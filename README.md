@@ -1,2 +1,0 @@
-# botmakingjoke
-Bot making joke

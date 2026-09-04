@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Разберите стили лидерства</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 20px; 
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        h2 { 
+            text-align: center; 
+            color: #1a202c; 
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .instruction { 
+            background: #ebf8ff; 
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            margin-bottom: 25px;
+        }
+        
+        .instruction strong { color: #2b6cb0; }
+        
+        .statements-pool { 
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .pool-title {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .draggable { 
+            background: #f7fafc; 
+            padding: 14px 18px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            cursor: grab;
+            border: 2px solid #e2e8f0;
+            transition: all 0.2s;
+            font-size: 14px;
+            user-select: none;
+        }
+        
+        .draggable:hover { 
+            border-color: #4299e1; 
+            background: #ebf8ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .draggable:active { cursor: grabbing; }
+        
+        .draggable.selected {
+            border-color: #4299e1;
+            background: #bee3f8;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+        
+        .draggable.placed {
+            opacity: 0.7;
+            border-style: dashed;
+        }
+        
+        .drop-zones { 
+            display: flex; 
+            gap: 20px; 
+            margin-bottom: 20px;
+        }
+        
+        .category { 
+            flex: 1; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            min-height: 300px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .toxic { border-top: 4px solid #e53e3e; }
+        .real { border-top: 4px solid #38a169; }
+        
+        .category h3 { 
+            margin-bottom: 15px; 
+            font-size: 16px;
+        }
+        
+        .drop-zone { 
+            min-height: 200px; 
+            border: 2px dashed #cbd5e0; 
+            border-radius: 6px; 
+            padding: 10px;
+            transition: all 0.2s;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #4299e1;
+            background: #ebf8ff;
+        }
+        
+        .drop-zone .draggable {
+            margin: 8px 0;
+            font-size: 13px;
+            padding: 10px 14px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn { 
+            padding: 12px 28px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-check { background: #48bb78; color: white; }
+        .btn-check:hover { background: #38a169; }
+        
+        .btn-reset { background: #edf2f7; color: #4a5568; }
+        .btn-reset:hover { background: #e2e8f0; }
+        
+        .result { 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result.success { background: #c6f6d5; border-left: 4px solid #38a169; }
+        .result.partial { background: #fefcbf; border-left: 4px solid #d69e2e; }
+        .result.error { background: #fed7d7; border-left: 4px solid #e53e3e; }
+        
+        .result h3 { margin-bottom: 10px; }
+        
+        .feedback {
+            margin-top: 25px;
+            display: none;
+        }
+        
+        .feedback-block {
+            padding: 18px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .feedback-toxic {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .feedback-real {
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+        }
+        
+        .feedback-block h4 {
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .feedback-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .feedback-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+        
+        .feedback-item em {
+            color: #718096;
+            font-size: 13px;
+        }
+        
+        .correct-mark { color: #38a169; font-weight: bold; }
+        .wrong-mark { color: #e53e3e; font-weight: bold; }
+        
+        @media (max-width: 768px) {
+            .drop-zones { flex-direction: column; }
+            .category { min-height: 200px; }
+            body { padding: 10px; }
+            h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎯 Разберите стили лидерства</h2>
+        <p class="subtitle">Перетащите каждое утверждение в соответствующую категорию</p>
+        
+        <div class="instruction">
+            <strong>Задание:</strong> Ниже 8 высказываний руководителей. Определите, какие из них характерны для <strong>токсичного лидера</strong>, а какие — для <strong>настоящего лидера</strong>. 
+            На мобильных устройствах: нажмите на утверждение, затем нажмите на нужную категорию.
+        </div>
+        
+        <div class="statements-pool">
+            <div class="pool-title">📋 Утверждения для сортировки</div>
+            
+            <div class="draggable" draggable="true" data-id="1">
+                «Я предпочитаю нанимать людей, которых смогу контролировать и направлять. Слишком самостоятельные сотрудники создают хаос в команде.»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="2">
+                «Когда я чувствую, что закипаю, я беру паузу. Гнев — это сигнал, что что-то идет не так, но крик не решит проблему. Лучше спросить себя: что меня на самом деле беспокоит?»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="3">
+                «В нашей сфере цена ошибки слишком высока. Я требую от команды работать без сбоев — для этого и нанял профессионалов.»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="4">
+                «Ошибки неизбежны в любой работе. Важнее не наказывать за них, а понять: где в процессе произошел сбой — в обучении, коммуникации или ресурсах?»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="5">
+                «Публичная критика от подчиненного подрывает авторитет руководителя. Если есть вопросы — пусть приходит лично, а не при всех.»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="6">
+                «Даже если критика звучит неудобно или публично, я стараюсь выслушать аргументы. Часто за резкой формой скрывается важная информация о проблемах в системе.»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="7">
+                «Когда проект провалился, важно понять, кто конкретно не справился со своей задачей. Без персональной ответственности система не работает.»
+            </div>
+            
+            <div class="draggable" draggable="true" data-id="8">
+                «Когда проект провалился, я беру ответственность на себя перед руководством. А внутри команды мы ищем не виноватых, а системные причины: где произошел сбой в процессах, коммуникации или планировании?»
+            </div>
+        </div>
+        
+        <div class="drop-zones">
+            <div class="category toxic">
+                <h3 style="color: #e53e3e;">⚠️ Токсичный лидер</h3>
+                <div class="drop-zone" data-category="toxic"></div>
+            </div>
+            <div class="category real">
+                <h3 style="color: #38a169;">✅ Настоящий лидер</h3>
+                <div class="drop-zone" data-category="real"></div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn btn-check" onclick="checkAnswers()">Проверить</button>
+            <button class="btn btn-reset" onclick="resetAll()">Сбросить</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div id="feedback" class="feedback">
+            <h3 style="margin-bottom: 15px;"> Подробный разбор:</h3>
+            
+            <div class="feedback-block feedback-toxic">
+                <h4 style="color: #e53e3e;">⚠️ Токсичный лидер — почему это проблематично:</h4>
+                
+                <div class="feedback-item">
+                    <strong>«Я предпочитаю нанимать людей, которых смогу контролировать...»</strong>
+                    <em>Звучит как «забота об управляемости», но на деле это страх перед сильными сотрудниками и микроменеджмент. Настоящий лидер ищет людей, которые сильнее его в своих областях.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Цена ошибки слишком высока. Требую работать без сбоев...»</strong>
+                    <em>Звучит как «забота о качестве», но создает культуру страха, где ошибки скрывают, а не исправляют. Команда перестает экспериментировать и расти.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Публичная критика подрывает авторитет...»</strong>
+                    <em>Звучит как «забота об иерархии», но блокирует обратную связь и создает эхо-камеру. Настоящий лидер ценит информацию больше, чем свой комфорт.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Важно понять, кто конкретно не справился...»</strong>
+                    <em>Звучит как «персональная ответственность», но на деле это поиск виноватых вместо системного анализа. Настоящий лидер ищет сбой в процессах, а не в людях.</em>
+                </div>
+            </div>
+            
+            <div class="feedback-block feedback-real">
+                <h4 style="color: #38a169;">✅ Настоящий лидер — в чем сила этого подхода:</h4>
+                
+                <div class="feedback-item">
+                    <strong>«Когда я закипаю, я беру паузу. Гнев — это сигнал...»</strong>
+                    <em>Понимает, что гнев — это симптом, а не инструмент управления. Берет ответственность за свои эмоции вместо того, чтобы срываться на команде.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Ошибки неизбежны. Важнее понять где сбой...»</strong>
+                    <em>Ищет системные причины, а не личных виноватых. Создает психологическую безопасность, где команда не боится признавать ошибки и учиться на них.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Даже если критика неудобна, я выслушиваю...»</strong>
+                    <em>Ценит информацию больше, чем свой авторитет. Понимает, что за резкой формой часто скрывается важная обратная связь о проблемах в системе.</em>
+                </div>
+                
+                <div class="feedback-item">
+                    <strong>«Беру ответственность на себя перед руководством...»</strong>
+                    <em>Защищает команду перед внешним миром, а внутри анализирует процессы. Это формула настоящего лидерства: решение = многие, ответственность = я.</em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const correctAnswers = {
+            '1': 'toxic',
+            '2': 'real',
+            '3': 'toxic',
+            '4': 'real',
+            '5': 'toxic',
+            '6': 'real',
+            '7': 'toxic',
+            '8': 'real'
+        };
+
+        let draggedElement = null;
+        let selectedElement = null;
+
+        // Drag and drop для десктопа
+        document.querySelectorAll('.draggable').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedElement = e.target;
+                e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            
+            // Клик для мобильных
+            item.addEventListener('click', () => {
+                if (item.classList.contains('placed')) return;
+                
+                document.querySelectorAll('.draggable').forEach(d => d.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedElement = item;
+            });
+        });
+
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                zone.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+            
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const id = e.dataTransfer.getData('text/plain');
+                const element = document.querySelector(`.draggable[data-id="${id}"]`);
+                if (element) {
+                    zone.appendChild(element);
+                    element.classList.add('placed');
+                }
+            });
+            
+            // Клик для мобильных
+            zone.addEventListener('click', () => {
+                if (selectedElement) {
+                    zone.appendChild(selectedElement);
+                    selectedElement.classList.add('placed');
+                    selectedElement.classList.remove('selected');
+                    selectedElement = null;
+                }
+            });
+        });
+
+        function checkAnswers() {
+            const toxicZone = document.querySelector('[data-category="toxic"]');
+            const realZone = document.querySelector('[data-category="real"]');
+            let correct = 0;
+            let total = 0;
+
+            toxicZone.querySelectorAll('.draggable').forEach(item => {
+                total++;
+                if (correctAnswers[item.dataset.id] === 'toxic') correct++;
+            });
+
+            realZone.querySelectorAll('.draggable').forEach(item => {
+                total++;
+                if (correctAnswers[item.dataset.id] === 'real') correct++;
+            });
+
+            const unplaced = document.querySelectorAll('.statements-pool .draggable:not(.placed)').length;
+            
+            const resultDiv = document.getElementById('result');
+            
+            if (unplaced > 0) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>️ Вы распределили только ${total} из 8 утверждений</h3><p>Пожалуйста, распределите все утверждения перед проверкой.</p>`;
+                resultDiv.style.display = 'block';
+                return;
+            }
+            
+            if (correct === 8) {
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '<h3>🎉 Всё верно! Вы отлично разбираетесь в стилях лидерства!</h3><p>Переходите к следующему шагу для закрепления материала.</p>';
+            } else if (correct >= 5) {
+                resultDiv.className = 'result partial';
+                resultDiv.innerHTML = `<h3>👍 Неплохо! Правильно ${correct} из 8</h3><p>Посмотрите разбор ниже, чтобы понять свои ошибки.</p>`;
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3> Правильно ${correct} из 8</h3><p>Не расстраивайтесь — посмотрите подробный разбор ниже и попробуйте снова.</p>`;
+            }
+            
+            resultDiv.style.display = 'block';
+            document.getElementById('feedback').style.display = 'block';
+            
+            // Прокрутка к результату
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetAll() {
+            const pool = document.querySelector('.statements-pool');
+            document.querySelectorAll('.draggable').forEach(item => {
+                item.classList.remove('placed', 'selected');
+                pool.appendChild(item);
+            });
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('feedback').style.display = 'none';
+            selectedElement = null;
+        }
+    </script>
+</body>
+</html>
