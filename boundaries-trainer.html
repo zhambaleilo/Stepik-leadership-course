@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр: Установка границ</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 20px; 
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        .container { max-width: 850px; margin: 0 auto; }
+        h2 { color: #1a202c; margin-bottom: 10px; font-size: 24px; }
+        .subtitle { color: #718096; margin-bottom: 25px; font-size: 14px; }
+        
+        .scenario-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .scenario-btn {
+            background: #edf2f7;
+            border: 2px solid #e2e8f0;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .scenario-btn:hover { background: #e2e8f0; }
+        .scenario-btn.active {
+            background: #4299e1;
+            color: white;
+            border-color: #4299e1;
+        }
+        
+        .instruction { 
+            background: #ebf8ff; 
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            margin-bottom: 25px;
+        }
+        
+        .scenario-box {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            display: none;
+        }
+        .scenario-box.show { display: block; }
+        .scenario-box strong { color: #e53e3e; display: block; margin-bottom: 10px; font-size: 16px; }
+        .scenario-box p { font-size: 16px; margin: 0; }
+        
+        .formula-box {
+            background: #f0fff4;
+            border: 2px solid #38a169;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .formula-box h3 { color: #22543d; margin-bottom: 15px; font-size: 18px; }
+        .formula-item {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #38a169;
+        }
+        .formula-item strong { color: #22543d; }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            margin: 20px 0;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: #4299e1; }
+        
+        .buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn {
+            background: #48bb78;
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #38a169; }
+        .btn-secondary { background: #4299e1; }
+        .btn-secondary:hover { background: #3182ce; }
+        .btn-reset { background: #edf2f7; color: #4a5568; }
+        .btn-reset:hover { background: #e2e8f0; }
+        
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+            animation: fadeIn 0.5s;
+        }
+        .feedback.show { display: block; }
+        .feedback h3 { color: #22543d; margin-bottom: 15px; }
+        
+        .example-box {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .example-item {
+            background: #f7fafc;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #38a169;
+        }
+        .example-item strong { color: #22543d; }
+        
+        .tips {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .tips h4 { color: #c05621; margin-bottom: 10px; }
+        .tips ul { padding-left: 20px; }
+        .tips li { margin: 5px 0; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .progress-indicator {
+            background: #edf2f7;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎯 Тренажёр: Установка профессиональных границ</h2>
+        <p class="subtitle">Отработайте навык экологичной, но твёрдой установки границ в трёх типичных ситуациях</p>
+        
+        <div class="progress-indicator">
+            Ситуация <span id="currentScenario">1</span> из 3
+        </div>
+        
+        <div class="scenario-selector">
+            <strong style="display: block; margin-bottom: 10px; color: #4a5568;">Выберите ситуацию для отработки:</strong>
+            <button class="scenario-btn active" onclick="showScenario(1)">🌙 Ночные сообщения</button>
+            <button class="scenario-btn" onclick="showScenario(2)">😤 Хамство на встрече</button>
+            <button class="scenario-btn" onclick="showScenario(3)">⏰ Срыв сроков</button>
+        </div>
+        
+        <div class="instruction">
+            <strong>Задание:</strong> Напишите 2-3 предложения, как вы установите границы в этой ситуации. Используйте формулу: Я-сообщение + Чёткое правило + Альтернатива.
+        </div>
+        
+        <!-- СИТУАЦИЯ 1 -->
+        <div id="scenario1" class="scenario-box show">
+            <strong>🌙 Ситуация 1: Ночные сообщения</strong>
+            <p>Сотрудник регулярно пишет вам в рабочие чаты в 22:00-23:00 и ждёт немедленного ответа. Если вы не отвечаете, он может написать ещё раз или прийти утром с претензией. Вы цените его вовлечённость, но это нарушает ваши границы отдыха.</p>
+        </div>
+        
+        <!-- СИТУАЦИЯ 2 -->
+        <div id="scenario2" class="scenario-box">
+            <strong>😤 Ситуация 2: Хамство на встрече</strong>
+            <p>На планёрке сотрудник начал повышать голос и говорить: «Это полная ерунда, ты вообще не понимаешь, о чём говоришь!» Коллеги замолчали. Вам нужно пресечь это, не разрушая рабочий диалог.</p>
+        </div>
+        
+        <!-- СИТУАЦИЯ 3 -->
+        <div id="scenario3" class="scenario-box">
+            <strong> Ситуация 3: Срыв сроков</strong>
+            <p>Сотрудник третий раз за месяц не выполняет обещания, данные на встрече. Он объясняет это «творческим подходом» и говорит, что «жёсткие рамки убивают креатив». Команда начинает срывать общие сроки.</p>
+        </div>
+        
+        <div class="formula-box">
+            <h3>📐 Формула установки границ</h3>
+            <div class="formula-item">
+                <strong>1. Я-сообщение:</strong> Опишите ситуацию без обвинения («Я замечаю...», «Я чувствую...»).
+            </div>
+            <div class="formula-item">
+                <strong>2. Чёткое правило:</strong> Обозначьте границу («Со мной так разговаривать нельзя», «Я не отвечаю после 19:00»).
+            </div>
+            <div class="formula-item">
+                <strong>3. Альтернатива:</strong> Предложите рабочий вариант («Давай сделаем паузу», «В экстренных случаях — звони»).
+            </div>
+        </div>
+        
+        <textarea id="userAnswer" placeholder="Напишите ваш ответ здесь...&#10;&#10;Например:&#10;Я замечаю, что...&#10;Мне важно...&#10;Давай договоримся..."></textarea>
+        
+        <div class="buttons">
+            <button class="btn" onclick="showFeedback()">Показать эталон</button>
+            <button class="btn btn-secondary" onclick="nextScenario()">Следующая ситуация →</button>
+            <button class="btn btn-reset" onclick="resetAll()">Сбросить</button>
+        </div>
+        
+        <div id="feedback" class="feedback">
+            <h3>✅ Эталонный ответ</h3>
+            <p>Сравните свой ответ с примером ниже. Главное — не точное совпадение слов, а использование всех трёх элементов формулы.</p>
+            
+            <div class="example-box" id="exampleContent">
+                <!-- Контент подставляется через JS -->
+            </div>
+            
+            <div class="tips">
+                <h4>💡 Ключевые принципы:</h4>
+                <ul>
+                    <li><strong>Твёрдость + Уважение:</strong> Вы защищаете границу, не унижая человека</li>
+                    <li><strong>Не оправдывайтесь:</strong> Вы не должны объяснять, почему имеете право на границу</li>
+                    <li><strong>Предлагайте решение:</strong> Не просто «нет», а «да, но по-другому»</li>
+                    <li><strong>Без эмоций:</strong> Спокойный тон усиливает сообщение, а не крик</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentScenarioNum = 1;
+        
+        const examples = {
+            1: {
+                title: 'Пример для ситуации «Ночные сообщения»:',
+                items: [
+                    '<strong>Я-сообщение:</strong> «Я замечаю, что ты часто пишешь мне поздно вечером и ждёшь быстрого ответа. Я ценю твою вовлечённость...»',
+                    '<strong>Чёткое правило:</strong> «...но мне важно соблюдать границы отдыха, чтобы оставаться эффективным. Я на связи до 19:00...»',
+                    '<strong>Альтернатива:</strong> «...если случается настоящий форс-мажор — просто позвони мне, в остальных случаях я отвечу утром.»'
+                ]
+            },
+            2: {
+                title: 'Пример для ситуации «Хамство на встрече»:',
+                items: [
+                    '<strong>Я-сообщение:</strong> «Я слышу, что ты не согласен с моим подходом, и это нормально...»',
+                    '<strong>Чёткое правило:</strong> «...но в таком тоне и с переходом на личности разговор продолжать не буду. Мы обсуждаем идеи, а не друг друга...»',
+                    '<strong>Альтернатива:</strong> «...давай сделаем паузу на 5 минут и вернёмся к обсуждению фактов, когда мы оба сможем говорить спокойно.»'
+                ]
+            },
+            3: {
+                title: 'Пример для ситуации «Срыв сроков»:',
+                items: [
+                    '<strong>Я-сообщение:</strong> «Я ценю твой креативный подход и понимаю, что рамки могут ограничивать...»',
+                    '<strong>Чёткое правило:</strong> «...но когда ты не выполняешь обещания, данные на встрече, это подводит всю команду и срывает наши общие сроки. Это недопустимо...»',
+                    '<strong>Альтернатива:</strong> «...давай обсудим, какие рамки тебе нужны для работы, но базовые договорённости мы должны соблюдать. Что ты предлагаешь?»'
+                ]
+            }
+        };
+        
+        function showScenario(num) {
+            currentScenarioNum = num;
+            
+            // Скрыть все сценарии
+            document.querySelectorAll('.scenario-box').forEach(box => {
+                box.classList.remove('show');
+            });
+            
+            // Показать выбранный
+            document.getElementById('scenario' + num).classList.add('show');
+            
+            // Обновить кнопки
+            document.querySelectorAll('.scenario-btn').forEach((btn, index) => {
+                if (index + 1 === num) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Обновить индикатор
+            document.getElementById('currentScenario').textContent = num;
+            
+            // Скрыть обратную связь
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('userAnswer').value = '';
+        }
+        
+        function showFeedback() {
+            const answer = document.getElementById('userAnswer').value.trim();
+            const feedback = document.getElementById('feedback');
+            const exampleContent = document.getElementById('exampleContent');
+            
+            if (answer.length < 10) {
+                alert('Пожалуйста, напишите хотя бы пару предложений, чтобы увидеть эталон. Практика — залог успеха! 😉');
+                return;
+            }
+            
+            // Подставить пример для текущего сценария
+            const example = examples[currentScenarioNum];
+            exampleContent.innerHTML = `
+                <h4 style="color: #22543d; margin-bottom: 15px;">${example.title}</h4>
+                ${example.items.map(item => `<div class="example-item">${item}</div>`).join('')}
+            `;
+            
+            feedback.classList.add('show');
+            setTimeout(() => {
+                feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        function nextScenario() {
+            let nextNum = currentScenarioNum + 1;
+            if (nextNum > 3) {
+                nextNum = 1;
+            }
+            showScenario(nextNum);
+        }
+        
+        function resetAll() {
+            document.getElementById('userAnswer').value = '';
+            document.getElementById('feedback').classList.remove('show');
+            showScenario(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Показать первый сценарий при загрузке
+        showScenario(1);
+    </script>
+</body>
+</html>
