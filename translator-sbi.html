@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Переводчик с защитного на зрелый</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 20px; 
+            background: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h2 { color: #1a202c; margin-bottom: 10px; font-size: 24px; }
+        .subtitle { color: #718096; margin-bottom: 20px; font-size: 14px; }
+        
+        .instruction { 
+            background: #ebf8ff; 
+            border-left: 4px solid #4299e1;
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            margin-bottom: 25px;
+        }
+        
+        .toxic-phrase {
+            background: #fff5f5;
+            border-left: 4px solid #e53e3e;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .toxic-phrase strong { color: #e53e3e; display: block; margin-bottom: 10px; font-size: 16px; }
+        .toxic-phrase p { font-size: 18px; font-style: italic; margin: 0; }
+        
+        .formula-box {
+            background: #ebf8ff;
+            border: 2px solid #4299e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .formula-box h3 { color: #2b6cb0; margin-bottom: 15px; font-size: 18px; }
+        .formula-item {
+            background: white;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #4299e1;
+        }
+        .formula-item strong { color: #2b6cb0; }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            margin: 20px 0;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: #4299e1; }
+        
+        .buttons { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn {
+            background: #48bb78;
+            color: white;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #38a169; }
+        .btn-reset { background: #edf2f7; color: #4a5568; }
+        .btn-reset:hover { background: #e2e8f0; }
+        
+        .feedback {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f0fff4;
+            border-left: 4px solid #38a169;
+            animation: fadeIn 0.5s;
+        }
+        .feedback.show { display: block; }
+        .feedback h3 { color: #22543d; margin-bottom: 15px; }
+        
+        .example-box {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .example-item {
+            background: #f7fafc;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #38a169;
+        }
+        .example-item strong { color: #22543d; }
+        
+        .tips {
+            background: #fffaf0;
+            border-left: 4px solid #ed8936;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .tips h4 { color: #c05621; margin-bottom: 10px; }
+        .tips ul { padding-left: 20px; }
+        .tips li { margin: 5px 0; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎯 Переводчик с защитного на зрелый</h2>
+        <p class="subtitle">Тренажёр формулы SBI + Request</p>
+        
+        <div class="instruction">
+            <strong>Задание:</strong> Переведите защитную фразу руководителя в формат зрелой обратной связи. Используйте формулу SBI + Request. Помните: похвала должна быть предметной, а связь — через «при этом», а не «но».
+        </div>
+        
+        <div class="toxic-phrase">
+            <strong>🔴 Защитная фраза:</strong>
+            <p>«Ты опять всё сделал неправильно, от тебя никакого толку!»</p>
+        </div>
+        
+        <div class="formula-box">
+            <h3>📐 Формула SBI + Request</h3>
+            <div class="formula-item">
+                <strong>S (Situation — Ситуация):</strong> Предметный контекст или признание (не «ты умница», а что именно сделано хорошо).
+            </div>
+            <div class="formula-item">
+                <strong>B (Behavior — Поведение):</strong> Конкретный факт без оценки личности.
+            </div>
+            <div class="formula-item">
+                <strong>I (Impact — Влияние):</strong> Как это повлияло на результат.
+            </div>
+            <div class="formula-item">
+                <strong>R (Request — Запрос):</strong> Предложение решения или совместный разбор.
+            </div>
+        </div>
+        
+        <textarea id="userAnswer" placeholder="Напишите ваш зрелый перевод здесь...&#10;&#10;Например:&#10;S: Я вижу, что ты взялся за эту задачу...&#10;B: При этом результат не соответствует...&#10;I: Из-за этого мы не можем...&#10;R: Давай разберём вместе..."></textarea>
+        
+        <div class="buttons">
+            <button class="btn" onclick="showFeedback()">Показать эталон</button>
+            <button class="btn btn-reset" onclick="resetAll()">Сбросить</button>
+        </div>
+        
+        <div id="feedback" class="feedback">
+            <h3>✅ Эталонный ответ</h3>
+            <p>Сравните свой ответ с примером ниже. Главное — не точное совпадение слов, а использование принципов формулы.</p>
+            
+            <div class="example-box">
+                <div class="example-item">
+                    <strong>S (Ситуация):</strong> «Я вижу, что ты взялся за эту задачу и потратил на неё время.»
+                </div>
+                <div class="example-item">
+                    <strong>B (Поведение):</strong> «При этом результат не соответствует требованиям — в отчёте отсутствуют ключевые данные.»
+                </div>
+                <div class="example-item">
+                    <strong>I (Влияние):</strong> «Из-за этого мы не можем отправить его клиенту в срок.»
+                </div>
+                <div class="example-item">
+                    <strong>R (Запрос):</strong> «Давай разберём вместе: что пошло не так? Может, нужны дополнительные инструкции или ресурсы?»
+                </div>
+            </div>
+            
+            <div class="tips">
+                <h4>💡 Ключевые отличия от защитной фразы:</h4>
+                <ul>
+                    <li>Нет оценки личности («никакого толку» → «результат не соответствует»)</li>
+                    <li>Нет обобщений («опять всё» → «в этот раз»)</li>
+                    <li>Есть конкретика (что именно отсутствует)</li>
+                    <li>Есть влияние (почему это важно)</li>
+                    <li>Связь через «при этом», а не через «но»</li>
+                </ul>
+            </div>
+            
+            <p style="margin-top: 20px; font-style: italic; color: #4a5568;">
+                Если в вашем ответе есть предметный контекст, факты вместо оценок и предложение решения — вы на правильном пути! 
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showFeedback() {
+            const answer = document.getElementById('userAnswer').value.trim();
+            const feedback = document.getElementById('feedback');
+            
+            if (answer.length < 10) {
+                alert('Пожалуйста, напишите хотя бы пару предложений, чтобы увидеть эталон. Практика — залог успеха! 😉');
+                return;
+            }
+            
+            feedback.classList.add('show');
+            setTimeout(() => {
+                feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+        
+        function resetAll() {
+            document.getElementById('userAnswer').value = '';
+            document.getElementById('feedback').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
