@@ -226,11 +226,11 @@
 </head>
 <body>
     <div class="container">
-        <h2>🎯 Разберите стили лидерства</h2>
+        <h2> Разберите стили лидерства</h2>
         <p class="subtitle">Перетащите каждое утверждение в соответствующую категорию</p>
         
         <div class="instruction">
-            <strong>Задание:</strong> Ниже 8 высказываний руководителей. Определите, какие из них характерны для <strong>токсичного лидера</strong>, а какие — для <strong>настоящего лидера</strong>. 
+            <strong>Задание:</strong> Ниже 8 высказываний руководителей. Определите, какие из них характерны для <strong>защитного (инстинктивного) паттерна</strong>, а какие — для <strong>зрелого подхода</strong>. 
             На мобильных устройствах: нажмите на утверждение, затем нажмите на нужную категорию.
         </div>
         
@@ -272,11 +272,11 @@
         
         <div class="drop-zones">
             <div class="category toxic">
-                <h3 style="color: #e53e3e;">⚠️ Токсичный лидер</h3>
+                <h3 style="color: #D97A2B;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#D97A2B;margin-right:8px;"></span>Защитный (инстинктивный)</h3>
                 <div class="drop-zone" data-category="toxic"></div>
             </div>
             <div class="category real">
-                <h3 style="color: #38a169;">✅ Настоящий лидер</h3>
+                <h3 style="color: #1F9E7E;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#1F9E7E;margin-right:8px;"></span>Зрелый</h3>
                 <div class="drop-zone" data-category="real"></div>
             </div>
         </div>
@@ -292,7 +292,7 @@
             <h3 style="margin-bottom: 15px;"> Подробный разбор:</h3>
             
             <div class="feedback-block feedback-toxic">
-                <h4 style="color: #e53e3e;">⚠️ Токсичный лидер — почему это проблематично:</h4>
+                <h4 style="color: #D97A2B;"> Защитный (инстинктивный) — почему это проблематично:</h4>
                 
                 <div class="feedback-item">
                     <strong>«Я предпочитаю нанимать людей, которых смогу контролировать...»</strong>
@@ -316,7 +316,7 @@
             </div>
             
             <div class="feedback-block feedback-real">
-                <h4 style="color: #38a169;">✅ Настоящий лидер — в чем сила этого подхода:</h4>
+                <h4 style="color: #1F9E7E;"> Зрелый — в чем сила этого подхода:</h4>
                 
                 <div class="feedback-item">
                     <strong>«Когда я закипаю, я беру паузу. Гнев — это сигнал...»</strong>
@@ -436,10 +436,10 @@
             
             if (correct === 8) {
                 resultDiv.className = 'result success';
-                resultDiv.innerHTML = '<h3>🎉 Всё верно! Вы отлично разбираетесь в стилях лидерства!</h3><p>Переходите к следующему шагу для закрепления материала.</p>';
+                resultDiv.innerHTML = '<h3> Всё верно! Вы отлично разбираетесь в стилях лидерства!</h3><p>Переходите к следующему шагу для закрепления материала.</p>';
             } else if (correct >= 5) {
                 resultDiv.className = 'result partial';
-                resultDiv.innerHTML = `<h3>👍 Неплохо! Правильно ${correct} из 8</h3><p>Посмотрите разбор ниже, чтобы понять свои ошибки.</p>`;
+                resultDiv.innerHTML = `<h3> Неплохо! Правильно ${correct} из 8</h3><p>Посмотрите разбор ниже, чтобы понять свои ошибки.</p>`;
             } else {
                 resultDiv.className = 'result error';
                 resultDiv.innerHTML = `<h3> Правильно ${correct} из 8</h3><p>Не расстраивайтесь — посмотрите подробный разбор ниже и попробуйте снова.</p>`;
