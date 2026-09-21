@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="stripes" width="56" height="56" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+      <rect width="20" height="56" fill="#1B2836"/>
+    </pattern>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7FF0D4"/><stop offset="1" stop-color="#D9F24F"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#16202C"/>
+  <rect width="1200" height="630" fill="url(#stripes)"/>
+  <g fill="#1E2A38">
+    <rect x="1050" y="540" width="22" height="40" rx="11"/>
+    <rect x="1084" y="510" width="22" height="70" rx="11"/>
+    <rect x="1118" y="478" width="22" height="102" rx="11"/>
+  </g>
+  <g>
+    <line x1="760" y1="330" x2="1120" y2="330" stroke="#E1E7EE" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="820" cy="270" r="16" fill="#9AA5B1"/><rect x="804" y="290" width="32" height="40" rx="14" fill="#9AA5B1"/>
+    <circle cx="910" cy="260" r="16" fill="#9AA5B1"/><rect x="894" y="280" width="32" height="50" rx="14" fill="#9AA5B1"/>
+    <circle cx="1000" cy="252" r="16" fill="#9AA5B1"/><rect x="984" y="272" width="32" height="58" rx="14" fill="#9AA5B1"/>
+    <circle cx="1090" cy="260" r="16" fill="#9AA5B1"/><rect x="1074" y="280" width="32" height="50" rx="14" fill="#9AA5B1"/>
+    <path d="M920 430 L880 335" stroke="#E1E7EE" stroke-width="10" stroke-linecap="round"/>
+    <path d="M960 430 L1000 335" stroke="#E1E7EE" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="940" cy="395" r="22" fill="#E1E7EE"/><rect x="916" y="420" width="48" height="72" rx="20" fill="#E1E7EE"/>
+    <path d="M840 160 l6 14 14 6 -14 6 -6 14 -6 -14 -14 -6 14 -6 z" fill="#7FF0D4"/>
+    <path d="M930 120 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 z" fill="#7FF0D4"/>
+    <path d="M1030 150 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 z" fill="#7FF0D4"/>
+  </g>
+  <text x="80" y="170" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#9AA5B1">MY PRO SKILLS</text>
+  <text x="80" y="260" font-family="Arial, sans-serif" font-size="62" font-weight="800" fill="#FFFFFF">Лидерство наизнанку</text>
+  <rect x="80" y="290" width="240" height="6" rx="3" fill="url(#grad)"/>
+  <text x="80" y="360" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#FFFFFF">Без брони и без крика</text>
+  <text x="80" y="410" font-family="Arial, sans-serif" font-size="26" fill="#9AA5B1">От защитных реакций — к зрелому лидерству</text>
+  <text x="80" y="470" font-family="Arial, sans-serif" font-size="26" fill="#7FF0D4">5 модулей · ~3 часа · 1 990 ₽ · первый урок бесплатно</text>
+</svg>
