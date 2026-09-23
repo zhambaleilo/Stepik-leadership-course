@@ -142,20 +142,53 @@
   <div class="wm"><i></i><i></i><i></i></div>
 </section>
 
-<section class="sec-light" id="b2b">
+<section class="sec-light" id="playground">
+  <div class="wrap">
+    <div class="card card--dark reveal" style="padding:36px">
+      <span class="badge badge--mint">Playground · в браузере</span>
+      <h3 style="font-size:26px;color:var(--white)">Тренажёр разговора с сотрудником</h3>
+      <p style="margin-top:14px;max-width:860px">Живой симулятор сложного разговора: сотрудник реагирует на ваши реплики, а в финале вы получаете разбор по 6 критериям методологии My Pro Skills — с цитатами из диалога и эталонным ответом. Два движка: офлайн-эксперт (работает без сети) и живой ИИ GigaChat (Sбер) через serverless-прокси — ключей в коде нет.</p>
+      <p style="margin-top:12px;max-width:860px"><b style="color:var(--white)">Кому полезно:</b> руководителям и тимлидам — отработать границы и поддержку без риска; HR и T&D — как материал онбординга; рекрутерам и инженерам — как доказательство архитектуры AI-продукта.</p>
+      <div style="margin-top:18px;display:grid;gap:8px">
+        <p style="color:var(--mint);font-weight:700">3 сценария · 3 попытки · 5 реплик · 6 критериев</p>
+        <p style="color:var(--mint);font-weight:700">Валидация оценки: 10+ прогонов автора, ревью двух внешних экспертов (HR и маркетолог)</p>
+        <p style="color:var(--mint);font-weight:700">0 ключей в коде: GigaChat через Vercel Functions, CORS по домену</p>
+      </div>
+      <p style="margin-top:18px"><span class="badge badge--gray">Client-side JS</span> <span class="badge badge--gray">GigaChat (Sбер)</span> <span class="badge badge--gray">Vercel Functions</span> <span class="badge badge--gray">SpeechSynthesis</span></p>
+      <div style="margin-top:26px"><button class="btn" id="pgToggle">Попробовать тренажёр →</button></div>
+      <div id="pgBox" hidden style="margin-top:24px"><iframe id="pgFrame" title="Тренажёр разговора с сотрудником" src="" loading="lazy" style="width:100%;border:none;border-radius:16px;background:#fff;min-height:700px;height:900px"></iframe></div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var t=document.getElementById('pgToggle'),box=document.getElementById('pgBox'),fr=document.getElementById('pgFrame');
+  if(!t)return;
+  t.onclick=function(){
+    if(box.hidden){box.hidden=false;if(!fr.src)fr.src='playground.html?embed=1';t.textContent='Свернуть тренажёр ↑';}
+    else{box.hidden=true;t.textContent='Попробовать тренажёр →';}
+  };
+  addEventListener('message',function(e){
+    if(e.data&&e.data.pgaHeight&&fr&&fr.contentWindow===e.source){fr.style.height=Math.max(e.data.pgaHeight,700)+'px';}
+  });
+})();
+</script>  
+  
+<section class="sec-dark" id="b2b">
   <div class="wrap">
     <div class="reveal center">
       <h2>Что это значит для вас</h2><span class="grad-line"></span>
     </div>
     <div class="grid" style="margin-top:48px">
-      <div class="card card--light reveal" data-d="1"><h3>Методология</h3><p>Кейсы с метриками: completion rate, CSAT, поведенческие изменения. Не «провели тренинг», а «измерили результат».</p></div>
-      <div class="card card--light reveal" data-d="2"><h3>AI-автоматизация</h3><p>Боты и workflow, которые забирают рутину: парсинг, генерация текстов, доставка результата. Часы ручного труда превращаются в секунды.</p></div>
-      <div class="card card--light reveal" data-d="3"><h3>Корпоративная практика</h3><p>Опыт в HR/L&D JTI Russia и международных проектах, 100+ обученных специалистов: решения строятся на реальных кейсах, а не на учебниках.</p></div>
+      <div class="card card--dark reveal" data-d="1"><h3 style="color:var(--white)">Методология</h3><p>Кейсы с метриками: completion rate, CSAT, поведенческие изменения. Не «провели тренинг», а «измерили результат».</p></div>
+      <div class="card card--dark reveal" data-d="2"><h3 style="color:var(--white)">AI-автоматизация</h3><p>Боты и workflow, которые забирают рутину: парсинг, генерация текстов, доставка результата. Часы ручного труда превращаются в секунды.</p></div>
+      <div class="card card--dark reveal" data-d="3"><h3 style="color:var(--white)">Корпоративная практика</h3><p>Опыт в HR/L&D JTI Russia и международных проектах, 100+ обученных специалистов: решения строятся на реальных кейсах, а не на учебниках.</p></div>
     </div>
     <div class="reveal center" style="margin-top:44px">
       <a class="btn" href="https://t.me/Zhambaleilo" target="_blank" rel="noopener">Обсудить проект для вашей компании →</a>
     </div>
   </div>
+  <div class="wm"><i></i><i></i><i></i></div>
 </section>
 </main>
 
