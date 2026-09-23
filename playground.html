@@ -155,12 +155,14 @@ const JUSTIFY=R('прости|извини|я вынужден|я виноват
 const SPEC=R('\\d{1,2}[:.]\\d{2}|после \\d|утром|вечером|в чате|на встрече|завтра|сегодня|на неделе|за месяц|на днях|одно сообщ|в telegram|на почту|10 минут|паузу');
 
 /* Эмодзи-слой (D6): классы закрыты, оценивается функция фразы-носителя */
-const MOCK=['🙄','🤦','','😏','🤬','🖕','пф','фе','хехе','хи-хи','lol','кек'];
+const MOCK_EMOJI=['🙄','🤦','😏','','🖕'];
+const MOCK_WORD=['пф','фе','хехе','хи-хи','кек','lol'];
 const LAUGH=['))))',':)',':-)',';)','😂','🤣'];
 const SAD=[':(',':-(','😞','😔','🙁'];
 const ACCW=['ты снова','ты опять','в который раз','ты уже','как ты мог','ты виноват','почему опять'];
-const hasAny=(arr,t)=>arr.some(w=>t.includes(w));
-
+const hasAny=(arr,t)=>arr.some(w=>w&&t.includes(w));
+const hasWord=(arr,t)=>arr.some(w=>new RegExp('(^|[^a-zа-яё0-9])'+w+'($|[^a-zа-яё0-9])','i').test(t));
+ 
 /* Комбо G10 на простых списках (устойчиво к артефактам вставки) */
 const I_MARK=['мне важно','я вижу','замечаю','понимаю','я чувствую'];
 const EMP_TAIL=['наконец','уже начни','соберись','чтобы ты'];
@@ -264,7 +266,7 @@ function grade(){
  if(KILL.test(all)) return {verdicts:SC[s].crit.map(c=>({c,v:0,why:'обнулено: грубое нарушение (оскорбление или угроза)'})),kill:true,gate:false,sum:0};
  const P=PRESS.test(all);
  const ACC=hasAny(ACCW,all);
- const mockery=hasAny(MOCK,all)||(hasAny(LAUGH,all)&&ACC);
+ const mockery=hasAny(MOCK_EMOJI,all)||hasWord(MOCK_WORD,all)||(hasAny(LAUGH,all)&&ACC);
  const guilt=hasAny(SAD,all)&&ACC;
  const struct=msgs.some(m=>m.role==='user'&&/^ты\b.*[?!]$/.test(m.content.trim()));
  const bg=P||guilt;
