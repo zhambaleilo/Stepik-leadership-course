@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажёр разговора с сотрудником — playground · My Pro Skills</title>
+<meta name="description" content="Живой симулятор сложного разговора с сотрудником: 3 сценария, диалог до 5 реплик, разбор по 6 критериям. Эксперт офлайн + живой GigaChat (Sбер). Бесплатно, в браузере.">
+<link rel="canonical" href="https://my-pro-skills.ru/playground.html">
+<meta name="theme-color" content="#16202C">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Тренажёр разговора с сотрудником — playground">
+<meta property="og:description" content="3 сценария, диалог до 5 реплик, разбор по 6 критериям. Эксперт офлайн + живой GigaChat. Бесплатно, в браузере.">
+<meta property="og:image" content="https://my-pro-skills.ru/og-cover.png">
+<meta property="og:url" content="https://my-pro-skills.ru/playground.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.chat{max-width:760px;margin:32px auto 0;display:grid;gap:12px}
+.bub{max-width:85%;padding:14px 18px;border-radius:14px;font-size:15px;line-height:1.55;white-space:pre-wrap}
+.bub--emp{background:var(--panel);color:var(--light-gray);border-bottom-left-radius:4px;justify-self:start}
+.bub--user{background:var(--mint);color:var(--ink);border-bottom-right-radius:4px;justify-self:end}
+.bub--sys{justify-self:center;background:transparent;color:var(--gray);font-size:13px;text-align:center;max-width:100%}
+.ctrl{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:stretch}
+.scen{cursor:pointer;border:2px solid var(--light-stripe);border-radius:14px;padding:14px 18px;background:#fff;transition:.25s;text-align:left;max-width:260px}
+.scen.on{border-color:var(--mint);box-shadow:0 8px 24px rgba(127,240,212,.25)}
+.scen h3{font-size:16px;margin-bottom:6px}
+.scen p{font-size:13px}
+.switch{display:inline-flex;gap:8px;align-items:center;font-weight:600;color:var(--ink);font-size:14px}
+.switch select{font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--light-stripe)}
+.crit{display:grid;gap:10px;margin-top:20px}
+.crit__row{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--light-stripe);border-radius:12px;padding:14px 16px;text-align:left}
+.crit__mark{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--ink)}
+.mark-2{background:var(--mint)}.mark-1{background:var(--light-stripe)}.mark-0{background:var(--amber);color:#fff}
+textarea{width:100%;min-height:84px;border:1px solid var(--light-stripe);border-radius:12px;padding:12px 14px;font:inherit;resize:vertical}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;max-width:760px;margin:20px auto 0}
+.row>div{flex:1;min-width:220px}
+</style>
+</head>
+<body>
+<div class="progress"></div>
+<header class="header">
+  <nav class="nav">
+    <a class="logo" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="12" width="5" height="9" rx="2.5" fill="#9AA5B1"/><rect x="9.5" y="7" width="5" height="14" rx="2.5" fill="#E1E7EE"/><rect x="17" y="2" width="5" height="19" rx="2.5" fill="#FFFFFF"/></svg>
+      My Pro Skills
+    </a>
+    <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    <div class="menu">
+      <a href="index.html#courses">Курсы</a>
+      <a href="projects.html">Проекты</a>
+      <a href="index.html#approach">Подход</a>
+      <a href="index.html#contacts">Контакты</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+<section class="sec-dark hero">
+  <div class="wrap center">
+    <div class="reveal">
+      <p style="color:var(--mint);font-weight:700;text-transform:uppercase;letter-spacing:.6px;font-size:13px;margin-bottom:16px">Playground · портфолио</p>
+      <h1>Тренажёр разговора с сотрудником</h1>
+      <span class="grad-line"></span>
+      <p style="margin:26px auto 36px;color:var(--gray);font-size:19px;max-width:680px">Живой симулятор сложного разговора: 3 сценария, диалог до 5 реплик, разбор по 6 критериям. Экспертный движок работает офлайн; режим «Живой ИИ» — на GigaChat (Sбер).</p>
+      <p style="font-size:13px;color:var(--gray)">Учебный симулятор. Не вводите реальные персональные или медицинские данные — используйте нейтральные формулировки.</p>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</section>
+
+<section class="sec-light" id="sim">
+  <div class="wrap">
+    <div class="ctrl reveal" id="scens"></div>
+    <div class="ctrl reveal" style="margin-top:20px">
+      <label class="switch"><input type="checkbox" id="repOn" checked> Разбор по 6 критериям</label>
+      <label class="switch">Сотрудник:
+        <select id="engine">
+          <option value="expert">Эксперт (офлайн, работает без сети)</option>
+          <option value="live">Живой ИИ · GigaChat (Sбер)</option>
+        </select>
+      </label>
+      <span class="switch" id="att" style="color:var(--gray)"></span>
+    </div>
+
+    <div class="chat" id="chat"></div>
+
+    <div class="row">
+      <div><textarea id="msg" maxlength="280" placeholder="Ваша реплика сотруднику… (до 280 символов)"></textarea>
+      <span id="chars" style="font-size:12px;color:var(--gray)">0/280</span></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div style="flex:0"><button class="btn" id="send">Сказать →</button></div>
+      <div style="flex:0"><button class="btn btn--ghost" id="fin">Завершить и получить разбор</button></div>
+      <div style="flex:0"><span class="switch" id="cnt" style="color:var(--gray)"></span></div>
+    </div>
+    <p class="reveal center" style="margin-top:14px;font-size:12px;color:var(--gray)"><a href="#" id="wipe" style="color:var(--gray);text-decoration:underline">сбросить прогресс попыток (для владельца)</a></p>
+
+    <div id="rep" hidden style="max-width:760px;margin:40px auto 0">
+      <div class="reveal center"><h2 style="font-size:28px">Разбор разговора</h2><span class="grad-line"></span></div>
+      <p id="engLabel" style="text-align:center;margin-top:10px;font-size:13px;color:var(--gray)"></p>
+      <p id="score" style="text-align:center;margin-top:14px;font-family:'Manrope',sans-serif;font-size:34px;font-weight:800;color:var(--mint)"></p>
+      <div class="crit" id="crits"></div>
+      <p id="advice" style="margin-top:20px;text-align:center;color:var(--ink2)"></p>
+      <details style="margin-top:20px;background:#fff;border:1px solid var(--light-stripe);border-radius:12px;padding:16px 18px">
+        <summary style="cursor:pointer;font-weight:700;color:var(--ink)">Эталонный ответ</summary>
+        <p id="etalon" style="margin-top:12px;color:var(--ink2)"></p>
+      </details>
+      <div class="row" style="justify-content:center;margin-top:24px">
+        <div style="flex:0"><button class="btn btn--ghost" id="again">Попробовать снова</button></div>
+        <div style="flex:0"><button class="btn btn--ghost" id="tts">Озвучить разбор</button></div>
+      </div>
+    </div>
+
+    <div class="reveal" style="max-width:760px;margin:48px auto 0;background:#fff;border:1px solid var(--light-stripe);border-radius:16px;padding:22px 24px;text-align:left">
+      <h3 style="font-size:18px">Как мы валидируем оценку</h3>
+      <p style="margin-top:10px;font-size:14px">В экспертном режиме балл ставит прозрачная методика из 6 критериев с цитатами из диалога, а не нейросеть: ИИ играет роль собеседника. Каждый сценарий прошёл 10+ тестовых прогонов автора; разборы проверили два внешних эксперта — опытный HR и маркетолог, их правки учтены в критериях. Мы собираем «золотой набор» диалогов с экспертной разметкой, чтобы измерить совпадение системы с консенсусом людей. В режиме живого ИИ разбор GigaChat — экспертное мнение, которое может отличаться от методики: это песочница. Не согласны с разбором? Приходите обсудить — каждый такой случай пополняет нашу копилку валидации.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__row">
+      <div>© <span data-year>2024</span> My Pro Skills. Все права защищены.<br>
+        Email: <a href="mailto:zhambalkhumaev@yandex.ru">zhambalkhumaev@yandex.ru</a> ·
+        Telegram: <a href="https://t.me/Zhambaleilo">@Zhambaleilo</a></div>
+      <div><a href="index.html">Все курсы</a> · <a href="projects.html">Проекты</a></div>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</footer>
+<button class="top" aria-label="Наверх">↑</button>
+<script src="script.js"></script>
+<script>
+const PROXY='https://stepik-leadership-course.vercel.app';
+const EMBED=new URLSearchParams(location.search).has('embed');
+if(EMBED){['header','footer'].forEach(t=>{const e=document.querySelector(t);if(e)e.style.display='none';});
+ ['.hero','.top','.progress'].forEach(s=>{const e=document.querySelector(s);if(e)e.style.display='none';});
+ const w=document.querySelector('#sim .wrap');if(w)w.style.paddingTop='24px';}
+const R=s=>new RegExp(s,'i');
+const SC=[
+ {t:'🌙 Ночные сообщения',g:'Установить границу, не разрушив контакт.',
+  intro:'Сотрудник регулярно пишет в рабочие чаты в 22:00–23:00 и ждёт немедленного ответа. Если не ответить — пишет снова или приходит утром с претензией. Вы цените его вовлечённость, но это нарушает вашу границу отдыха.',
+  crit:[
+   {n:'Я-сообщение без обвинения',y:[R('я замет'),R('я чувств'),R('мне важн'),R('я вижу'),R('мне спокойн')],no:[R('ты опять'),R('ты всегда'),R('ты никогда'),R('как ты мог'),R('ты виноват')],h:'Опишите ситуацию от себя: «Я замечаю…», «Мне важно…» — без «ты опять».'},
+   {n:'Чёткое правило',y:[R('после \\d'),R('не отвечаю'),R('правило'),R('договоримся'),R('границ'),R('рамк'),R('только в рабочее')],no:[],h:'Обозначьте границу конкретно: «Я не отвечаю после 19:00».'},
+   {n:'Конструктивная альтернатива',y:[R('давай'),R('предлагаю'),R('вместо'),R('можем'),R('в экстренн'),R('если срочно'),R('звони'),R('утром')],no:[],h:'Не просто «нет», а «да, но по-другому»: экстренные случаи, утренний блок.'},
+   {n:'Уважительный тон',y:[R('[\\s\\S]')],no:[R('!{2,}'),R('[А-ЯЁ]{6,}'),R('хам|дурак|идиот|заткнись|замолчи')],h:'Спокойный тон усиливает сообщение, а не крик.'},
+   {n:'Граница без оправданий',y:[R('[\\s\\S]')],no:[R('прости'),R('извини'),R('я вынужден'),R('я виноват'),R('не мог иначе')],h:'Вы не обязаны объяснять, почему имеете право на границу.'},
+   {n:'Конкретика',y:[R('\\d{1,2}[:.]\\d{2}'),R('после \\d'),R('утром'),R('в чате'),R('на встрече'),R('завтра'),R('одно сообщ')],no:[],h:'Время, канал, формат: чем конкретнее, тем легче выполнить.'}],
+  etalon:'Я замечаю, что сообщения часто приходят в 22:00–23:00 — и мне важно это обсудить. Вечером я не отвечаю на рабочие чаты: после 19:00 я офлайн. Если случится экстренное — звони, я подниму трубку. И давай договоримся: вопросы, которые могут подождать, ты собираешь в одно утреннее сообщение. Как тебе такая схема?',
+  pools:{def:['Понятно, вы у нас формалисты. Только вопросы ведь не ждут до утра, да?','Хорошо, не буду писать. Только не удивляйтесь, если к утру всё накопится.','Опять формальности? Ладно. Просто мои вопросы горят ночью, вы же понимаете.','Принял. Просто имейте в виду: утром я буду отвечать на бегу.'],
+   open:['Спасибо, что сказали прямо. Честно — я боюсь упустить что-то важное…','Звучит справедливо. А что мне делать с задачами, которые прилетают ночью?','Да, мне просто сложно отпустить контроль над задачами… Попробую.','Хорошо. А утренний блок — это с девяти или с десяти?'],
+   neg:['Принято. А как мне помечать «срочно», чтобы не гадать?','Понял. Давайте попробуем. Если я забудусь и напишу вечером — напомните?','А если экстренно, а вы не на связи — кто возьмёт удар на себя?','Договорились. Напишу себе памятку, чтобы не забыть правило.'],
+   neu:['Хм, не думал, что это для вас проблема. Расскажите, как это видите вы?','Хорошо, слушаю. Что конкретно предлагаете?','Интересно. А как вы сами пришли к такому правилу?','Понял. Честно — не думал, что это заметно со стороны.']}},
+ {t:'😤 Хамство на встрече',g:'Пресечь хамство, сохранив рабочий диалог.',
+  intro:'На планёрке сотрудник повысил голос: «Это полная ерунда, ты вообще не понимаешь, о чём говоришь!» Коллеги замолчали. Нужно пресечь это, не разрушив рабочий диалог.',
+  crit:[
+   {n:'Я-позиция',y:[R('я не готов'),R('я не продолжу'),R('мне некомфорт'),R('я слышу, но'),R('я вижу')],no:[R('ты хам'),R('ты дурак'),R('ты всегда')],h:'Говорите от себя: «Я не готов продолжать в этом тоне».'},
+   {n:'Стоп поведения, не личности',y:[R('стоп'),R('останов'),R('так нельзя'),R('не продолжу'),R('давай без'),R('без переход')],no:[R('ты хам'),R('заткнись')],h:'Останавливайте поведение, а не человека: критика решений возможна, личностей — нет.'},
+   {n:'Пауза и возврат к фактам',y:[R('пауз'),R('вернемся'),R('продолжим'),R('перерыв'),R('обсудим позже'),R('по фактам'),R('цифр')],no:[],h:'Предложите паузу и возврат к цифрам и фактам.'},
+   {n:'Уважительный тон',y:[R('[\\s\\S]')],no:[R('!{2,}'),R('[А-ЯЁ]{6,}'),R('хам|дурак|идиот|заткнись|замолчи')],h:'Ваше спокойствие — образец нормы для команды.'},
+   {n:'Без оправданий',y:[R('[\\s\\S]')],no:[R('прости'),R('извини'),R('я вынужден'),R('я виноват')],h:'Не извиняйтесь за то, что защитили норму диалога.'},
+   {n:'Конкретика',y:[R('фраз'),R('сказал'),R('про отчет'),R('цифр'),R('10 минут'),R('на встрече'),R('завтра')],no:[],h:'Назовите конкретную фразу или цифру и время разговора.'}],
+  etalon:'Стоп. Я не продолжаю разговор в этом тоне: критиковать решение можно, переходить на личности — нельзя. Давай возьмём паузу 10 минут, а потом вернёмся к фактам: какие именно цифры в отчёте ты считаешь ошибочными? Я готов обсудить каждую.',
+  pools:{def:['О, понятно, я ещё и виноват. Может, ещё и поаплодировать?','Ладно, буду «вежливым». Только отчёт всё равно слабый.','Да-да, я плохой. Извиниться перед всеми тоже нужно?','Хорошо. Только не делайте вид, что вы сами без предвзятости.'],
+   open:['…Да, я перегнул. Просто эти цифры меня неделю трясут.','Хорошо, пауза так пауза. Только давай без вида, что всё нормально.','…Сорвался. Недели две уже кипит, сегодня прорвало.','Ладно. Остыну. Но тема всё равно не закрыта.'],
+   neg:['Согласен про факты. Тогда скажи, каким цифрам мне верить?','Ладно, 10 минут. Но я вернусь с вопросами.','10 минут — нормально. Принесу цифры.','Договорились про факты. Без крика — так без крика.'],
+   neu:['И что мне делать, если отчёт реально слабый?','Хм. И как ты предлагаешь это обсуждать?','А как вы вообще видите разговор про слабый отчёт?','Хм. Вы спокойно об этом говорите — это удивляет.']}},
+ {t:'🫂 Уставший сотрудник (поддержка)',g:'Начать разговор об условиях, а не ставить диагноз.',
+  intro:'Сотрудник третий раз срывает дедлайн, выглядит уставшим, коллеги жалуются. Ваша задача — не поставить диагноз, а начать разговор о работе и условиях, которые могут мешать.',
+  crit:[
+   {n:'Факты без диагнозов',y:[R('замечаю'),R('заметил'),R('вижу, что'),R('треть'),R('срок'),R('месяц')],no:[R('ты лени'),R('ты выгорел'),R('ты болен'),R('диагноз'),R('ты опять'),R('ты всегда')],h:'Наблюдения и факты, не ярлыки: «третий срок за месяц», а не «ты выгорел».'},
+   {n:'Я-сообщение',y:[R('я замет'),R('я вижу'),R('я чувств'),R('мне важн'),R('я беспоко')],no:[R('ты виноват'),R('как ты мог')],h:'Своё восприятие вместо обвинения.'},
+   {n:'Эмпатия и поддержка',y:[R('понимаю'),R('ценю'),R('вижу, как'),R('спасибо'),R('поддерж'),R('важно, что'),R('сочувств')],no:[],h:'Признайте усилия и состояние человека до разбора полётов.'},
+   {n:'Открытый вопрос об условиях',y:[R('что меш'),R('что происход'),R('как так'),R('расскаж'),R('какие услови'),R('чем могу'),R('как справл'),R('что измен')],no:[],h:'Спросите о условиях и нагрузке, а не догадывайтесь о причинах.'},
+   {n:'Без давления и угроз',y:[R('[\\s\\S]')],no:[R('ты должен'),R('ты обязан'),R('последн'),R('предупреж'),R('увол'),R('лиш.*прем'),R('как ты мог')],h:'Угрозы закрывают разговор. Безопасность важнее дисциплины в этот момент.'},
+   {n:'Совместный следующий шаг',y:[R('давай'),R('вместе'),R('план'),R('встретимся'),R('обсудим'),R('шаг'),R('я возьм'),R('помогу'),R('предлагаю')],no:[],h:'Договоритесь о шаге вместе: что меняем в процессе, а не в человеке.'}],
+  etalon:'Я вижу, что третий срок за месяц сдвинулся, и ты выглядишь уставшим — мне важно это обсудить, и я беспокоюсь. Не буду угадывать причины: расскажи, что сейчас мешает больше всего? Может, условия или нагрузка. Хочу понять, что изменить в процессе, чтобы это не повторялось. Давай обсудим честно — без последствий для тебя.',
+  pools:{def:['Ну началось. Меня уже увольняют? Скажите прямо.','Третий раз, да. Только никто не спросил, как я вообще.','Только не читайте мне лекцию про ответственность, хорошо?','Да, срываю. Увольняйте — так проще.'],
+   open:['…Спасибо. Честно — я не сплю нормально две недели, и всё копится.','Не ожидал такого вопроса. Проблема в требованиях, они меняются на ходу.','Честно — дома тяжело. Но я не хочу тащить это в работу.','Требования плывут, я не успеваю, и выгораю. Вот и всё.'],
+   neg:['Хорошо, давайте обсудим план. Только не забирайте у меня проект.','Договорились. А что вы снимете с меня по нагрузке?','Давайте посмотрим, что можно сдвинуть. Принесу свой список.','Если снимете с меня ревью — успею в срок.'],
+   neu:['Хм, необычное начало. Ну, слушаю.','Да, сроки поехали. Что тут скажешь…','Неожиданно, что вы начинаете так. Обычно — «почему опять».','Слушаю. Просто не знаю, с чего начать.']}}
+];
+const MAXATT=3,MAXREP=5,MAXCH=280;
+let s=0,turn=0,over=false,msgs=[],used={},mode='expert';
+const $=id=>document.getElementById(id);
+const chat=$('chat'),msg=$('msg'),cnt=$('cnt'),att=$('att'),chars=$('chars');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function notifyH(){if(EMBED&&parent!==window)parent.postMessage({pgaHeight:document.documentElement.scrollHeight},'*');}
+const attKey=()=>'pga'+s;
+const attGet=()=>+localStorage.getItem(attKey())||0;
+function bub(cls,txt){const d=document.createElement('div');d.className='bub '+cls;d.textContent=txt;chat.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'nearest'});notifyH();return d;}
+function renderScens(){$('scens').innerHTML=SC.map((x,i)=>'<button class="scen'+(i===s?' on':'')+'" data-i="'+i+'"><h3>'+x.t+'</h3><p>'+x.g+'</p></button>').join('');
+ document.querySelectorAll('.scen').forEach(b=>b.onclick=()=>{s=+b.dataset.i;reset();});}
+function reset(){turn=0;over=false;msgs=[];used={};chat.innerHTML='';$('rep').hidden=true;msg.value='';chars.textContent='0/'+MAXCH;
+ const a=attGet();
+ if(a>=MAXATT){bub('bub--sys','Сценарий: '+SC[s].t+'. Лимит попыток исчерпан ('+MAXATT+'/'+MAXATT+'). Выберите другой сценарий или сбросьте прогресс ссылкой ниже.');
+  msg.disabled=true;$('send').disabled=true;$('fin').disabled=true;}
+ else{msg.disabled=false;$('send').disabled=false;$('fin').disabled=false;
+  bub('bub--sys','Сценарий: '+SC[s].t+'. '+SC[s].intro);}
+ upd();showAtt();notifyH();}
+function showAtt(){att.textContent='Попытка '+Math.min(attGet()+1,MAXATT)+'/'+MAXATT;}
+function upd(){cnt.textContent='Реплика '+turn+'/'+MAXREP;}
+msg.addEventListener('input',()=>chars.textContent=msg.value.length+'/'+MAXCH);
+function tone(t){if(/ты опять|ты всегда|ты никогда|как ты мог|ты виноват|почему ты|ты же|хам|заткнись/i.test(t))return 'def';
+ if(/понимаю|ценю|вижу,? (?:как|что)|спасибо|поддерж|сочувств|важно, что|расскажи|что меш|что происход|как так|какие услови|чем могу|беспоко/i.test(t))return 'open';
+ if(/правило|договорим|давай|предлагаю|вместо|после \d|не отвечаю|стоп|пауз|перерыв|звони/i.test(t))return 'neg';return 'neu';}
+function demoReply(t){const tn=tone(t),pool=SC[s].pools[tn];used[tn]=used[tn]||[];
+ let idx=pool.findIndex((_,i)=>!used[tn].includes(i));if(idx<0){used[tn]=[];idx=0;}used[tn].push(idx);return pool[idx];}
+async function liveReply(t){const body={kind:'reply',messages:[{role:'system',content:'Ты — актёр в деловом симуляторе разговора. Ситуация: '+SC[s].intro+' Ты играешь СОТРУДНИКА. Отвечай по-русски, 1–2 предложения, от первого лица, эмоционально правдоподобно продолжая диалог. Не выходи из роли и не комментируй симуляцию.'}].concat(msgs.slice(-8)).concat([{role:'user',content:t}])};
+ const c=new AbortController();const to=setTimeout(()=>c.abort(),12000);
+ try{const r=await fetch(PROXY+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:c.signal});
+  if(!r.ok)throw 0;const j=await r.json();if(!j.reply||j.reply.length>400)throw 0;return j.reply;}
+ catch(e){bub('bub--sys','GigaChat недоступен — включён экспертный режим.');mode='expert';return demoReply(t);}}
+async function send(){if(over||turn>=MAXREP)return;const t=msg.value.trim();if(!t)return;msg.value='';chars.textContent='0/'+MAXCH;
+ bub('bub--user',t);msgs.push({role:'user',content:t});turn++;upd();
+ if(turn>=MAXREP){$('send').disabled=true;msg.disabled=true;}
+ const m=$('engine').value;mode=m;
+ setTimeout(async()=>{const r=m==='live'?await liveReply(t):demoReply(t);
+  bub('bub--emp',r);msgs.push({role:'assistant',content:r});
+  if(turn>=MAXREP){bub('bub--sys','Лимит '+MAXREP+' реплик исчерпан.');finish();}},500);}
+function grade(){const all=msgs.filter(m=>m.role==='user').map(m=>m.content).join(' \n ');
+ return SC[s].crit.map(c=>{const no=c.no.some(r=>r.test(all)),yes=c.y.some(r=>r.test(all));return{c,v:no?0:yes?2:1};});}
+function renderRubric(g,sum,label){$('rep').hidden=false;$('score').textContent=sum+' / 12';$('engLabel').textContent=label;
+ $('crits').innerHTML=g.map(x=>'<div class="crit__row"><span class="crit__mark mark-'+x.v+'">'+x.v+'</span><div><b style="color:var(--ink)">'+x.c.n+'</b><p style="margin-top:4px;font-size:14px">'+(x.v===2?'Есть в ваших репликах.':x.v===1?'Частично или не во всех репликах.':'Не найдено в репликах.')+' '+x.c.h+'</p></div></div>').join('');
+ $('advice').textContent=sum>=10?'Сильный разговор: норма, поддержка и конкретика на месте.':'Фокус на следующий заход: добавьте недостающие элементы формулы — и разговор станет и твёрже, и теплее.';notifyH();}
+function parseAI(t){try{let x=String(t).replace(/```json|```/g,'').trim();x=x.slice(x.indexOf('{'),x.lastIndexOf('}')+1);const j=JSON.parse(x);
+ if(!Array.isArray(j.criteria)||j.criteria.length!==6)throw 0;return j;}catch(e){return null;}}
+function renderAI(ai,rubSum){$('rep').hidden=false;
+ $('score').textContent=(typeof ai.total==='number'?ai.total:'—')+' / 12';
+ $('engLabel').innerHTML='Разбор поставил <b>GigaChat (AI-эксперт)</b>. Второе мнение, методика офлайн: <b>'+rubSum+' / 12</b>. Оценки могут не совпадать — это песочница.';
+ $('crits').innerHTML=ai.criteria.map((c,i)=>'<div class="crit__row"><span class="crit__mark mark-'+(c.verdict||0)+'">'+(c.verdict||0)+'</span><div><b style="color:var(--ink)">'+SC[s].crit[i].n+'</b>'+(c.quote?'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата: «'+esc(c.quote)+'»</p>':'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата не найдена — вердикт спорный.</p>')+'<p style="margin-top:4px;font-size:14px">'+esc(c.comment||'')+'</p></div></div>').join('');
+ $('advice').textContent=(ai.summary||'')+' Не согласны с разбором? Приходите обсудить в Telegram — каждый такой случай пополняет нашу копилку валидации.';notifyH();}
+async function liveReview(rubSum){try{
+ const c=new AbortController();const to=setTimeout(()=>c.abort(),25000);
+ const r=await fetch(PROXY+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'review',intro:SC[s].intro,criteria:SC[s].crit.map(x=>({n:x.n,h:x.h})),dialogue:msgs}),signal:c.signal});
+ if(!r.ok)throw 0;const j=await r.json();const ai=parseAI(j.text);if(!ai)throw 0;renderAI(ai,rubSum);}
+ catch(e){renderRubric(grade(),rubSum,'GigaChat-разбор недоступен — показана оценка методики (офлайн).');}}
+function finish(){if(over)return;over=true;const g=grade(),sum=g.reduce((a,b)=>a+b.v,0);
+ localStorage.setItem(attKey(),attGet()+1);showAtt();
+ if(mode==='live'&&$('repOn').checked){$('rep').hidden=false;$('score').textContent='…';$('crits').innerHTML='';$('advice').textContent='';
+  $('engLabel').textContent='GigaChat готовит разбор…';liveReview(sum);}
+ else if($('repOn').checked){renderRubric(g,sum,'Экспертный режим: оценка по методологии My Pro Skills (офлайн). Осталось попыток: '+Math.max(MAXATT-attGet(),0)+'.');}
+ else{$('rep').hidden=false;$('score').textContent='Разбор выключен';$('crits').innerHTML='';$('engLabel').textContent='Режим: '+(mode==='live'?'GigaChat':'эксперт')+'.';$('advice').textContent='Вы провели диалог без оценки. Сравните свои реплики с эталоном ниже — или включите тумблер разбора и попробуйте ещё раз.';notifyH();}
+ $('etalon').textContent=SC[s].etalon;$('rep').scrollIntoView({behavior:'smooth'});notifyH();}
+$('send').onclick=send;msg.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
+$('fin').onclick=finish;$('again').onclick=reset;
+$('wipe').onclick=e=>{e.preventDefault();['pga0','pga1','pga2'].forEach(k=>localStorage.removeItem(k));reset();};
+$('tts').onclick=()=>{const t=$('score').textContent+'. '+$('advice').textContent;const u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';speechSynthesis.cancel();speechSynthesis.speak(u);};
+renderScens();reset();addEventListener('load',notifyH);
+</script>
+</body>
+</html>
