@@ -3,11 +3,7 @@ import https from 'https';
 
 let cache = { token: null, exp: 0 };
 
-// Транспорт на node:https: цепочка сертификатов Сбера (корневой CA Минцифры РФ)
-// отсутствует в доверенных хранилищах облачных платформ, поэтому проверку
-// сертификата для этого единственного направления отключаем осознанно.
-// Трафик функции идёт только к api.giga.chat и ngw.devices.sberbank.ru.
-function req(method, urlStr, headers, body) {
+function sreq(method, urlStr, headers, body) {
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
     const r = https.request({
@@ -33,7 +29,7 @@ async function getToken() {
   const auth = process.env.GIGACHAT_AUTH_KEY ||
     Buffer.from(process.env.GIGACHAT_CLIENT_ID + ':' + process.env.GIGACHAT_CLIENT_SECRET).toString('base64');
   const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
-  const r = await req('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
+  const r = await sreq('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
     Authorization: 'Basic ' + auth,
     RqUID: crypto.randomUUID(),
     'Content-Type': 'application/x-www-form-urlencoded',
@@ -46,7 +42,7 @@ async function getToken() {
 
 async function giga(messages, temperature, maxTokens) {
   const token = await getToken();
-  const r = await req('POST', 'https://api.giga.chat/v1/chat/completions', {
+  const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
     Authorization: 'Bearer ' + token,
     'Content-Type': 'application/json',
   }, JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-Pro', messages, temperature, max_tokens: maxTokens }));
@@ -61,9 +57,19 @@ export default async function handler(req, res) {
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
   }
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method === 'GET') {
+    try {
+      const token = await getToken();
+      const r = await sreq('GET', 'https://api.giga.chat/v1/models', { Authorization: 'Bearer ' + token });
+      if (r.status !== 200) return res.status(502).json({ error: 'models ' + r.status, raw: r.text.slice(0, 300) });
+      return res.status(200).json(JSON.parse(r.text));
+    } catch (e) {
+      return res.status(502).json({ error: String(e.code || e.message || e) });
+    }
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   try {
     const b = req.body || {};
