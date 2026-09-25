@@ -1,13 +1,19 @@
-// api/chat.js — прокси к GigaChat (Sбер). Ключи ТОЛЬКО в env Vercel.
+// api/chat.js — прокси к GigaChat (Sбер). Секреты ТОЛЬКО в env Vercel.
 let cache = { token: null, exp: 0 };
 
 async function getToken() {
   if (cache.token && Date.now() < cache.exp - 60000) return cache.token;
-  const auth = process.env.GIGACHAT_AUTH_KEY || Buffer.from(process.env.GIGACHAT_CLIENT_ID + ':' + process.env.GIGACHAT_CLIENT_SECRET).toString('base64');
+  const auth = process.env.GIGACHAT_AUTH_KEY ||
+    Buffer.from(process.env.GIGACHAT_CLIENT_ID + ':' + process.env.GIGACHAT_CLIENT_SECRET).toString('base64');
+  const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
   const r = await fetch('https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
     method: 'POST',
-    headers: { Authorization: 'Basic ' + auth, RqUID: crypto.randomUUID(), 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'scope=GIGACHAT_API_PERS', // для ключей юрлица — GIGACHAT_API_B2B
+    headers: {
+      Authorization: 'Basic ' + auth,
+      RqUID: crypto.randomUUID(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'scope=' + scope,
   });
   if (!r.ok) throw new Error('oauth ' + r.status);
   const j = await r.json();
@@ -17,7 +23,7 @@ async function getToken() {
 
 async function giga(messages, temperature, maxTokens) {
   const token = await getToken();
-  const r = await fetch('https://https://api.giga.chat/v1/chat/completions', {
+  const r = await fetch('https://api.giga.chat/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-Pro', messages, temperature, max_tokens: maxTokens }),
