@@ -161,18 +161,24 @@
   </div>
 </section>
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded', function(){
   var t=document.getElementById('pgToggle'),box=document.getElementById('pgBox'),fr=document.getElementById('pgFrame');
-  if(!t)return;
+  if(!t||!box||!fr)return;
   t.onclick=function(){
-    if(box.hidden){box.hidden=false;if(!fr.src)fr.src='playground.html?embed=1';t.textContent='Свернуть тренажёр ↑';}
-    else{box.hidden=true;t.textContent='Попробовать тренажёр →';}
+    if(box.hidden){
+      box.hidden=false;
+      if(!fr.getAttribute('src')) fr.setAttribute('src','playground.html?embed=1');
+      t.textContent='Свернуть тренажёр ↑';
+    }else{
+      box.hidden=true;
+      t.textContent='Попробовать тренажёр →';
+    }
   };
   addEventListener('message',function(e){
     if(e.data&&e.data.pgaHeight&&fr&&fr.contentWindow===e.source){fr.style.height=Math.max(e.data.pgaHeight,700)+'px';}
   });
-})();
-</script>  
+});
+</script>
   
 <section class="sec-dark" id="b2b">
   <div class="wrap">
