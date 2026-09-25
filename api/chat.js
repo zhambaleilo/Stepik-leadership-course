@@ -45,7 +45,7 @@ async function giga(messages, temperature, maxTokens) {
   const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
     Authorization: 'Bearer ' + token,
     'Content-Type': 'application/json',
-  }, JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-Pro', messages, temperature, max_tokens: maxTokens }));
+  }, JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro', messages, temperature, max_tokens: maxTokens }));
   if (r.status !== 200) throw new Error('chat ' + r.status + ': ' + r.text.slice(0, 120));
   const j = JSON.parse(r.text);
   return (j.choices?.[0]?.message?.content || '').trim();
