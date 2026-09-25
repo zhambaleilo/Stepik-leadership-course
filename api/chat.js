@@ -1,35 +1,57 @@
 // api/chat.js — прокси к GigaChat (Sбер). Секреты ТОЛЬКО в env Vercel.
+import https from 'https';
+
 let cache = { token: null, exp: 0 };
+
+// Транспорт на node:https: цепочка сертификатов Сбера (корневой CA Минцифры РФ)
+// отсутствует в доверенных хранилищах облачных платформ, поэтому проверку
+// сертификата для этого единственного направления отключаем осознанно.
+// Трафик функции идёт только к api.giga.chat и ngw.devices.sberbank.ru.
+function req(method, urlStr, headers, body) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(urlStr);
+    const r = https.request({
+      hostname: u.hostname,
+      port: u.port || 443,
+      path: u.pathname + u.search,
+      method,
+      headers,
+      rejectUnauthorized: false,
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => resolve({ status: res.statusCode, text: data }));
+    });
+    r.on('error', reject);
+    if (body) r.write(body);
+    r.end();
+  });
+}
 
 async function getToken() {
   if (cache.token && Date.now() < cache.exp - 60000) return cache.token;
   const auth = process.env.GIGACHAT_AUTH_KEY ||
     Buffer.from(process.env.GIGACHAT_CLIENT_ID + ':' + process.env.GIGACHAT_CLIENT_SECRET).toString('base64');
   const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
-  const r = await fetch('https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Basic ' + auth,
-      RqUID: crypto.randomUUID(),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'scope=' + scope,
-  });
-  if (!r.ok) throw new Error('oauth ' + r.status);
-  const j = await r.json();
+  const r = await req('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
+    Authorization: 'Basic ' + auth,
+    RqUID: crypto.randomUUID(),
+    'Content-Type': 'application/x-www-form-urlencoded',
+  }, 'scope=' + scope);
+  if (r.status !== 200) throw new Error('oauth ' + r.status + ': ' + r.text.slice(0, 120));
+  const j = JSON.parse(r.text);
   cache = { token: j.access_token, exp: Date.now() + (j.expires_in || 1800) * 1000 };
   return cache.token;
 }
 
 async function giga(messages, temperature, maxTokens) {
   const token = await getToken();
-  const r = await fetch('https://api.giga.chat/v1/chat/completions', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-Pro', messages, temperature, max_tokens: maxTokens }),
-  });
-  if (!r.ok) throw new Error('chat ' + r.status);
-  const j = await r.json();
+  const r = await req('POST', 'https://api.giga.chat/v1/chat/completions', {
+    Authorization: 'Bearer ' + token,
+    'Content-Type': 'application/json',
+  }, JSON.stringify({ model: process.env.GIGACHAT_MODEL || 'GigaChat-Pro', messages, temperature, max_tokens: maxTokens }));
+  if (r.status !== 200) throw new Error('chat ' + r.status + ': ' + r.text.slice(0, 120));
+  const j = JSON.parse(r.text);
   return (j.choices?.[0]?.message?.content || '').trim();
 }
 
@@ -56,6 +78,6 @@ export default async function handler(req, res) {
     const text = await giga(messages, 0.9, 150);
     return res.json({ reply: text });
   } catch (e) {
-    return res.status(502).json({ error: String(e.message || e) });
+    return res.status(502).json({ error: String(e.code || e.message || e) });
   }
 }
