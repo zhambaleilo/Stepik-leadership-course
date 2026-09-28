@@ -244,20 +244,27 @@ const SC=[
 const WORK=R('задач|срок|дедлайн|нагрузк|требован|процесс|приоритет|ресурс|времени|работ|проект|результат');
 
 /* ---- Частотный гейт входа (решение А): режет невозможное, пропускает правдоподобное ---- */
-let FREQ=null,FREQ_TRY=false,ALLPAT=null;
+let FREQ=null,TRI=null,FREQ_TRY=false,ALLPAT=null;
 async function loadFreq(){if(FREQ||FREQ_TRY)return;FREQ_TRY=true;
- try{const r=await fetch('data/freqrnc2011.csv');if(!r.ok)throw 0;const t=await r.text();const set=new Set();
-  t.split('\n').forEach(ln=>{const p=ln.split('\t');if(p.length<3)return;const ipm=parseFloat(p[2]);if(!p[0]||isNaN(ipm)||ipm<0.5)return;set.add(stem(p[0].toLowerCase().replace(/[^а-яёa-z-]/g,'')));});
-  FREQ=set;}catch(e){FREQ=null;}}
+ try{const r=await fetch('data/freqrnc2011.csv');if(!r.ok)throw 0;const t=await r.text();const set=new Set();const tri=new Set();
+  t.split('\n').forEach(ln=>{const p=ln.split('\t');if(p.length<3||!p[0])return;
+   const w=p[0].toLowerCase().replace(/[^а-яё]/g,'');
+   for(let i=0;i+3<=w.length;i++)tri.add(w.slice(i,i+3));
+   const ipm=parseFloat(p[2]);if(isNaN(ipm)||ipm<0.5)return;set.add(stem(w));});
+  FREQ=set;TRI=tri;}catch(e){FREQ=null;TRI=null;}}
 function buildAll(){if(ALLPAT)return;ALLPAT=[PRESS,KILL,INSULT,JUSTIFY,SPEC,WORK];
  SC.forEach(sc=>sc.crit.forEach(c=>{c.y.forEach(r=>ALLPAT.push(r));c.no.forEach(r=>ALLPAT.push(r));}));}
 function anyRubric(t){buildAll();return ALLPAT.some(r=>r.test(t));}
-function gateBlock(text){if(!FREQ)return null;
- const toks=(text.toLowerCase().match(/[а-яёa-z][а-яёa-z-]{2,}/g)||[]).map(w=>w.replace(/[^а-яёa-z]/g,'')).filter(w=>w.length>=3);
- if(toks.length<3)return null;
+function gateBlock(text){if(!FREQ||!TRI)return null;
  if(anyRubric(text))return null;
- let unk=0;for(const w of toks){if(!FREQ.has(stem(w)))unk++;}
- return unk/toks.length>0.4?'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.':null;}
+ const toks=(text.match(/[а-яёa-z][а-яёa-z-]{2,}/gi)||[]);
+ for(const tk of toks){const w=tk.toLowerCase().replace(/[^а-яёa-z]/g,'');
+  if(/[a-z]/.test(w))return 'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.';
+  for(let i=0;i+3<=w.length;i++){if(!TRI.has(w.slice(i,i+3)))return 'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.';}}
+ const low=toks.map(w=>w.toLowerCase().replace(/[^а-яёa-z]/g,'')).filter(w=>w.length>=3);
+ if(low.length<3)return null;
+ let unk=0;for(const w of low){if(!FREQ.has(stem(w)))unk++;}
+ return unk/low.length>0.4?'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.':null;}
 
 const MAXATT=3,MAXREP=5,MAXCH=280;
 let s=0,turn=0,over=false,msgs=[],used={},mode='expert',accepted=false;
@@ -394,13 +401,15 @@ function renderAI(ai,rubSum,g){$('rep').hidden=false;
  $('engLabel').innerHTML='Разбор поставил <b>GigaChat (AI-эксперт)</b>. Второе мнение, методика офлайн: <b>'+rubSum+' / 12</b>. Оценки могут не совпадать — это песочница.';
  $('crits').innerHTML=ai.criteria.map((c,i)=>'<div class="crit__row"><span class="crit__mark mark-'+(c.verdict||0)+'">'+(c.verdict||0)+'</span><div><b style="color:var(--ink)">'+SC[s].crit[i].n+'</b>'+(c.quote?'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата: «'+esc(c.quote)+'»</p>':(c.verdict>0?'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата не найдена — вердикт спорный.</p>':''))+'<p style="margin-top:4px;font-size:14px">'+esc(c.comment||'')+'</p></div></div>').join('')+compareTable(g,ai);
  $('advice').textContent=(ai.summary||'')+' Не согласны с разбором? Приходите обсудить в Telegram — каждый такой случай пополняет нашу копилку валидации.';notifyH();}
-async function callReview(){const c=new AbortController();const to=setTimeout(()=>c.abort(),25000);
- const r=await fetch(PROXY+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'review',intro:SC[s].intro,criteria:SC[s].crit.map(x=>({n:x.n,h:x.h})),dialogue:msgs}),signal:c.signal});
- if(!r.ok)throw new Error('http '+r.status);const j=await r.json();const ai=parseAI(j.text);if(!ai)throw new Error('parse');return ai;}
+ const hint=e=>(e&&(e.name==='AbortError'||/abort/i.test(String(e.message||e))))?'GigaChat не успел ответить за 45 секунд — диалог сложный. Нажми «Сравнить» ещё раз: обычно со второго раза проходит.':'Сверка недоступна ('+String(e&&e.message||e)+')';
+async function callReview(){const c=new AbortController();const to=setTimeout(()=>c.abort(),45000);
+ try{const r=await fetch(PROXY+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'review',intro:SC[s].intro,criteria:SC[s].crit.map(x=>({n:x.n,h:x.h})),dialogue:msgs}),signal:c.signal});
+  if(!r.ok)throw new Error('http '+r.status);const j=await r.json();const ai=parseAI(j.text);if(!ai)throw new Error('parse');return ai;}
+ finally{clearTimeout(to);}}
 async function liveReview(rubSum,g){try{const ai=await callReview();renderAI(ai,rubSum,g);}
- catch(e){renderRubric(grade(),'GigaChat-разбор недоступен ('+String(e.message||e)+') — показана оценка формулы методики (офлайн).');}}
+catch(e){renderRubric(grade(),'GigaChat-разбор не успел или недоступен — показана оценка формулы методики (офлайн). Сверку можно повторить кнопкой ниже.');}} 
 async function liveCompare(g){try{const ai=await callReview();let cmp=$('pgCmp');if(!cmp){cmp=document.createElement('div');cmp.id='pgCmp';$('rep').appendChild(cmp);}cmp.innerHTML=compareTable(g,ai);const btn=$('cmpBtn');if(btn){btn.textContent='Сверка готова';btn.disabled=false;}}
- catch(e){const btn=$('cmpBtn');if(btn){btn.textContent='Сверка недоступна ('+String(e.message||e)+')';btn.disabled=false;}}notifyH();}
+ catch(e){const btn=$('cmpBtn');if(btn){btn.textContent=hint(e);btn.disabled=false;}}notifyH();} 
 function finish(){if(over)return;over=true;const g=grade();
  localStorage.setItem(attKey(),attGet()+1);showAtt();
  if(mode==='live'&&$('repOn').checked&&!g.kill){$('rep').hidden=false;$('score').textContent='…';$('crits').innerHTML='';$('advice').textContent='';
