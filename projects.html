@@ -147,16 +147,16 @@
     <div class="card card--dark reveal" style="padding:36px">
       <span class="badge badge--mint">Playground · в браузере</span>
       <h3 style="font-size:26px;color:var(--white)">Тренажёр разговора с сотрудником</h3>
-      <p style="margin-top:14px;max-width:860px">Живой симулятор сложного разговора: сотрудник реагирует на ваши реплики, а в финале вы получаете разбор по 6 критериям методологии My Pro Skills — с цитатами из диалога и эталонным ответом. Два движка: офлайн-эксперт (работает без сети) и живой ИИ GigaChat (Sбер) через serverless-прокси — ключей в коде нет.</p>
-      <p style="margin-top:12px;max-width:860px"><b style="color:var(--white)">Кому полезно:</b> руководителям и тимлидам — отработать границы и поддержку без риска; HR и T&D — как материал онбординга; рекрутерам и инженерам — как доказательство архитектуры AI-продукта.</p>
+        <p style="margin-top:14px;max-width:860px;color:var(--light-gray)">Живой симулятор сложного разговора с сотрудником: собеседник реагирует на ваши реплики, а в финале вы получаете разбор по 6 критериям методологии My Pro Skills — с цитатами и эталонным ответом. Два режима: офлайн-эксперт на собственном своде правил (работает без ИИ и без сети) и живой ИИ GigaChat (Sбер) через serverless-прокси — ключей в коде нет. Каждый балл подкреплён доказательством: разбор показывает, какое правило сработало, и цитирует вашу реплику.</p>
+        <p style="margin-top:12px;max-width:860px;color:var(--light-gray)"><b style="color:var(--white)">Кому полезно:</b> руководителям и тимлидам — отработать границы, стоп хамства и поддержку без диагнозов; HR и T&D — как материал онбординга и методику оценки диалогов; рекрутёрам и инженерам — как доказательство гибридной AI-архитектуры: свод правил + LLM вторым судьёй.</p>
       <div style="margin-top:18px;display:grid;gap:8px">
         <p style="color:var(--mint);font-weight:700">3 сценария · 3 попытки · 5 реплик · 6 критериев</p>
-        <p style="color:var(--mint);font-weight:700">Валидация оценки: 10+ прогонов автора, ревью двух внешних экспертов (HR и маркетолог)</p>
+        <p style="color:var(--mint);font-weight:700">Валидация оценки: 10+ прогонов автора, ревью двух внешних экспертов (HR и маркетолог), кросс-ревью трёх ИИ-рецензентов с методическим приёмом каждого замечания</p>
         <p style="color:var(--mint);font-weight:700">0 ключей в коде: GigaChat через Vercel Functions, CORS по домену</p>
       </div>
-      <p style="margin-top:18px"><span class="badge badge--gray">Client-side JS</span> <span class="badge badge--gray">GigaChat (Sбер)</span> <span class="badge badge--gray">Vercel Functions</span> <span class="badge badge--gray">SpeechSynthesis</span></p>
+      <p style="margin-top:18px"><span class="badge badge--gray">Client-side JS</span> <span class="badge badge--gray">GigaChat (Sбер)</span> <span class="badge badge--gray">Vercel Functions</span> <span class="badge badge--gray">Rule-based scoring</span></p>
       <div style="margin-top:26px"><button class="btn" id="pgToggle">Попробовать тренажёр →</button></div>
-      <div id="pgBox" hidden style="margin-top:24px"><iframe id="pgFrame" title="Тренажёр разговора с сотрудником" src="" loading="lazy" style="width:100%;border:none;border-radius:16px;background:#fff;min-height:700px;height:900px"></iframe></div>
+      <div id="pgBox" hidden style="margin-top:24px"><iframe id="pgFrame" title="Тренажёр разговора с сотрудником" src="" loading="lazy" style="width:100%;border:none;border-radius:16px;background:#fff;min-height:700px;height:700px"></iframe></div>
     </div>
   </div>
 </section>
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   };
   addEventListener('message',function(e){
-    if(e.data&&e.data.pgaHeight&&fr&&fr.contentWindow===e.source){fr.style.height=Math.max(e.data.pgaHeight,700)+'px';}
+    if(e.data&&e.data.pgaHeight&&fr&&fr.contentWindow===e.source){fr.style.height=Math.min(Math.max(e.data.pgaHeight,500),4000)+'px';}
   });
 });
 </script>
