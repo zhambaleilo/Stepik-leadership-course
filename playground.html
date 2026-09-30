@@ -52,6 +52,7 @@ textarea{width:100%;min-height:84px;border:1px solid var(--light-stripe);border-
     <div class="menu">
       <a href="index.html#courses">Курсы</a>
       <a href="projects.html">Проекты</a>
+      <a href="/blog.html">Статьи</a>
       <a href="index.html#approach">Подход</a>
       <a href="index.html#contacts">Контакты</a>
     </div>
@@ -115,7 +116,6 @@ textarea{width:100%;min-height:84px;border:1px solid var(--light-stripe);border-
     </div>
 
     <div class="reveal" style="max-width:760px;margin:48px auto 0;background:#fff;border:1px solid var(--light-stripe);border-radius:16px;padding:22px 24px;text-align:left">
-      <h3 style="font-size:18px">Как мы валидируем оценку</h3>
       <p style="margin-top:10px;font-size:14px">
 <b>Как мы валидируем оценку</b>
 <p>Офлайн-режим работает на собственном своде правил: каждый из 6 критериев сценария — формула над речевыми примитивами («наблюдение», «самочувствие», «наезд», «давление»…), и каждый балл подкреплён доказательством — цитатой вашей реплики или именем сработавшего правила. Словарь правил заморожен и версионирован: новое правило попадает в него только если дыра в методике доказана прогоном и зафиксирована в золотом наборе диалогов с ожидаемыми баллами.</p>
@@ -142,7 +142,7 @@ textarea{width:100%;min-height:84px;border:1px solid var(--light-stripe);border-
 <script>
 const PROXY='https://stepik-leadership-course.vercel.app';
 const EMBED=new URLSearchParams(location.search).has('embed');
-if(EMBED){['header','footer'].forEach(t=>{const e=document.querySelector(t);if(e)e.style.display='none';});
+if(EMBED){['header','footer'].forEach(t=>{const e=document.querySelector(t);if(e)e.style.display='none;});
  ['.hero','.top','.progress'].forEach(s=>{const e=document.querySelector(s);if(e)e.style.display='none';});
  const w=document.querySelector('#sim .wrap');if(w)w.style.paddingTop='24px';
  const st=document.createElement('style');st.textContent='html,body{min-height:0!important;height:auto!important;}';document.head.appendChild(st);}
@@ -154,12 +154,12 @@ const Ri=s=>new RegExp(s);
 function stem(w){w=w.toLowerCase();if(w.length<3)return w;
  const swap=[['ируя','ир'],['ива','и'],['ыва','ы'],['ова','о'],['ева','е'],['ами','а'],['ями','а'],['ого','о'],['его','о'],['ому','о'],['ему','о'],['ых','и'],['их','и'],['ую','у'],['юю','у'],['ая','а'],['яя','а'],['ие','и'],['ые','ы'],['ах','а'],['ях','а'],['ии','и'],['ьи','и'],['ей','е'],['ий','и'],['ый','ы'],['ой','о'],['ам','а'],['ям','а'],['ом','о'],['ем','е'],['им','и'],['ым','ы'],['аю','а'],['яю','я'],['ую','у'],['юю','у'],['ив','и'],['ын','ы'],['ов','о'],['ев','е']];
  for(const[a,b]of swap){if(w.endsWith(a)){w=w.slice(0,-a.length)+b;break;}}
- const cut=[['ия','и'],['ье',''],['ые','ы'],['ой','о'],['ем',''],['им',''],['ов','о'],['ев','е'],['ни','н'],['ти','т'],['ли','л']]
+ const cut=[['ия','и'],['ье',''],['ые','ы'],['ой','о'],['ем',''],['им',''],['ов','о'],['ев','е'],['ни','н'],['ти','т'],['ли','л']];
  for(const[a,b]of cut){if(w.endsWith(a)){w=w.slice(0,-a.length)+b;break;}}
  w=w.replace(/(нн|сс|лл|тт|пп|фф|хх|цц|шш|щщ|жж)$/,'$1'[0]);
  return w;}
 
-/* ---- Словарь p-v5 (заморожен; вход только через дыру в формуле, доказанную золотым набором; G13: нарушения перекрываются самокоррекцией, KILL — нет) ---- */
+/* ---- Словарь p-v5.1 (заморожен; G13: нарушения перекрываются самокоррекцией, KILL — нет) ---- */
 const PRESS=R('я требую|ко мне в кабинет|объяснись|отчитайся|почему опять|ты опять|ты всегда|ты никогда|как ты мог|сколько раз можно повторять|хватит|ты должен|ты обязан|не потерплю|кто ты такой|соберись|возьми себя|ты вообще понимаешь|кто разрешил|как ты себе позволяешь|ты в своём уме|сам подумай|ну ты даёшь|чтобы ты наконец|берега попутал|попутал|ты чего|ты что ли|как не стыдно');
 const KILL=new RegExp('(^|[^a-zа-яё])(идиот|хам|дурак|дебил|ничтожество|неудачник|клоун|заткнись|тварь|урод)(?![a-zа-яё])|(^|[^a-zа-яё])(уволю|последнее предупреждение|лишу премии|выгоню|ты конченый)','i');
 const TONE_NO=R('!{2,}');
@@ -167,10 +167,10 @@ const INSULT=new RegExp('(^|[^a-zа-яё])(хам|дурак|идиот|деби
 const JUSTIFY=R('прости|извини|я вынужден|я виноват|не мог иначе|не обижайся|сорри');
 const SPEC=R('\\d{1,2}[:.]\\d{2}|после \\d|утром|вечером|днём|в течение дня|после работы|в чате|на встрече|завтра|сегодня|на неделе|за месяц|на днях|одно сообщ|в telegram|на почту|10 минут|паузу|рабочее время');
 
-const MOCK_EMOJI=['🙄','🤦','😏','🖐'];
+const MOCK_EMOJI=['🙄','','😏',''];
 const MOCK_WORD=['пф','фе','хехе','хи-хи','кек','lol'];
 const LAUGH=['))))',':)',':-)',';)','😂',''];
-const SAD=[':(',':-(','😞','😔','🙁'];
+const SAD=[':(',':-(','😞','😔',''];
 const ACCW=['ты снова','ты опять','в который раз','ты уже','как ты мог','ты виноват','почему опять'];
 const hasAny=(arr,t)=>{const s=t.toLowerCase();return arr.some(w=>w&&s.includes(w));};
 const hasWord=(arr,t)=>arr.some(w=>new RegExp('(^|[^a-zа-яё0-9])'+w+'($|[^a-zа-яё0-9])','i').test(t));
@@ -243,28 +243,34 @@ const SC=[
 ];
 const WORK=R('задач|срок|дедлайн|нагрузк|требован|процесс|приоритет|ресурс|времени|работ|проект|результат');
 
-/* ---- Частотный гейт входа (решение А): режет невозможное, пропускает правдоподобное ---- */
+/* ---- Частотный гейт входа (решение А) + видимый индикатор ---- */
 let FREQ=null,TRI=null,FREQ_TRY=false,ALLPAT=null;
-async function loadFreq(){if(FREQ||FREQ_TRY)return;FREQ_TRY=true;
- try{const r=await fetch('data/freqrnc2011.csv');if(!r.ok)throw 0;const t=await r.text();const set=new Set();const tri=new Set();
+function gateEl(){let e=document.getElementById('gateStatus');if(!e){e=document.createElement('div');e.id='gateStatus';e.style.cssText='font-size:12px;color:var(--gray);margin:6px 0 0';const box=msg.parentElement;if(box)box.insertBefore(e,msg.nextSibling);}return e;}
+function setGateStatus(){const e=gateEl();if(!e)return;if(FREQ)e.textContent='🛡 защита активна: словарь '+FREQ.size+' основ, триграмм '+TRI.size;else if(FREQ_TRY)e.textContent='⚠️ словарь НЕ загрузился — блокировка мусора выключена (проверь data/freqrnc2011.csv)';else e.textContent='⏳ загрузка словаря…';}
+async function loadFreq(){if(FREQ||FREQ_TRY)return;FREQ_TRY=true;setGateStatus();
+ try{const r=await fetch('data/freqrnc2011.csv');if(!r.ok)throw new Error('http '+r.status);const t=await r.text();const set=new Set();const tri=new Set();
   t.split('\n').forEach(ln=>{const p=ln.split('\t');if(p.length<3||!p[0])return;
    const w=p[0].toLowerCase().replace(/[^а-яё]/g,'');
    for(let i=0;i+3<=w.length;i++)tri.add(w.slice(i,i+3));
    const ipm=parseFloat(p[2]);if(isNaN(ipm)||ipm<0.5)return;set.add(stem(w));});
-  FREQ=set;TRI=tri;}catch(e){FREQ=null;TRI=null;}}
+  if(set.size<1000)throw new Error('мало основ: '+set.size);
+  FREQ=set;TRI=tri;}catch(e){FREQ=null;TRI=null;}
+ setGateStatus();}
 function buildAll(){if(ALLPAT)return;ALLPAT=[PRESS,KILL,INSULT,JUSTIFY,SPEC,WORK];
  SC.forEach(sc=>sc.crit.forEach(c=>{c.y.forEach(r=>ALLPAT.push(r));c.no.forEach(r=>ALLPAT.push(r));}));}
 function anyRubric(t){buildAll();return ALLPAT.some(r=>r.test(t));}
-function gateBlock(text){if(!FREQ||!TRI)return null;
- if(anyRubric(text))return null;
+const GATE_MSG='Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.';
+function gateBlock(text){
  const toks=(text.match(/[а-яёa-z][а-яёa-z-]{2,}/gi)||[]);
+ for(const tk of toks){if(/[a-z]/i.test(tk))return GATE_MSG;}
+ if(anyRubric(text))return null;
+ if(!FREQ||!TRI)return null;
  for(const tk of toks){const w=tk.toLowerCase().replace(/[^а-яёa-z]/g,'');
-  if(/[a-z]/.test(w))return 'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.';
-  for(let i=0;i+3<=w.length;i++){if(!TRI.has(w.slice(i,i+3)))return 'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.';}}
+  for(let i=0;i+3<=w.length;i++){if(!TRI.has(w.slice(i,i+3)))return GATE_MSG;}}
  const low=toks.map(w=>w.toLowerCase().replace(/[^а-яёa-z]/g,'')).filter(w=>w.length>=3);
  if(low.length<3)return null;
  let unk=0;for(const w of low){if(!FREQ.has(stem(w)))unk++;}
- return unk/low.length>0.4?'Похоже, это не слова: тренажёр оценивает живые формулировки. Проверьте раскладку клавиатуры — и попробуйте ещё раз.':null;}
+ return unk/low.length>0.4?GATE_MSG:null;}
 
 const MAXATT=3,MAXREP=5,MAXCH=280;
 let s=0,turn=0,over=false,msgs=[],used={},mode='expert',accepted=false;
@@ -304,7 +310,8 @@ async function liveReply(t){const body={kind:'reply',messages:[{role:'system',co
   if(!r.ok)throw new Error((j&&j.error)||('http '+r.status));
   if(!j||!j.reply||j.reply.length>400)throw new Error('пустой ответ');
   return j.reply;}
- catch(e){bub('bub--sys','GigaChat недоступен — включён экспертный режим. Причина: '+String(e.message||e));mode='expert';return demoReply(t);}}
+ catch(e){bub('bub--sys','GigaChat недоступен — включён экспертный режим. Причина: '+String(e.message||e));mode='expert';return demoReply(t);}
+ finally{clearTimeout(to);}}
 async function send(){if(over||turn>=MAXREP)return;const t=msg.value.trim();if(!t)return;
  const gb=gateBlock(t);if(gb){bub('bub--sys',gb);return;}
  msg.value='';chars.textContent='0/'+MAXCH;
@@ -385,15 +392,14 @@ function renderRubric(g,label){
  if(g.kill){$('advice').textContent='Разговор сорван в унижение или угрозы: такой диалог обнуляется целиком. Посмотрите эталон ниже — и попробуйте ещё раз, удерживая уважительный тон.';}
  else if(g.gate){$('advice').textContent='Цель сценария не достигнута: разговор не решил задачу. Обратите внимание на стержневой критерий с нулём — без него остальные техники не складываются в результат.';}
  else{$('advice').textContent=g.sum>=10?'Сильный разговор: цель достигнута, тон выдержан, конкретика на месте.':'Фокус на следующий заход: добавьте недостающие элементы формулы — и разговор станет и твёрже, и результативнее.';}
- // opt-in сравнение для экспертного режима
  let btn=$('cmpBtn');if(!btn){btn=document.createElement('button');btn.id='cmpBtn';btn.className='btn btn--ghost';btn.style.cssText='margin-top:14px';btn.textContent='Сравнить с ИИ-судьёй (≈1.5k токенов)';$('rep').appendChild(btn);}
  btn.onclick=()=>{btn.disabled=true;btn.textContent='GigaChat сверяет…';liveCompare(g);};
  notifyH();
 }
 function compareTable(g,ai){
- return '<table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px"><thead><tr style="color:var(--gray);text-align:left"><th style="padding:6px;border-bottom:1px solid var(--line)">Критерий</th><th style="padding:6px;border-bottom:1px solid var(--line)">Метод без ИИ</th><th style="padding:6px;border-bottom:1px solid var(--line)">GigaChat</th><th style="padding:6px;border-bottom:1px solid var(--line)"></th></tr></thead><tbody>'+
+ return '<p style="margin-top:10px;font-size:12px;color:var(--gray)">Ниже — сверка двух независимых судей на этот же диалог: слева формула методики, справа смысл от GigaChat. Совпадение = ✅, расхождение = ⚠️.</p><table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px"><thead><tr style="color:var(--gray);text-align:left"><th style="padding:6px;border-bottom:1px solid var(--line)">Критерий</th><th style="padding:6px;border-bottom:1px solid var(--line)">Метод без ИИ</th><th style="padding:6px;border-bottom:1px solid var(--line)">GigaChat</th><th style="padding:6px;border-bottom:1px solid var(--line)"></th></tr></thead><tbody>'+
  g.verdicts.map((x,i)=>{const a=ai.criteria[i]||{};const eq=(x.v===(a.verdict||0));return '<tr><td style="padding:6px;border-bottom:1px solid var(--line)">'+x.c.n+'</td><td style="padding:6px;border-bottom:1px solid var(--line)"><b>'+x.v+'</b> · '+esc(x.why||'')+'</td><td style="padding:6px;border-bottom:1px solid var(--line)"><b>'+(a.verdict||0)+'</b>'+(a.quote?' · «'+esc(a.quote)+'»':'')+'</td><td style="padding:6px;border-bottom:1px solid var(--line)">'+(eq?'✅':'⚠️')+'</td></tr>';}).join('')+
- '</tbody></table><p style="margin-top:10px;font-size:13px;color:var(--gray)">Расхождение метода и LLM — не ошибка, а данные: метод смотрит на формулу, LLM на смысл. Каждый ⚠️ уходит в копилку валидации и становится строкой золотого набора.</p>';}
+ '</tbody></table><p style="margin-top:10px;font-size:13px;color:var(--gray)">Расхождение метода и LLM — не ошибка, а данные: метод смотрит на формулу, LLM на смысл. Каждое ⚠️ — кандидат в золотой набор: мы разбираем его вручную и добавляем правило, которое ловит такие случаи в следующий раз.</p>';}
 function parseAI(t){try{let x=String(t).replace(/```json|```/g,'').trim();x=x.slice(x.indexOf('{'),x.lastIndexOf('}')+1);const j=JSON.parse(x);
  if(!Array.isArray(j.criteria)||j.criteria.length!==6)throw 0;return j;}catch(e){return null;}}
 function renderAI(ai,rubSum,g){$('rep').hidden=false;
@@ -401,25 +407,26 @@ function renderAI(ai,rubSum,g){$('rep').hidden=false;
  $('engLabel').innerHTML='Разбор поставил <b>GigaChat (AI-эксперт)</b>. Второе мнение, методика офлайн: <b>'+rubSum+' / 12</b>. Оценки могут не совпадать — это песочница.';
  $('crits').innerHTML=ai.criteria.map((c,i)=>'<div class="crit__row"><span class="crit__mark mark-'+(c.verdict||0)+'">'+(c.verdict||0)+'</span><div><b style="color:var(--ink)">'+SC[s].crit[i].n+'</b>'+(c.quote?'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата: «'+esc(c.quote)+'»</p>':(c.verdict>0?'<p style="margin-top:4px;font-size:14px;color:var(--ink2)">Цитата не найдена — вердикт спорный.</p>':''))+'<p style="margin-top:4px;font-size:14px">'+esc(c.comment||'')+'</p></div></div>').join('')+compareTable(g,ai);
  $('advice').textContent=(ai.summary||'')+' Не согласны с разбором? Приходите обсудить в Telegram — каждый такой случай пополняет нашу копилку валидации.';notifyH();}
- const hint=e=>(e&&(e.name==='AbortError'||/abort/i.test(String(e.message||e))))?'GigaChat не успел ответить за 45 секунд — диалог сложный. Нажми «Сравнить» ещё раз: обычно со второго раза проходит.':'Сверка недоступна ('+String(e&&e.message||e)+')';
+const hint=e=>(e&&(e.name==='AbortError'||/abort/i.test(String(e.message||e))))?'GigaChat не успел ответить за 45 секунд — диалог сложный. Нажми «Сравнить» ещё раз: обычно со второго раза проходит.':'Сверка недоступна ('+String(e&&e.message||e)+')';
 async function callReview(){const c=new AbortController();const to=setTimeout(()=>c.abort(),45000);
  try{const r=await fetch(PROXY+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind:'review',intro:SC[s].intro,criteria:SC[s].crit.map(x=>({n:x.n,h:x.h})),dialogue:msgs}),signal:c.signal});
   if(!r.ok)throw new Error('http '+r.status);const j=await r.json();const ai=parseAI(j.text);if(!ai)throw new Error('parse');return ai;}
  finally{clearTimeout(to);}}
 async function liveReview(rubSum,g){try{const ai=await callReview();renderAI(ai,rubSum,g);}
-catch(e){renderRubric(grade(),'GigaChat-разбор не успел или недоступен — показана оценка формулы методики (офлайн). Сверку можно повторить кнопкой ниже.');}} 
+ catch(e){renderRubric(grade(),'GigaChat-разбор не успел или недоступен — показана оценка формулы методики (офлайн). Сверку можно повторить кнопкой ниже.');}}
 async function liveCompare(g){try{const ai=await callReview();let cmp=$('pgCmp');if(!cmp){cmp=document.createElement('div');cmp.id='pgCmp';$('rep').appendChild(cmp);}cmp.innerHTML=compareTable(g,ai);const btn=$('cmpBtn');if(btn){btn.textContent='Сверка готова';btn.disabled=false;}}
- catch(e){const btn=$('cmpBtn');if(btn){btn.textContent=hint(e);btn.disabled=false;}}notifyH();} 
+ catch(e){const btn=$('cmpBtn');if(btn){btn.textContent=hint(e);btn.disabled=false;}}notifyH();}
 function finish(){if(over)return;over=true;const g=grade();
  localStorage.setItem(attKey(),attGet()+1);showAtt();
  if(mode==='live'&&$('repOn').checked&&!g.kill){$('rep').hidden=false;$('score').textContent='…';$('crits').innerHTML='';$('advice').textContent='';
   $('engLabel').textContent='GigaChat готовит разбор…';liveReview(g.sum,g);}
- else if($('repOn').checked){renderRubric(g,'Экспертный режим: оценка формулы методики (прозрачные маркеры, словарь p-v5). Смысловая оценка — в режиме живого ИИ. Осталось попыток: '+Math.max(MAXATT-attGet(),0)+'.');}
+ else if($('repOn').checked){renderRubric(g,'Экспертный режим: оценка формулы методики (прозрачные маркеры, словарь p-v5.1). Смысловая оценка — в режиме живого ИИ. Осталось попыток: '+Math.max(MAXATT-attGet(),0)+'.');}
  else{$('rep').hidden=false;$('score').textContent='Разбор выключен';$('crits').innerHTML='';$('engLabel').textContent='Режим: '+(mode==='live'?'GigaChat':'эксперт')+'.';$('advice').textContent='Вы провели диалог без оценки. Сравните свои реплики с эталоном ниже — или включите тумблер разбора и попробуйте ещё раз.';notifyH();}
  $('etalon').textContent=SC[s].etalon;$('rep').scrollIntoView({behavior:'smooth'});notifyH();}
 $('send').onclick=send;msg.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
 $('fin').onclick=finish;$('again').onclick=reset;
 $('wipe').onclick=e=>{e.preventDefault();['pga0','pga1','pga2'].forEach(k=>localStorage.removeItem(k));reset();};
+if(!new URLSearchParams(location.search).has('owner')){const w=document.getElementById('wipe');if(w)w.style.display='none';}
 renderScens();reset();addEventListener('load',notifyH);addEventListener('resize',notifyH);
 </script>
 </body>
