@@ -21,6 +21,9 @@ function sreq(method, urlStr, headers, body) {
     r.on('error', reject);
     if (body) r.write(body);
     r.end();
+    const o=event.headers.origin||event.headers.referer||'';
+    const ok=!o||/my-pro-skills\.ru|localhost|127\.0\.0\.1/.test(o);
+    if(!ok) return {statusCode:403,body:{error:'forbidden origin'}};
   });
 }
 
