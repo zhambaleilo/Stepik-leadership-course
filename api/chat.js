@@ -52,9 +52,6 @@ async function giga(messages, temperature, maxTokens) {
 }
 
 export default async function handler(req, res) {
-  const o=req.headers.origin||req.headers.referer||'';
-  const ok=!o||/my-pro-skills\.ru|localhost|127\.0\.0\.1/.test(o);
-  if(!ok) return {statusCode:403,body:{error:'forbidden origin'}};
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
   const origin = req.headers.origin || '';
   if (allow.includes(origin)) {
