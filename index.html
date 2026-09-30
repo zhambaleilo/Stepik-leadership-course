@@ -1,12 +1,178 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Редактор статей — My Pro Skills</title>
-<link rel="stylesheet" href="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Pro Skills — практические курсы для профессионального роста</title>
+<meta name="description" content="Практические онлайн-курсы для руководителей и команд. Без воды: готовые скрипты, чек-листы, практика.">
+<link rel="canonical" href="https://my-pro-skills.ru/">
+<meta name="theme-color" content="#16202C">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://my-pro-skills.ru/">
+<meta property="og:title" content="My Pro Skills — практические курсы для профессионального роста">
+<meta property="og:description" content="Онлайн-курсы для руководителей и команд. Флагман — «Лидерство наизнанку: станьте руководителем, за которым идут». Без брони и без крика.">
+<meta property="og:image" content="https://my-pro-skills.ru/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+<div class="progress"></div>
+<header class="header">
+  <nav class="nav">
+    <a class="logo" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="12" width="5" height="9" rx="2.5" fill="#9AA5B1"/><rect x="9.5" y="7" width="5" height="14" rx="2.5" fill="#E1E7EE"/><rect x="17" y="2" width="5" height="19" rx="2.5" fill="#FFFFFF"/></svg>
+      My Pro Skills
+    </a>
+    <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    <div class="menu">
+      <a href="#courses">Курсы</a>
+      <a href="projects.html">Проекты</a>
+      <a href="/blog.html">Статьи</a>
+      <a href="#approach">Подход</a>
+      <a href="#contacts">Контакты</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+<section class="sec-dark hero">
+  <div class="wrap hero__grid">
+    <div class="reveal">
+      <h1>My Pro Skills</h1>
+      <span class="grad-line left"></span>
+      <p class="lead">Практические курсы для профессионального роста. Для руководителей и команд: без воды — только инструменты, которые работают уже завтра.</p>
+      <a class="btn" href="#courses">Выбрать курс →</a>
+    </div>
+    <div class="hero__art reveal" data-d="2">
+      <svg viewBox="0 0 420 300" fill="none" aria-hidden="true">
+        <line x1="90" y1="150" x2="330" y2="150" stroke="#E1E7EE" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="130" cy="105" r="12" fill="#9AA5B1"/><rect x="118" y="120" width="24" height="30" rx="10" fill="#9AA5B1"/>
+        <circle cx="190" cy="98" r="12" fill="#9AA5B1"/><rect x="178" y="113" width="24" height="37" rx="10" fill="#9AA5B1"/>
+        <circle cx="250" cy="92" r="12" fill="#9AA5B1"/><rect x="238" y="107" width="24" height="43" rx="10" fill="#9AA5B1"/>
+        <circle cx="310" cy="98" r="12" fill="#9AA5B1"/><rect x="298" y="113" width="24" height="37" rx="10" fill="#9AA5B1"/>
+        <path d="M196 222 L172 154" stroke="#E1E7EE" stroke-width="8" stroke-linecap="round"/>
+        <path d="M224 222 L248 154" stroke="#E1E7EE" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="210" cy="196" r="16" fill="#E1E7EE"/><rect x="192" y="215" width="36" height="52" rx="14" fill="#E1E7EE"/>
+        <path d="M150 48 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5 z" fill="#7FF0D4"/>
+        <path d="M210 30 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4 z" fill="#7FF0D4"/>
+        <path d="M280 52 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4 z" fill="#7FF0D4"/>
+      </svg>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</section>
+
+<section class="sec-light" id="courses">
+  <div class="wrap">
+    <div class="reveal center">
+      <h2>Курсы</h2><span class="grad-line"></span>
+      <p style="margin-top:18px">Каталог практических программ. Скоро — новые курсы.</p>
+    </div>
+    <div class="grid" style="margin-top:48px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));max-width:880px;margin-left:auto;margin-right:auto">
+      <a class="card card--light reveal" data-d="1" href="leadership.html">
+        <span class="badge badge--mint">Набор открыт</span>
+        <h3>Лидерство наизнанку</h3>
+        <p style="font-weight:700;color:var(--ink);margin:6px 0">Без брони и без крика</p>
+        <p>От защитных реакций — к зрелому лидерству. Практический курс для начинающих руководителей и тимлидов.</p>
+        <p style="margin-top:14px;font-weight:700;color:var(--ink)">5 модулей · ~3 часа · 1 990 ₽</p>
+        <p style="margin-top:6px;font-size:14px;font-weight:700;color:var(--mint)">Первый урок — бесплатно</p>
+      </a>
+      <a class="card card--light reveal" data-d="2" href="resume.html">
+        <span class="badge badge--mint">Бесплатно</span>
+        <h3>Резюме вне очереди</h3>
+        <p style="font-weight:700;color:var(--ink);margin:6px 0">Отклик, который открывают</p>
+        <p>ИИ-метод прямого отклика + 3 HTML-шаблона. Соберите пакет под вакансию за 45 минут.</p>
+        <p style="margin-top:14px;font-weight:700;color:var(--mint)">Мини-курс · 45 минут · 0 ₽</p>
+      </a>
+      <div class="card card--light reveal" data-d="3" style="opacity:.75">
+        <span class="badge badge--gray">В разработке</span>
+        <h3>ГОСТ Р ИСО 45003</h3>
+        <p>Психосоциальные риски на рабочем месте: курс для руководителей и HR. В разработке — анонс скоро.</p>
+      </div>
+        <!-- Карточка: Атмосферные продажи -->
+      <div class="card card--light reveal" data-d="3" style="opacity:.75">
+        <span class="badge badge--gray">В разработке</span>
+        <h3>Атмосферные продажи</h3>
+        <p>Обслуживание как атмосфера, в которую возвращаются — путь клиента от первых 10 секунд до прощания: курс для персонала и владельцев сферы услуг. В разработке — анонс скоро.</p>
+      </div>
+        
+        <!-- Карточка: Фасилитация -->
+      <div class="card card--light reveal" data-d="3" style="opacity:.75">
+        <span class="badge badge--gray">В разработке</span>
+        <h3>Фасилитация встреч, где все хотят говорить</h3>
+        <p>Как вести планёрку, ретро и воркшоп — и удержать диалог один на один — чтобы вышли с решением, а не с усталостью: курс для тимлидов, проджект-менеджеров и ведущих сессий. В разработке — анонс скоро.</p>
+      </div>
+    <a class="card card--light reveal" data-d="3" href="projects.html" style="margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+      <div>
+        <span class="badge badge--mint">Портфолио</span>
+        <h3>Проекты и кейсы</h3>
+        <p>Парсер вакансий, который подбирает вакансии и пишет сопроводительные письма, бот уникальных поздравлений для коллег и комьюнити бизнес-импровизаторов в JTI Russia (CSAT 5.0/5) — плюс интерактивный тренажёр сложного разговора с сотрудником: граница, стоп хамства и поддержка без диагнозов, прямо в браузере, с оценкой по методологии My Pro Skills и разбором от живого ИИ GigaChat (Sбер).</p>
+      </div>
+      <span style="font-family:'Manrope',sans-serif;font-weight:800;color:var(--mint);font-size:18px">Смотреть проекты →</span>
+    </a>
+  </div>
+</section>
+
+<section class="sec-dark" id="approach">
+  <div class="wrap">
+    <div class="reveal center"><h2>Подход</h2><span class="grad-line"></span></div>
+    <div class="grid" style="margin-top:48px">
+      <div class="card card--dark reveal" data-d="1"><h3>Без воды</h3><p>Только практики, которые можно применить на следующий день после урока.</p></div>
+      <div class="card card--dark reveal" data-d="2"><h3>Готовые скрипты</h3><p>Фразы, чек-листы и формулы вместо абстрактной теории.</p></div>
+      <div class="card card--dark reveal" data-d="3"><h3>В своём темпе</h3><p>Текст и видео. Материалы остаются доступными без ограничений по сроку.</p></div>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</section>
+
+  <section class="sec-light" id="author">
+  <div class="wrap center" style="max-width:820px">
+    <div class="reveal">
+      <h2>Кто стоит за My Pro Skills</h2><span class="grad-line"></span>
+      <p style="margin-top:26px;font-size:18px;font-weight:600;color:var(--ink)">Практикующий методист и разработчик образовательных программ. Многолетний опыт в разных странах, культурах и индустриях: собираю курсы на собственных кейсах реальных компаний.</p>
+      <p style="margin-top:16px">Путь от переводчика и инженера СМК через грант США и международные проекты («Ямал СПГ», HR в JTI Russia) до IT и внедрения ИИ в обучение. За годы практики — 100+ обученных специалистов и курсы по лидерству, управлению персоналу и техническим навыкам.</p>
+      <p style="margin-top:20px;font-family:'Manrope',sans-serif;font-size:19px;font-weight:800;color:var(--ink)">«Курсы должны работать в реальных компаниях, а не только в учебниках»</p>
+      <p style="margin-top:26px"><a class="btn" href="projects.html">Проекты и кейсы →</a></p>
+      <p style="margin-top:14px;font-size:14px"><a href="leadership.html#author" style="color:var(--ink2);text-decoration:underline">Полная биография — в курсе «Лидерство наизнанку»</a></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer" id="contacts">
+  <div class="wrap">
+    <div class="footer__row">
+      <div>© <span data-year>2024</span> My Pro Skills. Все права защищены.<br>
+        Email: <a href="mailto:zhambalkhumaev@yandex.ru">zhambalkhumaev@yandex.ru</a> ·
+        Telegram: <a href="https://t.me/Zhambaleilo">@Zhambaleilo</a></div>
+      <div><a href="#courses">Все курсы</a> · <a href="leadership.html">Лидерство наизнанку</a></div>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</footer>
+<button class="top" aria-label="Наверх">↑</button>
+<script src="script.js"></script>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+   ym(112863535, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true,
+        webvisor:true
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/112863535" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 </body>
 </html>
