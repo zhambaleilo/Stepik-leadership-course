@@ -1,0 +1,19 @@
+backend:
+  name: github
+  repo: zhamibailo/Stepik-leadership-course
+  branch: main
+media_folder: "articles/img"
+public_folder: "/articles/img"
+collections:
+  - name: "articles"
+    label: "Статьи"
+    folder: "articles"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Заголовок", name: "title", widget: "string"}
+      - {label: "Дата", name: "date", widget: "datetime"}
+      - {label: "Краткое описание для карточки (одна строка)", name: "description", widget: "string"}
+      - {label: "Теги через запятую", name: "tags", widget: "string", required: false}
+      - {label: "Обложка (необязательно)", name: "cover", widget: "image", required: false}
+      - {label: "Текст статьи", name: "body", widget: "markdown"}
