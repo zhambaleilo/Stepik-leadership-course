@@ -142,7 +142,7 @@ textarea{width:100%;min-height:84px;border:1px solid var(--light-stripe);border-
 <script>
 const PROXY='https://stepik-leadership-course.vercel.app';
 const EMBED=new URLSearchParams(location.search).has('embed');
-if(EMBED){['header','footer'].forEach(t=>{const e=document.querySelector(t);if(e)e.style.display='none;});
+if(EMBED){['header','footer'].forEach(t=>{const e=document.querySelector(t);if(e)e.style.display='none';});
  ['.hero','.top','.progress'].forEach(s=>{const e=document.querySelector(s);if(e)e.style.display='none';});
  const w=document.querySelector('#sim .wrap');if(w)w.style.paddingTop='24px';
  const st=document.createElement('style');st.textContent='html,body{min-height:0!important;height:auto!important;}';document.head.appendChild(st);}
