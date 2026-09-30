@@ -13,11 +13,13 @@ function sreq(method, urlStr, headers, body) {
       method,
       headers,
       rejectUnauthorized: false,
+      timeout: 20000,
     }, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
       res.on('end', () => resolve({ status: res.statusCode, text: data }));
     });
+    r.on('timeout', () => { r.destroy(new Error('upstream timeout')); });
     r.on('error', reject);
     if (body) r.write(body);
     r.end();
