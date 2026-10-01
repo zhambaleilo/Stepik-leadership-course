@@ -4,72 +4,90 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Статьи — My Pro Skills</title>
+<meta name="description" content="Методология, разборы и заметки My Pro Skills: формульный анализ диалога, оценка управленческих разговоров, AI-архитектура.">
+<link rel="canonical" href="https://my-pro-skills.ru/blog.html">
+<meta name="theme-color" content="#16202C">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://my-pro-skills.ru/blog.html">
+<meta property="og:title" content="Статьи — My Pro Skills">
+<meta property="og:description" content="Методология, разборы и заметки My Pro Skills.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <style>
-:root{--ink:#1a2230;--ink2:#3a4658;--gray:#8a93a3;--line:#e6e9ef;--mint:#34d399;--bg:#f5f7fa;--card:#fff;--light-gray:#cdd5e0}
-*{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
-.wrap{max-width:880px;margin:0 auto;padding:32px 20px 80px}
-h1{font-size:30px;margin:0 0 6px}
-.sub{color:var(--gray);margin:0 0 28px}
-.grid{display:grid;gap:16px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;text-decoration:none;color:inherit;display:block;transition:.15s}
-.card:hover{border-color:var(--mint);transform:translateY(-1px)}
-.card h2{font-size:19px;margin:0 0 6px}
-.card p{margin:0;color:var(--ink2);font-size:14px}
-.meta{font-size:12px;color:var(--gray);margin-top:10px}
-.tag{display:inline-block;background:#eef7f2;color:#1f9d6b;border-radius:20px;padding:2px 10px;font-size:12px;margin-right:6px}
-.back{display:inline-block;margin-bottom:18px;color:#1f9d6b;text-decoration:none;font-weight:600}
-.article{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 30px}
-.article h1{font-size:26px}
-.article h2{font-size:20px;margin-top:28px;border-bottom:1px solid var(--line);padding-bottom:6px}
-.article h3{font-size:17px;margin-top:22px}
-.article p,.article li{color:var(--ink2)}
-.article code{background:#eef1f6;padding:1px 6px;border-radius:6px;font-size:13px}
-.article pre{background:#0f1622;color:#d6deeb;padding:14px 16px;border-radius:10px;overflow:auto}
+.article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px 34px}
+.article h1{font-size:28px;margin:0 0 8px}
+.article h2{font-size:21px;margin:30px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.article h3{font-size:17px;margin:22px 0 8px}
+.article p,.article li{color:var(--ink2);font-size:16px}
+.article ul,.article ol{padding-left:22px;color:var(--ink2)}
+.article a{color:var(--mint);font-weight:600}
+.article code{background:#eef1f6;padding:1px 6px;border-radius:6px;font-size:14px}
+.article pre{background:#0f1622;color:#d6deeb;padding:14px 16px;border-radius:12px;overflow:auto}
 .article pre code{background:none;color:inherit;padding:0}
-.article img{max-width:100%;border-radius:10px}
-.article a{color:#1f9d6b}
-.empty{color:var(--gray);text-align:center;padding:40px}
-nav.top{display:flex;gap:18px;align-items:center;padding:14px 20px;background:#0f1622}
-nav.top a{color:var(--light-gray);text-decoration:none;font-size:14px}
-nav.top a.on{color:var(--mint)}
+.article img{max-width:100%;border-radius:12px}
+.article blockquote{border-left:3px solid var(--mint);margin:16px 0;padding:4px 16px;color:var(--ink2);font-style:italic}
+.back{display:inline-block;margin-bottom:18px;color:var(--mint);text-decoration:none;font-weight:600}
+.card h3{font-size:19px;margin:0 0 6px}
 </style>
 </head>
 <body>
-<nav class="top">
-<a href="/">Главная</a>
-<a href="/courses.html">Курсы</a>
-<a href="/projects.html">Проекты</a>
-<a href="/blog.html" class="on">Статьи</a>
-<a href="/index.html#approach">Подход</a>
-<a href="/index.html#contacts">Контакты</a>
-</nav>
-<div class="wrap" id="app">Загрузка…</div>
+<div class="progress"></div>
+<header class="header">
+  <nav class="nav">
+    <a class="logo" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="12" width="5" height="9" rx="2.5" fill="#9AA5B1"/><rect x="9.5" y="7" width="5" height="14" rx="2.5" fill="#E1E7EE"/><rect x="17" y="2" width="5" height="19" rx="2.5" fill="#FFFFFF"/></svg>
+      My Pro Skills
+    </a>
+    <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    <div class="menu">
+      <a href="index.html#courses">Курсы</a>
+      <a href="projects.html">Проекты</a>
+      <a href="/blog.html">Статьи</a>
+      <a href="index.html#approach">Подход</a>
+      <a href="index.html#contacts">Контакты</a>
+    </div>
+  </nav>
+</header>
+<main id="app">Загрузка…</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__row">
+      <div>© <span data-year>2024</span> My Pro Skills. Все права защищены.<br>
+        Email: <a href="mailto:zhambalkhumaev@yandex.ru">zhambalkhumaev@yandex.ru</a> ·
+        Telegram: <a href="https://t.me/Zhambaleilo">@Zhambaleilo</a></div>
+      <div><a href="index.html">Все курсы</a> · <a href="leadership.html">Лидерство наизнанку</a></div>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</footer>
+<button class="top" aria-label="Наверх">↑</button>
+<script src="script.js"></script>
 <script src="/js/marked.min.js"></script>
 <script>
 const app=document.getElementById('app');
 const q=new URLSearchParams(location.search);
 const slug=q.get('slug');
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function tags(list){return (list||[]).map(t=>'<span class="tag">'+esc(t)+'</span>').join('');}
+function badges(list){return (list||[]).map(t=>'<span class="badge" style="margin-right:6px">'+esc(t)+'</span>').join('');}
 async function view(){
   const r=await fetch('/articles/'+encodeURIComponent(slug)+'.md');
-  if(!r.ok){app.innerHTML='<a class="back" href="/blog.html">← ко всем статьям</a><div class="empty">Статья не найдена.</div>';return;}
+  if(!r.ok){app.innerHTML='<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><p style="color:var(--gray);text-align:center;padding:40px">Статья не найдена.</p></div></section>';return;}
   let t=await r.text();
   t=t.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/,'');
-  app.innerHTML='<a class="back" href="/blog.html">← ко всем статьям</a><article class="article">'+marked.parse(t)+'</article>';
+  app.innerHTML='<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><article class="article">'+marked.parse(t)+'</article></div></section>';
 }
 async function list(){
   let items=[];
   try{const r=await fetch('/articles/index.json');if(r.ok)items=await r.json();}catch(e){}
-  if(!items.length){app.innerHTML='<h1>Статьи</h1><p class="sub">Методология, разборы и заметки My Pro Skills.</p><div class="empty">Пока пусто. Напиши первую статью в /admin — и она появится здесь через минуту.</div>';return;}
-  app.innerHTML='<h1>Статьи</h1><p class="sub">Методология, разборы и заметки My Pro Skills.</p><div class="grid">'+
-    items.map(it=>'<a class="card" href="/blog.html?slug='+encodeURIComponent(it.slug)+'">'+
-      (it.cover?'<img src="'+esc(it.cover)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:12px">':'')+
-      '<h2>'+esc(it.title)+'</h2><p>'+esc(it.description)+'</p>'+
-      '<div class="meta">'+(it.date?new Date(it.date).toLocaleDateString('ru-RU'):'')+' '+tags(it.tags)+'</div></a>').join('')+
-    '</div>';
+  if(!items.length){app.innerHTML='<section class="sec-light"><div class="wrap center"><h1>Статьи</h1><span class="grad-line"></span><p style="margin:18px auto 0;color:var(--gray);max-width:640px">Методология, разборы и заметки My Pro Skills.</p></div><div class="wrap"><p style="color:var(--gray);text-align:center;padding:40px">Пока пусто. Напиши первую статью в /admin — и она появится здесь через минуту.</p></div></section>';return;}
+  const cards=items.map(it=>'<a class="card card--light" href="/blog.html?slug='+encodeURIComponent(it.slug)+'">'+
+    (it.cover?'<img src="'+esc(it.cover)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px">':'')+
+    '<h3>'+esc(it.title)+'</h3><p style="margin-top:8px;color:var(--ink2)">'+esc(it.description)+'</p>'+
+    '<div style="margin-top:12px;color:var(--gray);font-size:13px">'+(it.date?new Date(it.date).toLocaleDateString('ru-RU'):'')+' '+badges(it.tags)+'</div></a>').join('');
+  app.innerHTML='<section class="sec-light"><div class="wrap center"><h1>Статьи</h1><span class="grad-line"></span><p style="margin:18px auto 0;color:var(--gray);max-width:640px">Методология, разборы и заметки My Pro Skills.</p></div>'+
+    '<div class="wrap"><div class="grid" style="margin-top:36px">'+cards+'</div></div></section>';
 }
 slug?view():list();
 </script>
