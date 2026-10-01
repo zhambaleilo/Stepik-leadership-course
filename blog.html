@@ -16,6 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
+.back{display:inline-block;margin-bottom:18px;color:var(--mint);text-decoration:none;font-weight:600}
 .article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px 34px}
 .article h1{font-size:28px;margin:0 0 8px}
 .article h2{font-size:21px;margin:30px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
@@ -28,7 +29,6 @@
 .article pre code{background:none;color:inherit;padding:0}
 .article img{max-width:100%;border-radius:12px}
 .article blockquote{border-left:3px solid var(--mint);margin:16px 0;padding:4px 16px;color:var(--ink2);font-style:italic}
-.back{display:inline-block;margin-bottom:18px;color:var(--mint);text-decoration:none;font-weight:600}
 .card h3{font-size:19px;margin:0 0 6px}
 </style>
 </head>
@@ -70,24 +70,28 @@ const app=document.getElementById('app');
 const q=new URLSearchParams(location.search);
 const slug=q.get('slug');
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hero(title,sub,small){return '<section class="sec-dark hero"><div class="wrap center"><div><h1'+(small?' style="font-size:34px;line-height:1.25"':'')+'>'+esc(title)+'</h1><span class="grad-line"></span>'+(sub?'<p style="margin:26px auto 0;color:var(--gray);font-size:19px;max-width:640px">'+esc(sub)+'</p>':'')+'</div></div><div class="wm"><i></i><i></i><i></i></div></section>';}
 function badges(list){return (list||[]).map(t=>'<span class="badge" style="margin-right:6px">'+esc(t)+'</span>').join('');}
 async function view(){
   const r=await fetch('/articles/'+encodeURIComponent(slug)+'.md');
-  if(!r.ok){app.innerHTML='<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><p style="color:var(--gray);text-align:center;padding:40px">Статья не найдена.</p></div></section>';return;}
+  if(!r.ok){app.innerHTML=hero('Статьи','Методология, разборы и заметки My Pro Skills.')+'<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><p style="color:var(--gray);text-align:center;padding:40px 0">Статья не найдена.</p></div></section>';return;}
   let t=await r.text();
+  const fm=t.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  let title='Статья';
+  if(fm){const tl=fm[1].match(/title:\s*"?(.+?)"?\s*$/m);if(tl)title=tl[1];}
   t=t.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/,'');
-  app.innerHTML='<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><article class="article">'+marked.parse(t)+'</article></div></section>';
+  app.innerHTML=hero(title,'',true)+'<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><article class="article">'+marked.parse(t)+'</article></div></section>';
 }
 async function list(){
   let items=[];
   try{const r=await fetch('/articles/index.json');if(r.ok)items=await r.json();}catch(e){}
-  if(!items.length){app.innerHTML='<section class="sec-light"><div class="wrap center"><h1>Статьи</h1><span class="grad-line"></span><p style="margin:18px auto 0;color:var(--gray);max-width:640px">Методология, разборы и заметки My Pro Skills.</p></div><div class="wrap"><p style="color:var(--gray);text-align:center;padding:40px">Пока пусто. Напиши первую статью в /admin — и она появится здесь через минуту.</p></div></section>';return;}
+  const head=hero('Статьи','Методология, разборы и заметки My Pro Skills.');
+  if(!items.length){app.innerHTML=head+'<section class="sec-light"><div class="wrap"><p style="color:var(--gray);text-align:center;padding:40px 0">Пока пусто. Напиши первую статью в /admin — и она появится здесь через минуту.</p></div></section>';return;}
   const cards=items.map(it=>'<a class="card card--light" href="/blog.html?slug='+encodeURIComponent(it.slug)+'">'+
     (it.cover?'<img src="'+esc(it.cover)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px">':'')+
     '<h3>'+esc(it.title)+'</h3><p style="margin-top:8px;color:var(--ink2)">'+esc(it.description)+'</p>'+
     '<div style="margin-top:12px;color:var(--gray);font-size:13px">'+(it.date?new Date(it.date).toLocaleDateString('ru-RU'):'')+' '+badges(it.tags)+'</div></a>').join('');
-  app.innerHTML='<section class="sec-light"><div class="wrap center"><h1>Статьи</h1><span class="grad-line"></span><p style="margin:18px auto 0;color:var(--gray);max-width:640px">Методология, разборы и заметки My Pro Skills.</p></div>'+
-    '<div class="wrap"><div class="grid" style="margin-top:36px">'+cards+'</div></div></section>';
+  app.innerHTML=head+'<section class="sec-light"><div class="wrap"><div class="grid" style="margin-top:48px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));max-width:920px;margin-left:auto;margin-right:auto">'+cards+'</div></div></section>';
 }
 slug?view():list();
 </script>
