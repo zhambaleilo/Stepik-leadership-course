@@ -2,6 +2,7 @@ backend:
   name: github
   repo: zhamibailo/Stepik-leadership-course
   branch: main
+  auth_endpoint: https://api.netlify.com/auth/v1
 media_folder: "articles/img"
 public_folder: "/articles/img"
 collections:
