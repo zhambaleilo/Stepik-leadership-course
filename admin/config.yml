@@ -1,7 +1,7 @@
 # admin/config.yml
 
 backend:
-  name: github
+  name: git-gateway
   repo: zhambaleilo/Stepik-leadership-course # <-- ИСПРАВЛЕНО: было zhamibailo
   branch: main
   # Если репозиторий приватный, раскомментируй строку ниже для упрощенной авторизации:
