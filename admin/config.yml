@@ -1,19 +1,11 @@
-# admin/config.yml
-
 backend:
-  name: git-gateway
-  repo: zhambaleilo/Stepik-leadership-course # <-- ИСПРАВЛЕНО: было zhamibailo
+  name: github
+  repo: zhambaleilo/Stepik-leadership-course
   branch: main
-  # Если репозиторий приватный, раскомментируй строку ниже для упрощенной авторизации:
-  auth_type: implicit 
+  auth_type: implicit
 
-# Эти параметры помогают CMS корректно формировать абсолютные ссылки и превью
-site_url: https://my-pro-skills.ru/ 
+site_url: https://my-pro-skills.ru/
 display_url: https://my-pro-skills.ru/
-
-# Включает режим редакционного процесса (черновики сохраняются как Pull Request в GitHub)
-# Если не нужен, можно удалить эту строку
-publish_mode: editorial_workflow
 
 media_folder: "articles/img"
 public_folder: "/articles/img"
