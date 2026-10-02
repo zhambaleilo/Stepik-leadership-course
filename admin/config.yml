@@ -1,10 +1,23 @@
-site_id: f5b20806-fc5c-4605-8cae-186aedb9a439
+# admin/config.yml
+
 backend:
   name: github
-  repo: zhamibailo/Stepik-leadership-course
+  repo: zhambaleilo/Stepik-leadership-course # <-- ИСПРАВЛЕНО: было zhamibailo
   branch: main
+  # Если репозиторий приватный, раскомментируй строку ниже для упрощенной авторизации:
+  auth_type: implicit 
+
+# Эти параметры помогают CMS корректно формировать абсолютные ссылки и превью
+site_url: https://my-pro-skills.ru/ 
+display_url: https://my-pro-skills.ru/
+
+# Включает режим редакционного процесса (черновики сохраняются как Pull Request в GitHub)
+# Если не нужен, можно удалить эту строку
+publish_mode: editorial_workflow
+
 media_folder: "articles/img"
 public_folder: "/articles/img"
+
 collections:
   - name: "articles"
     label: "Статьи"
