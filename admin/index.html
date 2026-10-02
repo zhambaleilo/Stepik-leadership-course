@@ -1,12 +1,31 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Редактор статей — My Pro Skills</title>
-<link rel="stylesheet" href="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.css"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Редактор статей — My Pro Skills</title>
+  
+  <!-- ТВОЙ ИСХОДНЫЙ CSS (сохранен) -->
+  <link rel="stylesheet" href="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.css"/>
+  
+  <!-- ДОБАВЛЕНО: Скрипт виджета Netlify Identity (именно он читает токены из ссылок) -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-<script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+  <!-- ТВОЙ ИСХОДНЫЙ JS (сохранен) -->
+  <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+  
+  <!-- ДОБАВЛЕНО: Логика для перехвата ссылки восстановления/приглашения -->
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", user => {
+        if (!user) {
+          window.netlifyIdentity.on("login", () => {
+            document.location.href = "/admin/";
+          });
+        }
+      });
+    }
+  </script>
 </body>
 </html>
