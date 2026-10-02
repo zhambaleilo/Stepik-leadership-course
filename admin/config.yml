@@ -2,8 +2,6 @@ backend:
   name: github
   repo: zhambaleilo/Stepik-leadership-course
   branch: main
-  auth_type: pkce
-  app_id: Ov23li62am2GubEmczRS
 
 site_url: https://my-pro-skills.ru/
 display_url: https://my-pro-skills.ru/
