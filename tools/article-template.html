@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{TITLE}} — My Pro Skills</title>
+<meta name="description" content="{{DESC}}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://my-pro-skills.ru/articles/pages/{{SLUG}}.html">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESC}}">
+<meta property="og:image" content="https://my-pro-skills.ru{{COVER}}">
+<meta property="og:site_name" content="My Pro Skills">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE}}">
+<meta name="twitter:description" content="{{DESC}}">
+<meta name="twitter:image" content="https://my-pro-skills.ru{{COVER}}">
+<link rel="canonical" href="https://my-pro-skills.ru/articles/pages/{{SLUG}}.html">
+<meta name="theme-color" content="#16202C">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+.back{display:inline-block;margin-bottom:18px;color:var(--mint);text-decoration:none;font-weight:600}
+.hero-sub{margin-top:16px;color:var(--gray);font-size:19px;max-width:640px}
+.article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px 34px}
+.article h1{font-size:28px;margin:0 0 8px}
+.article h2{font-size:21px;margin:30px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line);text-align:left}
+.article h3{font-size:17px;margin:22px 0 8px}
+.article p,.article li{color:var(--ink2);font-size:16px}
+.article ul,.article ol{padding-left:22px;color:var(--ink2)}
+.article a{color:var(--mint);font-weight:600}
+.article code{background:#eef1f6;padding:1px 6px;border-radius:6px;font-size:14px}
+.article pre{background:#0f1622;color:#d6deeb;padding:14px 16px;border-radius:12px;overflow:auto}
+.article pre code{background:none;color:inherit;padding:0}
+.article img{max-width:100%;border-radius:12px}
+.article blockquote{border-left:3px solid var(--mint);margin:16px 0;padding:4px 16px;color:var(--ink2);font-style:italic}
+.rate-btn{background:none;border:2px solid var(--light-stripe);border-radius:12px;padding:10px 16px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:70px}
+.rate-btn:hover{border-color:var(--mint)}
+.rcount{font-size:13px;color:var(--gray);font-weight:600}
+.btn-emoji{font-size:28px}
+.views-row{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.views-row span{display:inline-flex;align-items:center;gap:4px;color:var(--gray);font-size:13px}
+</style>
+</head>
+<body>
+<div class="progress"></div>
+<header class="header">
+  <nav class="nav">
+    <a class="logo" href="/index.html">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="12" width="5" height="9" rx="2.5" fill="#9AA5B1"/><rect x="9.5" y="7" width="5" height="14" rx="2.5" fill="#E1E7EE"/><rect x="17" y="2" width="5" height="19" rx="2.5" fill="#FFFFFF"/></svg>
+      My Pro Skills
+    </a>
+    <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+    <div class="menu">
+      <a href="/index.html#courses">Курсы</a>
+      <a href="/projects.html">Проекты</a>
+      <a href="/blog.html">Статьи</a>
+      <a href="/index.html#approach">Подход</a>
+      <a href="/index.html#contacts">Контакты</a>
+    </div>
+  </nav>
+</header>
+<main id="app">
+  <section class="sec-dark hero">
+    <div class="wrap">
+      <h1 style="font-size:34px;line-height:1.25">{{TITLE}}</h1>
+      <span class="grad-line visible"></span>
+      {{DESC_BLOCK}}
+    </div>
+  </section>
+  <section class="sec-light">
+    <div class="wrap">
+      <a class="back" href="/blog.html">&#8592; ко всем статьям</a>
+      <article class="article" id="article-content">Загрузка...</article>
+      <div id="reactions-block" style="margin-top:32px;padding-top:24px;border-top:1px solid var(--line);text-align:center;display:none">
+        <p style="color:var(--ink2);font-size:15px;margin-bottom:16px">Как вам статья?</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button id="btn-like" class="rate-btn"><span class="btn-emoji">&#128077;</span><span id="count-like" class="rcount">0</span></button>
+          <button id="btn-love" class="rate-btn"><span class="btn-emoji">&#10084;&#65039;</span><span id="count-love" class="rcount">0</span></button>
+          <button id="btn-fire" class="rate-btn"><span class="btn-emoji">&#128293;</span><span id="count-fire" class="rcount">0</span></button>
+          <button id="btn-think" class="rate-btn"><span class="btn-emoji">&#129300;</span><span id="count-think" class="rcount">0</span></button>
+        </div>
+        <p id="rate-msg" style="margin-top:14px;color:var(--mint);font-size:14px;opacity:0;transition:.3s">Спасибо за оценку!</p>
+      </div>
+      <div id="views-block" class="views-row" style="display:none">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span id="views-count">0</span></span>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__row">
+      <div>© 2026 My Pro Skills. Все права защищены.<br>
+        Email: <a href="mailto:zhambalkhumaev@yandex.ru">zhambalkhumaev@yandex.ru</a> ·
+        Telegram: <a href="https://t.me/Zhambaleilo">@Zhambaleilo</a></div>
+      <div><a href="/index.html">Все курсы</a> · <a href="/leadership.html">Лидерство наизнанку</a></div>
+    </div>
+  </div>
+  <div class="wm"><i></i><i></i><i></i></div>
+</footer>
+<button class="top" aria-label="Наверх">↑</button>
+<script src="/js/marked.min.js"></script>
+<script>
+var NS = "myproskills";
+var SLUG = "{{SLUG}}";
+function cGet(k) {
+  return fetch("https://api.counterapi.dev/v1/" + NS + "/" + k)
+    .then(function (r) { return r.json(); })
+    .then(function (d) { return d.count || 0; })
+    .catch(function () { return 0; });
+}
+function cUp(k) {
+  return fetch("https://api.counterapi.dev/v1/" + NS + "/" + k + "/up")
+    .then(function (r) { return r.json(); })
+    .then(function (d) { return d.count || 0; })
+    .catch(function () { return 0; });
+}
+function msg(t) {
+  var m = document.getElementById("rate-msg");
+  m.textContent = t;
+  m.style.opacity = "1";
+  setTimeout(function () { m.style.opacity = "0"; }, 2000);
+}
+function vote(id, suf) {
+  var b = document.getElementById(id);
+  b.addEventListener("click", function () {
+    if (localStorage.getItem("voted_" + SLUG)) {
+      msg("Вы уже голосовали!");
+      return;
+    }
+    cUp(SLUG + "-" + suf).then(function (n) {
+      document.getElementById("count-" + suf).textContent = n;
+      localStorage.setItem("voted_" + SLUG, suf);
+      var all = document.querySelectorAll(".rate-btn");
+      for (var i = 0; i < all.length; i++) {
+        all[i].style.borderColor = "var(--light-stripe)";
+      }
+      b.style.borderColor = "var(--mint)";
+      msg("Спасибо за оценку!");
+    });
+  });
+}
+fetch("/articles/" + SLUG + ".md")
+  .then(function (r) { return r.text(); })
+  .then(function (t) {
+    t = t.replace(/^---[\s\S]*?---\r?\n?/, "");
+    document.getElementById("article-content").innerHTML = marked.parse(t);
+    cUp(SLUG + "-views").then(function (v) {
+      document.getElementById("views-count").textContent = v;
+    });
+    cGet(SLUG + "-like").then(function (n) {
+      document.getElementById("count-like").textContent = n;
+    });
+    cGet(SLUG + "-love").then(function (n) {
+      document.getElementById("count-love").textContent = n;
+    });
+    cGet(SLUG + "-fire").then(function (n) {
+      document.getElementById("count-fire").textContent = n;
+    });
+    cGet(SLUG + "-think").then(function (n) {
+      document.getElementById("count-think").textContent = n;
+    });
+    document.getElementById("reactions-block").style.display = "block";
+    document.getElementById("views-block").style.display = "flex";
+    vote("btn-like", "like");
+    vote("btn-love", "love");
+    vote("btn-fire", "fire");
+    vote("btn-think", "think");
+  });
+</script>
+<script src="/script.js"></script>
+</body>
+</html>
