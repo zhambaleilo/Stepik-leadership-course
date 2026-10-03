@@ -67,7 +67,7 @@
 <footer class="footer">
   <div class="wrap">
     <div class="footer__row">
-      <div>© <span data-year>2024</span> My Pro Skills. Все права защищены.<br>
+      <div>© <span data-year>2026</span> My Pro Skills. Все права защищены.<br>
         Email: <a href="mailto:zhambalkhumaev@yandex.ru">zhambalkhumaev@yandex.ru</a> ·
         Telegram: <a href="https://t.me/Zhambaleilo">@Zhambaleilo</a></div>
       <div><a href="index.html">Все курсы</a>
@@ -217,7 +217,7 @@ async function list() {
   }));
 
   const cards = items.map(it => 
-    '<a class="card card--light" href="/blog.html?slug='+encodeURIComponent(it.slug)+'">'+
+    '<a class="card card--light" href="/articles/pages/'+encodeURIComponent(it.slug)+'.html">'+
     (it.cover?'<img src="'+esc(it.cover)+'" alt="" style="width:100%;height:160px;object-fit:cover;border-radius:12px;margin-bottom:14px">':'')+
     '<h3>'+esc(it.title)+'</h3><p style="margin-top:8px;color:var(--ink2)">'+esc(it.description)+'</p>'+
     '<div style="margin-top:12px;color:var(--gray);font-size:13px">'+(it.date?new Date(it.date).toLocaleDateString('ru-RU'):'')+' '+badges(it.tags)+'</div>'+
