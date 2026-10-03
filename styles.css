@@ -143,9 +143,4 @@ a{color:var(--mint);text-decoration:none}
   .reveal{opacity:1;transform:none;transition:none}
   .grad-line{width:210px;transition:none}
 }
-/* =========================================
-   ИСПРАВЛЕНИЯ ТОЛЬКО ДЛЯ БЛОГА И СТАТЕЙ
-   ========================================= */
-.hero--blog{min-height:auto;padding-top:120px;padding-bottom:48px}
-.hero--blog .wrap{padding-top:0;padding-bottom:0;text-align:left}
-.hero--blog .grad-line{margin-left:0;margin-right:auto}
+
