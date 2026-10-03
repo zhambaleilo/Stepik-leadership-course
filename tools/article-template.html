@@ -146,17 +146,33 @@ function vote(id, suf) {
     });
   });
 }
+function pFM(tx) {
+  var mm = tx.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  var out = {};
+  if (!mm) return out;
+  var key = null;
+  mm[1].split(/\r?\n/).forEach(function (l) {
+    if (/^\s+\S/.test(l) && key) {
+      out[key] = (out[key] ? out[key] + " " : "") + l.trim();
+      return;
+    }
+    var i = l.indexOf(":");
+    if (i > 0) {
+      key = l.slice(0, i).trim();
+      var v = l.slice(i + 1).trim();
+      out[key] = (v === ">-" || v === "|-") ? "" : v;
+    } else { key = null; }
+  });
+  for (var k in out) {
+    out[k] = out[k].replace(/^["']|["']$/g, "").trim();
+  }
+  return out;
+}
 fetch("/articles/" + SLUG + ".md")
   .then(function (r) { return r.text(); })
-    .then(function (t) {
-    var sub = "";
-    var fm2 = t.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    if (fm2) {
-      var ld = fm2[1].match(/lead:\s*"?(.+?)"?\s*$/m);
-      if (ld) sub = ld[1];
-      var ds = fm2[1].match(/description:\s*"?(.+?)"?\s*$/m);
-      if (!sub && ds) sub = ds[1];
-    }
+  .then(function (t) {
+    var fmd = pFM(t);
+    var sub = fmd.lead || fmd.description || "";
     if (sub) {
       var hs = document.getElementById("hero-sub");
       hs.textContent = sub;
