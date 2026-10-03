@@ -32,7 +32,7 @@
 .back{display:inline-block;margin-bottom:18px;color:var(--mint);text-decoration:none;font-weight:600}
 .article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:32px 34px}
 .article h1{font-size:28px;margin:0 0 8px}
-.article h2{font-size:21px;margin:30px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.article h2{font-size:21px;margin:30px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line);text-align:left}
 .article h3{font-size:17px;margin:22px 0 8px}
 .article p,.article li{color:var(--ink2);font-size:16px}
 .article ul,.article ol{padding-left:22px;color:var(--ink2)}
@@ -120,7 +120,7 @@ function reactionBtn(emoji, key, count) {
 
 // ===== 3. ШАБЛОНЫ =====
 function hero(title, sub, small) {
-  return '<section class="sec-dark hero"><div class="wrap"><div><h1'+(small?' style="font-size:34px;line-height:1.25"':'')+'>'+esc(title)+'</h1><span class="grad-line left"></span>'+(sub?'<p style="margin:16px 0 0;color:var(--gray);font-size:19px;max-width:640px">'+esc(sub)+'</p>':'')+'</div></div><div class="wm"><i></i><i></i><i></i></div></section>';
+    return '<section class="sec-dark hero hero--blog"><div class="wrap"><div><h1'+(small?' style="font-size:34px;line-height:1.25"':'')+'>'+esc(title)+'</h1><span class="grad-line"></span>'+(sub?'<p style="margin:16px 0 0;color:var(--gray);font-size:19px;max-width:640px">'+esc(sub)+'</p>':'')+'</div></div><div class="wm"><i></i><i></i><i></i></div></section>';
 }
 
 function badges(list) {
