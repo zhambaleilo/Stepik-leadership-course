@@ -67,7 +67,7 @@
     <div class="wrap">
       <h1 style="font-size:34px;line-height:1.25">Разговорные тренажеры: как оценивать без „мне показалось&quot; и без ИИ</h1>
       <span class="grad-line visible"></span>
-      <p class="hero-sub">Почему «по впечатлению» и «нейросеть решила» — плохие арбитры...</p>
+      <p id="hero-sub" class="hero-sub" style="display:none"></p>
     </div>
   </section>
   <section class="sec-light">
@@ -145,7 +145,20 @@ function vote(id, suf) {
 }
 fetch("/articles/" + SLUG + ".md")
   .then(function (r) { return r.text(); })
-  .then(function (t) {
+    .then(function (t) {
+    var sub = "";
+    var fm2 = t.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (fm2) {
+      var ld = fm2[1].match(/lead:\s*"?(.+?)"?\s*$/m);
+      if (ld) sub = ld[1];
+      var ds = fm2[1].match(/description:\s*"?(.+?)"?\s*$/m);
+      if (!sub && ds) sub = ds[1];
+    }
+    if (sub) {
+      var hs = document.getElementById("hero-sub");
+      hs.textContent = sub;
+      hs.style.display = "block";
+    }
     t = t.replace(/^---[\s\S]*?---\r?\n?/, "");
     document.getElementById("article-content").innerHTML = marked.parse(t);
     cUp(SLUG + "-views").then(function (v) {
