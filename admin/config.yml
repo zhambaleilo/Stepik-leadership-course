@@ -19,6 +19,7 @@ collections:
       - {label: "Заголовок", name: "title", widget: "string"}
       - {label: "Дата", name: "date", widget: "datetime"}
       - {label: "Краткое описание для карточки (одна строка)", name: "description", widget: "string"}
+      - {label: "Подзаголовок статьи (можно длинный, не обяз.)", name: "lead", widget: "text", required: false}      
       - {label: "Теги через запятую", name: "tags", widget: "string", required: false}
       - {label: "Обложка (необязательно)", name: "cover", widget: "image", required: false}
       - {label: "Текст статьи", name: "body", widget: "markdown"}
