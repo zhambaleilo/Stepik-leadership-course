@@ -144,32 +144,8 @@ a{color:var(--mint);text-decoration:none}
   .grad-line{width:210px;transition:none}
 }
 /* =========================================
-   ИСПРАВЛЕНИЯ ДЛЯ ОТОБРАЖЕНИЯ СТАТЕЙ
+   ИСПРАВЛЕНИЯ ТОЛЬКО ДЛЯ БЛОГА И СТАТЕЙ
    ========================================= */
-
-/* 1. Убираем гигантский пустой блок под заголовком */
-.hero {
-  min-height: auto !important;
-  padding-top: 120px !important;
-  padding-bottom: 48px !important;
-}
-
-/* Убираем лишние внутренние отступы обертки в шапке статьи */
-.hero .wrap {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-/* 2. Выравниваем заголовки H2 внутри текста статьи по левому краю */
-.sec-light h2 {
-  text-align: left !important;
-}
-
-/* 3. Фикс для шапки статьи: убираем центрирование из JS и прижимаем линию влево */
-.hero .wrap.center {
-  text-align: left !important;
-}
-.hero .wrap.center .grad-line {
-  margin-left: 0 !important;
-  margin-right: auto !important;
-}
+.hero--blog{min-height:auto;padding-top:120px;padding-bottom:48px}
+.hero--blog .wrap{padding-top:0;padding-bottom:0;text-align:left}
+.hero--blog .grad-line{margin-left:0;margin-right:auto}
