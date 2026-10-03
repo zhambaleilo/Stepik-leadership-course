@@ -4,16 +4,16 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Разговорные тренажеры: как оценивать без „мне показалось&quot; и без ИИ — My Pro Skills</title>
-<meta name="description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и">
+<meta name="description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и как устроена оценка разговора, где каждый балл обязан показать цитату. Шесть принципов — без академизмов.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://my-pro-skills.ru/articles/pages/2026-09-30-formulnyi-analiz-dialoga.html">
 <meta property="og:title" content="Разговорные тренажеры: как оценивать без „мне показалось&quot; и без ИИ">
-<meta property="og:description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и">
+<meta property="og:description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и как устроена оценка разговора, где каждый балл обязан показать цитату. Шесть принципов — без академизмов.">
 <meta property="og:image" content="https://my-pro-skills.ru/img/logo-og.png">
 <meta property="og:site_name" content="My Pro Skills">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Разговорные тренажеры: как оценивать без „мне показалось&quot; и без ИИ">
-<meta name="twitter:description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и">
+<meta name="twitter:description" content="Почему «по впечатлению» и «нейросеть решила» — плохие арбитры, и как устроена оценка разговора, где каждый балл обязан показать цитату. Шесть принципов — без академизмов.">
 <meta name="twitter:image" content="https://my-pro-skills.ru/img/logo-og.png">
 <link rel="canonical" href="https://my-pro-skills.ru/articles/pages/2026-09-30-formulnyi-analiz-dialoga.html">
 <meta name="theme-color" content="#16202C">
@@ -146,17 +146,33 @@ function vote(id, suf) {
     });
   });
 }
+function pFM(tx) {
+  var mm = tx.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  var out = {};
+  if (!mm) return out;
+  var key = null;
+  mm[1].split(/\r?\n/).forEach(function (l) {
+    if (/^\s+\S/.test(l) && key) {
+      out[key] = (out[key] ? out[key] + " " : "") + l.trim();
+      return;
+    }
+    var i = l.indexOf(":");
+    if (i > 0) {
+      key = l.slice(0, i).trim();
+      var v = l.slice(i + 1).trim();
+      out[key] = (v === ">-" || v === "|-") ? "" : v;
+    } else { key = null; }
+  });
+  for (var k in out) {
+    out[k] = out[k].replace(/^["']|["']$/g, "").trim();
+  }
+  return out;
+}
 fetch("/articles/" + SLUG + ".md")
   .then(function (r) { return r.text(); })
-    .then(function (t) {
-    var sub = "";
-    var fm2 = t.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    if (fm2) {
-      var ld = fm2[1].match(/lead:\s*"?(.+?)"?\s*$/m);
-      if (ld) sub = ld[1];
-      var ds = fm2[1].match(/description:\s*"?(.+?)"?\s*$/m);
-      if (!sub && ds) sub = ds[1];
-    }
+  .then(function (t) {
+    var fmd = pFM(t);
+    var sub = fmd.lead || fmd.description || "";
     if (sub) {
       var hs = document.getElementById("hero-sub");
       hs.textContent = sub;
