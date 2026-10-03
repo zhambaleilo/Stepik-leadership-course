@@ -138,7 +138,15 @@ async function view() {
   let t = await r.text();
   const fm = t.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   let title = 'Статья';
-  if (fm) { const tl = fm[1].match(/title:\s*"?(.+?)"?\s*$/m); if (tl) title = tl[1]; }
+  let lead = '';
+  if (fm) {
+    const tl = fm[1].match(/title:\s*"?(.+?)"?\s*$/m);
+    if (tl) title = tl[1];
+    const ld = fm[1].match(/lead:\s*"?(.+?)"?\s*$/m);
+    if (ld) lead = ld[1];
+    const ds = fm[1].match(/description:\s*"?(.+?)"?\s*$/m);
+    if (!lead && ds) lead = ds[1];
+  }
   t = t.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/,'');
 
   // Увеличиваем счетчик просмотров
@@ -168,7 +176,7 @@ async function view() {
     </div>
   `;
 
-  app.innerHTML = hero(title,'',true) +
+  app.innerHTML = hero(title,lead,true) +
     '<section class="sec-light"><div class="wrap"><a class="back" href="/blog.html">← ко всем статьям</a><article class="article">' +
     marked.parse(t) + reactionsBlock +
     '</article></div></section>';
