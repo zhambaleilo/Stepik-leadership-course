@@ -108,6 +108,7 @@
 <script src="/js/marked.min.js"></script>
 <script>
 var NS = "my-pro-skills.ru";
+var SLUG = "2026-09-30-formulnyi-analiz-dialoga";
 function hashKey(s) {
   var h = 0x811c9dc5;
   for (var i = 0; i < s.length; i++) {
@@ -183,8 +184,10 @@ fetch("/articles/" + SLUG + ".md")
     var sub = fmd.lead || fmd.description || "";
     if (sub) {
       var hs = document.getElementById("hero-sub");
-      hs.textContent = sub;
-      hs.style.display = "block";
+      if (hs) {
+        hs.textContent = sub;
+        hs.style.display = "block";
+      }
     }
     t = t.replace(/^---[\s\S]*?---\r?\n?/, "");
     document.getElementById("article-content").innerHTML = marked.parse(t);
