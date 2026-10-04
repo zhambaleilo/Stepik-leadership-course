@@ -107,18 +107,26 @@
 <button class="top" aria-label="Наверх">↑</button>
 <script src="/js/marked.min.js"></script>
 <script>
-var NS = "myproskills";
-var SLUG = "{{SLUG}}";
+var NS = "my-pro-skills.ru";
+function hashKey(s) {
+  var h = 0x811c9dc5;
+  for (var i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return ("00000000" + h.toString(16)).slice(-8);
+}
+function safeKey(k) { return "k-" + hashKey(k); }
 function cGet(k) {
-  return fetch("https://api.counterapi.dev/v1/" + NS + "/" + k)
-    .then(function (r) { return r.json(); })
-    .then(function (d) { return d.count || 0; })
+  return fetch("https://abacus.jasoncameron.dev/get/" + NS + "/" + safeKey(k))
+    .then(function (r) { return r.ok ? r.json() : { value: 0 }; })
+    .then(function (d) { return d.value || 0; })
     .catch(function () { return 0; });
 }
 function cUp(k) {
-  return fetch("https://api.counterapi.dev/v1/" + NS + "/" + k + "/up")
-    .then(function (r) { return r.json(); })
-    .then(function (d) { return d.count || 0; })
+  return fetch("https://abacus.jasoncameron.dev/hit/" + NS + "/" + safeKey(k))
+    .then(function (r) { return r.ok ? r.json() : { value: 0 }; })
+    .then(function (d) { return d.value || 0; })
     .catch(function () { return 0; });
 }
 function msg(t) {
