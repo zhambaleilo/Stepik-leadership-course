@@ -85,7 +85,7 @@
 const app = document.getElementById('app');
 const q = new URLSearchParams(location.search);
 const slug = q.get('slug');
-const NS = 'myproskills';
+const NS = 'my-pro-skills.ru'; // пространство имён счётчика (Abacus)
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function parseFM(text) {
@@ -113,19 +113,30 @@ function parseFM(text) {
   return out;
 }
 
-// ===== 1. COUNTERAPI (Просмотры и Реакции) =====
+// ===== 1. СЧЁТЧИК (просмотры и реакции) через Abacus =====
+function hashKey(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return ('00000000' + h.toString(16)).slice(-8);
+}
+function safeKey(k) { return 'k-' + hashKey(k); }
 async function counterGet(key) {
   try {
-    const r = await fetch(`https://api.counterapi.dev/v1/${NS}/${key}`);
+    const r = await fetch('https://abacus.jasoncameron.dev/get/' + NS + '/' + safeKey(key));
+    if (!r.ok) return 0;
     const d = await r.json();
-    return d.count || 0;
+    return d.value || 0;
   } catch(e) { return 0; }
 }
 async function counterUp(key) {
   try {
-    const r = await fetch(`https://api.counterapi.dev/v1/${NS}/${key}/up`);
+    const r = await fetch('https://abacus.jasoncameron.dev/hit/' + NS + '/' + safeKey(key));
+    if (!r.ok) return 0;
     const d = await r.json();
-    return d.count || 0;
+    return d.value || 0;
   } catch(e) { return 0; }
 }
 
