@@ -26,7 +26,7 @@
   "provider": {"@type": "Organization", "name": "My Pro Skills", "sameAs": "https://my-pro-skills.ru"},
   "url": "https://my-pro-skills.ru/gost-45003.html",
   "inLanguage": "ru",
-  "offers": {"@type": "Offer", "price": "12 900", "priceCurrency": "RUB", "availability": "https://schema.org/InStock", "url": "https://stepik.org/a/301863"}
+  "offers": {"@type": "Offer", "price": "12900", "priceCurrency": "RUB", "availability": "https://schema.org/InStock", "url": "https://stepik.org/a/301863"}
 }
 </script>
 <meta name="theme-color" content="#16202C">
@@ -35,16 +35,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-.subnav{position:sticky;top:62px;z-index:45;background:rgba(22,32,44,.94);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;justify-content:center;gap:8px 26px;padding:12px 16px}
-.subnav a{color:var(--light-gray);font-size:14px;font-weight:600}
-.subnav a:hover{color:var(--mint)}
 .chip{display:inline-block;background:rgba(255,178,94,.14);color:var(--amber);padding:8px 16px;border-radius:999px;font-size:14px;font-weight:700}
 .note{background:var(--white);border-left:3px solid var(--amber);border-radius:8px;padding:16px 20px;color:var(--ink2);font-size:14px;line-height:1.6;text-align:left}
 .intro{max-width:760px;margin:20px auto 0;color:var(--ink2);font-size:17px;line-height:1.7}
 .sec-dark .intro{color:var(--light-gray)}
-.check{list-style:none;color:var(--ink2);line-height:1.9;font-size:15px;margin:0;padding:0}
-.check li{padding-left:26px;position:relative;margin-bottom:6px}
-.check li::before{content:"✓";position:absolute;left:0;color:var(--mint);font-weight:800}
 </style>
 </head>
 <body>
@@ -57,23 +51,15 @@
     </a>
     <button class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
     <div class="menu">
-      <a href="index.html#courses">Курсы</a>
-      <a href="projects.html">Проекты</a>
-      <a href="blog.html">Статьи</a>
-      <a href="index.html#approach">Подход</a>
-      <a href="index.html#contacts">Контакты</a>
+      <a href="#problems">Проблемы</a>
+      <a href="#solution">Решение</a>
+      <a href="#program">Программа</a>
+      <a href="#audience">Для кого</a>
+      <a href="#price">Стоимость</a>
+      <a href="#faq">ЧаВо</a>
     </div>
   </nav>
 </header>
-
-<nav class="subnav">
-  <a href="#problems">Проблемы</a>
-  <a href="#solution">Решение</a>
-  <a href="#program">Программа</a>
-  <a href="#audience">Для кого</a>
-  <a href="#price">Стоимость</a>
-  <a href="#faq">ЧаВо</a>
-</nav>
 
 <main>
 <section class="sec-dark hero">
@@ -93,23 +79,23 @@
 <section class="sec-light" id="problems">
   <div class="wrap">
     <div class="reveal center"><h2>Проблемы</h2><span class="grad-line"></span></div>
-    <p class="intro reveal">Стандарт <strong style="color:var(--ink)">ГОСТ Р ИСО 45003-2026</strong> (адаптация ISO 45003:2021, приказ Росстандарта № 668-ст) вводится с 1 февраля 2027 года. А ситуации, которые он разбирает, у команд уже сейчас:</p>
+    <p class="intro reveal">Психосоциальные риски уже в повседневности большинства команд. А с 1 февраля 2027 года работа с ними становится частью новой нормы: вступает в силу ГОСТ Р ИСО 45003-2026. Проблема в том, что привычные реакции руководителей эти ситуации не закрывают:</p>
     <div class="grid reveal" style="margin-top:40px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <div class="card card--light" data-d="1">
         <h3>Команда на грани выгорания</h3>
-        <p style="margin-top:8px">Перегруз и «горящие дедлайны» стали нормой. Непонятно главное: где корень — в процессах или в «сложных характерах».</p>
+        <p style="margin-top:8px">Перегруз и «горящие дедлайны» стали нормой. Типичная реакция — отправить людей в отпуск и посоветовать отдыхать. Выгорание возвращается: источник остался в системе работы.</p>
       </div>
       <div class="card card--light" data-d="2">
         <h3>Токсичный климат и сообщения</h3>
-        <p style="margin-top:8px">Поступила жалоба или виден конфликт — но процедуры нет: с чего начать, кого привлечь, как защитить того, кто сообщил.</p>
+        <p style="margin-top:8px">Поступила жалоба или виден конфликт. Типичная реакция — поговорить с каждым по отдельности и надеяться, что рассосётся. Сообщивший о риске остаётся незащищённым, корень — нетронутым.</p>
       </div>
       <div class="card card--light" data-d="3">
         <h3>Возвращение после отсутствия</h3>
-        <p style="margin-top:8px">Сотрудник выходит после больничного или выгорания — и нет ответа, как начать разговор без стигмы и с планом.</p>
+        <p style="margin-top:8px">Сотрудник выходит после больничного или выгорания. Типичная реакция — сделать вид, что ничего не было, и загрузить с первого дня. Человек закрывается, риск уходит в подполье.</p>
       </div>
       <div class="card card--light" data-d="4">
         <h3>Запрос на «программу по стрессу»</h3>
-        <p style="margin-top:8px">Медитации и велнес «лечат людей», а не источники опасностей. Стандарт требует обратной логики — и даёт её.</p>
+        <p style="margin-top:8px">Руководство хочет медитации и велнес. Типичная реакция — купить приложение осознанности. Это лечение симптома вместо источника: стандарт называет такую подмену мер прямой ошибкой.</p>
       </div>
     </div>
   </div>
@@ -121,13 +107,12 @@
       <p style="margin-top:16px;color:var(--gray);font-size:18px">Что вы измените после обучения</p>
     </div>
     <div class="steps reveal">
-      <div class="step"><div class="step__num">1</div><p>Перестанете «лечить людей» и начнёте работать с системой: увидите источники перегруза, климата и выгорания в организации труда, социальных факторах и среде — а не в характерах.</p></div>
-      <div class="step"><div class="step__num">2</div><p>Научитесь классифицировать опасности по корню вреда и оценивать риск по вероятности и тяжести: матрица покажет, какие меры брать первыми.</p></div>
-      <div class="step"><div class="step__num">3</div><p>Выберете меры по иерархии стандарта: устранить источник → организационные меры → индивидуальная поддержка только как дополнение. Тест: если мера не меняет источник — вы начали не с того конца.</p></div>
-      <div class="step"><div class="step__num">4</div><p>Проведёте поддерживающий разговор по формуле — и отработаете его в AI-тренажёре: 5 реплик в сложной ситуации, разбор каждой по 6 критериям с цитатами из ваших ответов.</p></div>
-      <div class="step"><div class="step__num">5</div><p>Выстроите конфиденциальные каналы сообщений и процедуру возвращения к работе: сообщивший о риске защищён, вернувшийся поддержан без стигмы.</p></div>
-      <div class="step"><div class="step__num">6</div><p>Встроите управление рисками в цикл PDCA и уйдёте с планом на 30–60 дней: метрики, мониторинг, корректировки — вместо разовой «программы по стрессу».</p></div>
+      <div class="step"><div class="step__num">1</div><p><strong style="color:var(--white)">От «сложных людей» — к трём источникам опасностей.</strong> Перегруз, конфликты и выгорание вы начнёте видеть не в характерах, а в организации труда, социальных факторах и среде с задачами. Остаётся инструмент: классификация по корню вреда + матрица риска «вероятность × тяжесть».</p></div>
+      <div class="step"><div class="step__num">2</div><p><strong style="color:var(--white)">От «велнеса по запросу» — к иерархии мер.</strong> Сначала устранение источника, затем организационные меры, и только поверх — индивидуальная поддержка. Остаётся критерий: если мера не меняет источник опасности — вы начали не с того конца.</p></div>
+      <div class="step"><div class="step__num">3</div><p><strong style="color:var(--white)">От «разговора на интуиции» — к разговору по формуле.</strong> Факты без ярлыков, открытый вопрос, договорённости — и отработка в AI-тренажёре: 5 реплик в сложной ситуации, разбор каждой по 6 критериям с цитатами из ваших ответов.</p></div>
+      <div class="step"><div class="step__num">4</div><p><strong style="color:var(--white)">От «разовой программы» — к циклу управления.</strong> Конфиденциальные каналы сообщений, возвращение к работе без стигмы, мониторинг в цикле PDCA. Итог курса — план внедрения на 30–60 дней под вашу команду.</p></div>
     </div>
+    <p class="reveal" style="margin-top:36px;text-align:center;color:var(--gray);font-size:16px">Эти четыре сдвига — каркас курса: каждый модуль программы отрабатывает свой сдвиг.</p>
   </div>
 </section>
 
@@ -137,35 +122,12 @@
       <p style="margin-top:16px;color:var(--ink2);font-size:18px">6 модулей · 36 шагов · уроки по 5–7 минут с мини-практикой после каждого</p>
     </div>
     <div class="modules reveal">
-      <div class="module"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><div><h3>Модуль 1. Перед стартом</h3><p>Как устроен курс. Статус стандарта: приказ № 668-ст, ввод с 01.01.2027. Границы компетенции: что делает руководитель, а что — медицина. База: что такое психосоциальный риск.</p></div></div>
+      <div class="module"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><div><h3>Модуль 1. Перед стартом</h3><p>Как устроен курс. Статус стандарта: приказ № 668-ст, ввод с 01.02.2027. Границы компетенции: что делает руководитель, а что — медицина. База: что такое психосоциальный риск.</p></div></div>
       <div class="module"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><div><h3>Модуль 2. Распознать</h3><p>Три источника опасностей: организация труда, социальные факторы, среда и задачи. Иерархия мер. Практикум «Детектив опасностей» — классификация реальных ситуаций по корню вреда.</p></div></div>
       <div class="module"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 5-4 1 2-5z"/></svg><div><h3>Модуль 3. Принять решение</h3><p>Лидерство и три опоры доверия: ответственность, справедливость, диалог. Конфиденциальность каналов. Реабилитация и возвращение к работе. Цикл PDCA.</p></div></div>
       <div class="module"><svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/></svg><div><h3>Модуль 4. Отработать</h3><p>Алгоритм поддерживающей беседы: факты без ярлыков, открытый вопрос, договорённости. AI-тренажёр диалога: 5 реплик, разбор по 6 критериям (до 12 баллов), попытки не ограничены.</p></div></div>
       <div class="module"><svg class="icon" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-6"/></svg><div><h3>Модуль 5. Встроить</h3><p>Контекст организации. Оценка риска: вероятность × тяжесть. Мониторинг и внутренний аудит: метрики, которые показывают динамику, а не «уровень счастья».</p></div></div>
       <div class="module"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h13l-2.5 4L18 12H5"/></svg><div><h3>Модуль 6. Закрепить</h3><p>Карта типичных ошибок внедрения. План внедрения на 30–60 дней под вашу команду. Финальная проверка: 10 вопросов, порог 80%, варианты перемешиваются.</p></div></div>
-    </div>
-
-    <div class="card card--light reveal" data-d="1" style="margin-top:44px;padding:32px 34px">
-      <h3 style="font-size:22px">Чему вы научитесь и что заберёте с собой</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;margin-top:18px">
-        <ul class="check">
-          <li>Выявлять опасности по трём источникам и классифицировать по корню вреда</li>
-          <li>Оценивать риски по вероятности и тяжести, расставлять приоритеты мер</li>
-          <li>Выбирать меры по иерархии стандарта — от устранения источника до поддержки</li>
-          <li>Проводить поддерживающий разговор: факты без ярлыков, открытый вопрос, договорённости</li>
-          <li>Выстраивать конфиденциальные каналы и защищать тех, кто сообщает о рисках</li>
-          <li>Поддерживать возвращение сотрудника к работе без стигмы</li>
-          <li>Встраивать управление рисками в цикл PDCA: мониторить, измерять, корректировать</li>
-        </ul>
-        <ul class="check">
-          <li>Формула разговора + практика в AI-тренажёре с разбором каждой реплики</li>
-          <li>Матрица рисков и метрики мониторинга</li>
-          <li>План внедрения принципов стандарта на 30–60 дней</li>
-          <li>Карта типичных ошибок внедрения</li>
-          <li>Сертификат Stepik о прохождении курса</li>
-          <li>Бессрочный доступ к материалам после завершения</li>
-        </ul>
-      </div>
     </div>
   </div>
 </section>
@@ -201,7 +163,6 @@
       <div class="over">Онлайн-курс</div>
       <h3>«Психосоциальные риски на рабочем месте»</h3>
       <div class="price">12 900 ₽</div>
-      <p style="margin-top:12px;color:var(--ink2)">−30% по промокоду <strong style="color:var(--mint)">@ZHAMBALEILO</strong> при оформлении на Stepik</p>
       <ul class="includes">
         <li>6 модулей и 36 шагов в своём темпе, без дедлайнов</li>
         <li>AI-тренажёр управленческого диалога с разбором по 6 критериям</li>
@@ -218,7 +179,7 @@
   <div class="wrap center">
     <div class="reveal">
       <h2>Кто стоит за курсом</h2><span class="grad-line"></span>
-      <p style="max-width:760px;margin:20px auto 0;color:var(--light-gray);line-height:1.7">Жамбал Хумаев — практикующий методист, T&amp;D-специалист и prompt-инженер, автор школы My Pro Skills. Бэкграунд: HR в JTI, проекты «Ямал СПГ», внедрение ИИ в обучающие процессы, более 100 обученных специалистов. «Я не психолог и не ставлю диагнозы — я создаю практические инструменты на основе собственных кейсов и ошибок».</p>
+      <p style="max-width:760px;margin:20px auto 0;color:var(--light-gray);line-height:1.7">Жамбал Хумаев — практикующий методист, T&D-специалист и prompt-инженер, автор школы My Pro Skills. Бэкграунд: HR в JTI, проекты «Ямал СПГ», внедрение ИИ в обучающие процессы, более 100 обученных специалистов. «Я не психолог и не ставлю диагнозы — я создаю практические инструменты на основе собственных кейсов и ошибок».</p>
     </div>
   </div>
 </section>
@@ -227,7 +188,7 @@
   <div class="wrap">
     <div class="reveal center"><h2>ЧаВо</h2><span class="grad-line"></span></div>
     <div class="faq reveal">
-      <div class="faq-item"><button class="faq-q">ГОСТ Р ИСО 45003-2026 и ISO 45003:2021 — это одно и то же?<span class="plus">+</span></button><div class="faq-a"><p>Да. Российский ГОСТ Р ИСО 45003-2026 — идентичная адаптация международного ISO 45003:2021 «Psychological health and safety at work». Принят приказом Росстандарта от 16.06.2026 № 668-ст, вводится в действие с 1 января 2027 года.</p></div></div>
+      <div class="faq-item"><button class="faq-q">ГОСТ Р ИСО 45003-2026 и ISO 45003:2021 — это одно и то же?<span class="plus">+</span></button><div class="faq-a"><p>Да. Российский ГОСТ Р ИСО 45003-2026 — идентичная адаптация международного ISO 45003:2021 «Psychological health and safety at work». Принят приказом Росстандарта от 16.06.2026 № 668-ст, вводится в действие с 1 февраля 2027 года.</p></div></div>
       <div class="faq-item"><button class="faq-q">Вы выдаёте сертификат соответствия ГОСТ Р ИСО 45003-2026?<span class="plus">+</span></button><div class="faq-a"><p>Нет. Это авторский учебный курс: он учит применять принципы стандарта в управленческой практике, но не является официальной программой сертификации. Выдаётся сертификат Stepik о прохождении курса.</p></div></div>
       <div class="faq-item"><button class="faq-q">Нужна ли база по охране труда или HR?<span class="plus">+</span></button><div class="faq-a"><p>Специальных знаний не нужно — курс рассчитан на практиков, а не на экспертов по стандартам. Полезно, но не обязательно: опыт управления людьми от 3–6 месяцев и понимание процессов своей компании.</p></div></div>
       <div class="faq-item"><button class="faq-q">Что такое AI-тренажёр и зачем он?<span class="plus">+</span></button><div class="faq-a"><p>Это модуль практики: вы пишете 5 реплик в разговоре с виртуальным сотрудником в сложной ситуации и получаете разбор каждой реплики по 6 критериям. Каждая оценка опирается на цитату из вашего ответа. Попытки не ограничены; если сервис недоступен, работает офлайн-самопроверка по той же рубрике.</p></div></div>
