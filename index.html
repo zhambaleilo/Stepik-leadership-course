@@ -20,6 +20,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<style>
+.courses-grid{grid-template-columns:repeat(2,1fr)}
+.courses-grid>.card:last-child:nth-child(odd){grid-column:1/-1}
+@media(max-width:860px){
+  .courses-grid{grid-template-columns:1fr}
+  .courses-grid>.card:last-child:nth-child(odd){grid-column:auto}
+}
+</style>
 </head>
 <body>
 <div class="progress"></div>
@@ -74,7 +82,7 @@
       <h2>Курсы</h2><span class="grad-line"></span>
       <p style="margin-top:18px">Каталог практических программ. Скоро — новые курсы.</p>
     </div>
-    <div class="grid" style="margin-top:48px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="grid courses-grid reveal" style="margin-top:48px">
       <a class="card card--light reveal" data-d="1" href="leadership.html">
         <span class="badge badge--mint">Набор открыт</span>
         <h3>Лидерство наизнанку</h3>
