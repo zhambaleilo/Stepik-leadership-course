@@ -14,9 +14,10 @@ collections:
     label: "Статьи"
     folder: "articles"
     create: true
-    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{fields.slug}}"
     fields:
       - {label: "Заголовок", name: "title", widget: "string"}
+      - {label: "Slug (адрес статьи латиницей)", name: "slug", widget: "string", pattern: ["^[a-z0-9-]+$", "Только строчные латинские буквы, цифры и дефисы"], hint: "Короткий адрес через дефисы, например: express-audit-psihosocialnyh-riskov. Дата подставится автоматически."}
       - {label: "Дата", name: "date", widget: "datetime"}
       - {label: "Краткое описание для карточки (одна строка)", name: "description", widget: "string"}
       - {label: "Подзаголовок статьи (можно длинный, не обяз.)", name: "lead", widget: "text", required: false}      
