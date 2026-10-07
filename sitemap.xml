@@ -9,7 +9,7 @@
   <url>
     <loc>https://my-pro-skills.ru/leadership.html</loc>
     <lastmod>2026-10-07</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
@@ -19,20 +19,8 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://my-pro-skills.ru/resume.html</loc>
-    <lastmod>2026-09-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://my-pro-skills.ru/playground.html</loc>
-    <lastmod>2026-09-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://my-pro-skills.ru/projects.html</loc>
-    <lastmod>2026-09-22</lastmod>
+    <loc>https://my-pro-skills.ru/templates.html</loc>
+    <lastmod>2026-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -43,7 +31,37 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://my-pro-skills.ru/templates.html</loc>
+    <loc>https://my-pro-skills.ru/projects.html</loc>
+    <lastmod>2026-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://my-pro-skills.ru/playground.html</loc>
+    <lastmod>2026-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://my-pro-skills.ru/resume.html</loc>
+    <lastmod>2026-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://my-pro-skills.ru/articles/pages/2026-09-30-formulnyi-analiz-dialoga.html</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://my-pro-skills.ru/articles/pages/2026-10-05-как-выбрать-курс-по-лидерству-в-2026-карта-подходов-а-не-рейтинг.html</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://my-pro-skills.ru/articles/pages/2026-10-07-express-audit-psihosocialnyh-riskov.html</loc>
     <lastmod>2026-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
