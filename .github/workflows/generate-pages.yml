@@ -23,11 +23,14 @@ jobs:
       - name: Generate article pages
         run: node tools/generate-article-pages.js
       
-      - name: Commit generated pages
+      - name: Build sitemap
+        run: node tools/build-sitemap.js
+      
+      - name: Commit generated pages and sitemap
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add articles/pages/
-          git diff --staged --quiet || git commit -m "Auto-generate article pages [skip ci]"
+          git add articles/pages/ sitemap.xml
+          git diff --staged --quiet || git commit -m "Auto-generate article pages and sitemap [skip ci]"
           git pull --rebase origin main
           git push
