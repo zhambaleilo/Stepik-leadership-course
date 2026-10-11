@@ -24,3 +24,56 @@ collections:
       - {label: "Теги через запятую", name: "tags", widget: "string", required: false}
       - {label: "Обложка (необязательно)", name: "cover", widget: "image", required: false}
       - {label: "Текст статьи", name: "body", widget: "markdown"}
+
+  - name: "scenarios"
+    label: "Сценарии игры"
+    folder: "scenarios"
+    create: true
+    slug: "{{fields.scenario_id}}"
+    format: "json"
+    fields:
+      - {label: "ID сценария (латиница, без пробелов)", name: "scenario_id", widget: "string", pattern: ["^[a-z0-9_]+$", "Только строчные буквы, цифры и подчеркивание"], hint: "Например: burnout_alexey_01"}
+      - {label: "Название сценария", name: "title", widget: "string", hint: "Например: Пятничный срыв"}
+      - {label: "Сложность", name: "difficulty", widget: "select", options: ["easy", "medium", "hard"]}
+      - {label: "Контекст ситуации", name: "context", widget: "text", hint: "Описание ситуации для игрока"}
+      - {label: "Цель игрока", name: "player_goal", widget: "text", hint: "Что должен достичь игрок"}
+      
+      - label: "Персонаж ИИ"
+        name: "ai_persona"
+        widget: "object"
+        fields:
+          - {label: "Имя", name: "name", widget: "string"}
+          - {label: "Роль в компании", name: "role", widget: "string"}
+          - {label: "Скрытое состояние", name: "hidden_state", widget: "string", hint: "Что он чувствует на самом деле (не видно игроку)"}
+          - {label: "Стиль коммуникации", name: "communication_style", widget: "text", hint: "Как он обычно общается"}
+          
+      - label: "Активные элементы UI"
+        name: "active_elements"
+        widget: "object"
+        fields:
+          - {label: "Чат с сотрудниками", name: "chat", widget: "boolean", default: true}
+          - {label: "Календарь", name: "calendar", widget: "boolean", default: false}
+          - {label: "Дашборд команды", name: "dashboard", widget: "boolean", default: false}
+          - {label: "Доска задач", name: "tasks", widget: "boolean", default: false}
+          - {label: "Почта", name: "email", widget: "boolean", default: false}
+          
+      - label: "Динамические триггеры"
+        name: "dynamic_triggers"
+        widget: "list"
+        hint: "Если игрок пишет слово из keyword, выполняется действие"
+        fields:
+          - {label: "Ключевые слова (через |)", name: "keyword", widget: "string", hint: "Например: дедлайн|срок|завтра"}
+          - {label: "Действие", name: "action", widget: "select", options: ["show_calendar", "show_dashboard", "show_tasks", "show_email"]}
+          
+      - label: "Критерии оценки"
+        name: "evaluation_criteria"
+        widget: "object"
+        fields:
+          - label: "Психологическая безопасность (6 критериев)"
+            name: "psychological_safety"
+            widget: "list"
+            field: {label: "ID критерия", name: "criterion", widget: "string", hint: "Например: emotion_validation"}
+          - label: "Импровизация (5 критериев)"
+            name: "improvisation"
+            widget: "list"
+            field: {label: "ID критерия", name: "criterion", widget: "string", hint: "Например: yes_and"}
