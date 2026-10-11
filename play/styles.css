@@ -71,6 +71,21 @@ h1{font-family:'Manrope',sans-serif;font-size:28px;margin-bottom:8px}
 .gate-error{margin-top:16px;color:#EF4444;font-size:14px}
 .gate-success{margin-top:16px;color:#3F6B4C;font-size:14px;font-weight:600}
 
+/* Индикатор печати */
+.typing-indicator{margin-top:8px;font-size:13px;color:#5B6673;font-style:italic;display:flex;align-items:center;gap:4px}
+.typing-indicator .dots{animation:blink 1.4s infinite}
+@keyframes blink{0%,20%{opacity:0}50%{opacity:1}100%{opacity:0}}
+
+/* Карточка календаря */
+.calendar-event{padding:12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px}
+.calendar-event.urgent{background:#FEF2F2;border-color:#EF4444}
+.event-time{font-size:12px;color:#EF4444;font-weight:700;margin-bottom:4px}
+.event-title{font-size:14px;font-weight:600;color:#14202F;margin-bottom:4px}
+.event-desc{font-size:12px;color:#5B6673}
+
+/* Отключенная кнопка */
+.send-btn:disabled{opacity:0.5;cursor:not-allowed}
+
 @media(max-width:768px){
   .workspace{flex-direction:column}
   .side-panel{width:100%;min-height:auto}
