@@ -36,40 +36,60 @@ async function getToken() {
 }
 
 export default async function handler(req, res) {
+  // CORS — как в scenario-chat.js
+  const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
+  const origin = req.headers.origin || '';
+  if (allow.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  
+
   try {
     const { dialogue } = req.body;
-    
-    const dialogueText = dialogue.map(m => 
+    if (!Array.isArray(dialogue) || dialogue.length === 0) {
+      return res.status(400).json({ error: 'dialogue is required' });
+    }
+
+    const dialogueText = dialogue.map(m =>
       (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content
     ).join('\n');
 
-    const systemPrompt = `Ты — эксперт по психологической безопасности и бизнес-импровизации. Оцени диалог по 11 критериям.
+    const systemPrompt = `Ты эксперт по оценке управленческих диалогов. Верни ТОЛЬКО валидный JSON без markdown-обёрток, без пояснений.
 
-КРИТЕРИИ (максимум 2 балла за каждый):
+Оцени диалог по 11 критериям (0, 1 или 2 балла за каждый):
+
 ПСИХОЛОГИЧЕСКАЯ БЕЗОПАСНОСТЬ:
-1. Валидация эмоций (распознал и озвучил чувства сотрудника)
-2. Отсутствие обесценивания (не использовал "да ладно", "соберись")
-3. Удержание границ (экологично остановил токсичность)
-4. Фокус на решении (не застрял в жалобах)
-5. Использование "Я-сообщений" (говорил о фактах, не обвинял)
-6. Конкретный следующий шаг (договорились о действии)
+1. emotion_validation — Валидация эмоций (распознал и озвучил чувства сотрудника)
+2. no_devaluation — Отсутствие обесценивания (не "да ладно", "соберись")
+3. boundaries — Удержание границ (экологично остановил токсичность)
+4. solution_focus — Фокус на решении (не застрял в жалобах)
+5. i_messages — Я-сообщения (говорил о фактах, не обвинял)
+6. concrete_next_step — Конкретный следующий шаг
 
 ИМПРОВИЗАЦИЯ:
-7. Принцип "Да, и..." (развивал идеи, не блокировал)
-8. Адаптивность (менял стиль под реакцию)
-9. Переформулирование (возвращал смысл своими словами)
-10. Активное слушание (использовал слова собеседника)
-11. Креативность (предложил нестандартное решение)
+7. yes_and — Принцип "Да, и..." (развивал идеи, не блокировал)
+8. adaptability — Адаптивность (менял стиль под реакцию)
+9. reframing — Переформулирование (возвращал смысл своими словами)
+10. active_listening — Активное слушание (использовал слова собеседника)
+11. creativity — Креативность (нестандартное решение)
 
-ПРАВИЛА:
-1. Верни СТРОГО валидный JSON без markdown-обёрток (без \`\`\`json).
-2. Для каждого критерия: score (0, 1 или 2), quote (точная цитата Руководителя, если нет — ""), comment (совет на русском).
-3. Добавь total_score (сумма), max_score (22), summary (2-3 предложения).
+Для каждого критерия:
+- score: 0, 1 или 2
+- quote: ТОЧНАЯ цитата из реплик Руководителя, подтверждающая оценку (если нет — пустая строка)
+- comment: 1-2 предложения совета на русском
 
-ФОРМАТ:
+В конце добавь:
+- total_score: сумма всех баллов
+- max_score: 22
+- summary: 2-3 предложения общего вывода
+
+Структура JSON:
 {"criteria":[{"id":"emotion_validation","name":"Валидация эмоций","score":2,"quote":"...","comment":"..."}],"total_score":18,"max_score":22,"summary":"..."}`;
+
+    const userPrompt = `Проанализируй этот диалог:\n\n${dialogueText}`;
 
     const token = await getToken();
     const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
@@ -78,25 +98,35 @@ export default async function handler(req, res) {
       model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Проанализируй диалог:\n\n${dialogueText}` }
+        { role: 'user', content: userPrompt }
       ],
-      temperature: 0.3,
+      temperature: 0.2,
       max_tokens: 1500
     }));
 
-    if (r.status !== 200) throw new Error('eval ' + r.status + ': ' + r.text.slice(0, 200));
-    
+    if (r.status !== 200) {
+      console.error('GigaChat error:', r.status, r.text.slice(0, 300));
+      throw new Error('GigaChat ' + r.status);
+    }
+
     const j = JSON.parse(r.text);
     let content = j.choices?.[0]?.message?.content || '';
-    
-    // Чистим markdown-обёртку, если модель её добавила
-    content = content.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-    
+
+    // Чистим markdown-обёртки и лишний текст
+    content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    // Если модель добавила текст до/после JSON — ищем первую { и последнюю }
+    const firstBrace = content.indexOf('{');
+    const lastBrace = content.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      content = content.slice(firstBrace, lastBrace + 1);
+    }
+
     const result = JSON.parse(content);
     return res.status(200).json(result);
 
   } catch (e) {
     console.error('Eval error:', e);
-    return res.status(502).json({ error: String(e.message) });
+    return res.status(502).json({ error: e.message || String(e) });
   }
 }
