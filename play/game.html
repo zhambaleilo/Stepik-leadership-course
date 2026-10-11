@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RPG-симулятор руководителя: лаборатория лидеров · Полная версия — My Pro Skills</title>
+  <title>RPG-симулятор руководителя: Лаборатория лидеров · Полная версия — My Pro Skills</title>
   <meta name="description" content="Полная версия симулятора с ИИ-оценкой по 11 критериям. Доступ по паролю.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -13,11 +13,10 @@
   <div class="container">
     <div class="header">
       <a href="index.html" class="back-link">← Демо-режим</a>
-      <h1>🎮 RPG-симулятор руководителя: лаборатория лидеров</h1>
-      <p class="subtitle">Полная версия с ИИ-оценкой по 11 критериям (ГОСТ Р ИСО 45003-2026 и бизнес-импровизация). Проведите диалог и получите детальный разбор.</p>
+      <h1>🎮 RPG-симулятор руководителя: Лаборатория лидеров</h1>
+      <p class="subtitle">Полная версия с ИИ-оценкой по 11 критериям. Проведите диалог и получите детальный разбор.</p>
     </div>
     
-    <!-- Форма пароля -->
     <div id="gateSection" class="workspace" style="min-height:auto">
       <div class="gate-card">
         <h2>Введите пароль</h2>
@@ -30,7 +29,6 @@
       </div>
     </div>
     
-    <!-- Интерфейс игры (скрыт до ввода пароля) -->
     <div id="gameSection" class="workspace" style="display:none">
       <div class="chat-section">
         <div class="chat-header">
@@ -87,42 +85,45 @@
           </div>
         </div>
         
-        <div id="finalScreen" class="panel-card final-screen" style="display:none">
-          <h3>📊 Анализ диалога</h3>
-          <p class="final-note">ИИ анализирует ваш диалог по 11 критериям (ГОСТ Р ИСО 45003-2026 и бизнес-импровизация). Результаты будут доступны после завершения сессии.</p>
-          <button class="cta-btn" onclick="location.reload()">Начать заново</button>
-        </div>
+        <div id="finalScreen" class="panel-card final-screen" style="display:none"></div>
       </div>
     </div>
   </div>
   
   <script>
     const SCENARIO_ID = 'burnout_alexey_01';
+    const API_BASE = 'https://stepik-leadership-course.vercel.app';
     let chatHistory = [];
     let isWaitingForResponse = false;
     let messageCount = 0;
     const MAX_MESSAGES = 10;
-    
-    // Обработка формы пароля
-    document.getElementById('gateForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const code = document.getElementById('gateCode').value.trim();
-      if (!code) return;
-      
-      // TODO: на Шаге 5 здесь будет реальная проверка через Supabase
-      // Пока принимаем любой непустой пароль для теста API
-      document.getElementById('gateError').style.display = 'none';
-      document.getElementById('gateSection').style.display = 'none';
-      document.getElementById('gameSection').style.display = 'flex';
-      document.getElementById('userInput').focus();
-    });
-    
-    // Отправка сообщения
-    document.getElementById('sendBtn').addEventListener('click', sendMessage);
-    document.getElementById('userInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') sendMessage();
-    });
-    
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function addMessage(role, text) {
+      const messagesDiv = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'message ' + role;
+      msg.innerHTML = '<div class="bubble">' + escapeHtml(text) + '</div>';
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function updateUI(elements) {
+      if (elements.dashboard) {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('dashboardCard').style.display = 'block';
+        setTimeout(() => document.getElementById('dashboardCard').classList.add('visible'), 10);
+      }
+      if (elements.calendar) {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('calendarCard').style.display = 'block';
+        setTimeout(() => document.getElementById('calendarCard').classList.add('visible'), 10);
+      }
+    }
+
     async function sendMessage() {
       const input = document.getElementById('userInput');
       const userText = input.value.trim();
@@ -133,19 +134,16 @@
         return;
       }
       
-      // Добавляем сообщение пользователя
       addMessage('user', userText);
       input.value = '';
       messageCount++;
       
-      // Показываем индикатор печати
       isWaitingForResponse = true;
       document.getElementById('typingIndicator').style.display = 'block';
       document.getElementById('sendBtn').disabled = true;
       
       try {
-        // Вызов API
-        const response = await fetch('https://stepik-leadership-course.vercel.app/api/scenario-chat', {
+        const response = await fetch(API_BASE + '/api/scenario-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -155,23 +153,18 @@
           })
         });
         
-        if (!response.ok) throw new Error('API error');
+        if (!response.ok) throw new Error('API error: ' + response.status);
         
         const data = await response.json();
-        
-        // Добавляем ответ ИИ
         addMessage('ai', data.ai_response);
         
-        // Обновляем историю
         chatHistory.push({ role: 'user', content: userText });
         chatHistory.push({ role: 'assistant', content: data.ai_response });
         
-        // Обрабатываем триггеры
         if (data.updated_elements) {
           updateUI(data.updated_elements);
         }
         
-        // Проверяем, не конец ли диалога
         if (messageCount >= MAX_MESSAGES) {
           setTimeout(showFinalScreen, 1500);
         }
@@ -186,31 +179,8 @@
         input.focus();
       }
     }
-    
-    function addMessage(role, text) {
-      const messagesDiv = document.getElementById('messages');
-      const msg = document.createElement('div');
-      msg.className = 'message ' + role;
-      msg.innerHTML = '<div class="bubble">' + escapeHtml(text) + '</div>';
-      messagesDiv.appendChild(msg);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-    
-    function updateUI(elements) {
-      if (elements.dashboard) {
-        document.getElementById('placeholder').style.display = 'none';
-        document.getElementById('dashboardCard').style.display = 'block';
-        document.getElementById('dashboardCard').classList.add('visible');
-      }
-      if (elements.calendar) {
-        document.getElementById('placeholder').style.display = 'none';
-        document.getElementById('calendarCard').style.display = 'block';
-        document.getElementById('calendarCard').classList.add('visible');
-      }
-    }
-    
+
     async function showFinalScreen() {
-      // Скрываем игровые панели, показываем лоадер
       document.getElementById('placeholder').style.display = 'none';
       document.getElementById('dashboardCard').style.display = 'none';
       document.getElementById('calendarCard').style.display = 'none';
@@ -221,7 +191,7 @@
       requestAnimationFrame(() => final.classList.add('visible'));
 
       try {
-        const response = await fetch('https://stepik-leadership-course.vercel.app/api/evaluate', {
+        const response = await fetch(API_BASE + '/api/evaluate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dialogue: chatHistory })
@@ -229,11 +199,10 @@
         
         if (!response.ok) throw new Error('Evaluation failed');
         const data = await response.json();
-        
-        // Рендерим результаты
         renderResults(data);
         
       } catch (error) {
+        console.error('Eval error:', error);
         final.innerHTML = '<h3>⚠️ Ошибка анализа</h3><p class="final-note">Не удалось получить оценку. Попробуйте начать заново.</p><button class="cta-btn" onclick="location.reload()">Начать заново</button>';
       }
     }
@@ -244,7 +213,7 @@
       let gradeColor = percent > 70 ? '#3F6B4C' : (percent > 40 ? '#F59E0B' : '#EF4444');
       
       let html = `
-        <h3>📊 Разбор полетов</h3>
+        <h3> Разбор полетов</h3>
         <div class="score-circle" style="border-color: ${gradeColor}">
           <span class="score-value" style="color: ${gradeColor}">${percent}%</span>
           <span class="score-label">Эффективность</span>
@@ -271,9 +240,33 @@
         `;
       });
       
-      html += `</div><button class="cta-btn" onclick="location.reload()">🔄 Пройти еще раз</button>`;
+      html += '</div><button class="cta-btn" onclick="location.reload()">🔄 Пройти еще раз</button>';
       final.innerHTML = html;
     }
+
+    // Инициализация после загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      const gateForm = document.getElementById('gateForm');
+      if (gateForm) {
+        gateForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const code = document.getElementById('gateCode').value.trim();
+          if (!code) return;
+          document.getElementById('gateError').style.display = 'none';
+          document.getElementById('gateSection').style.display = 'none';
+          document.getElementById('gameSection').style.display = 'flex';
+          document.getElementById('userInput').focus();
+        });
+      }
+      
+      const sendBtn = document.getElementById('sendBtn');
+      const userInput = document.getElementById('userInput');
+      
+      if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+      if (userInput) userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+      });
+    });
   </script>
 </body>
 </html>
