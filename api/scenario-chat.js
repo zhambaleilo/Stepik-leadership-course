@@ -1,66 +1,91 @@
+// api/scenario-chat.js — прокси к GigaChat для симулятора управленческих диалогов
 import fs from 'fs';
 import path from 'path';
+import https from 'https';
+import crypto from 'crypto';
 
-// Функция для получения токена GigaChat (переиспользует твои существующие переменные)
-async function getGigaChatToken() {
-  // ВАЖНО: Замени 'GIGACHAT_CLIENT_ID' и 'GIGACHAT_CLIENT_SECRET' на точные имена 
-  // твоих переменных окружения в Vercel, если они называются иначе (например, AUTH_KEY)
-  const clientId = process.env.GIGACHAT_CLIENT_ID;
-  const clientSecret = process.env.GIGACHAT_CLIENT_SECRET;
+let cache = { token: null, exp: 0 };
 
-  if (!clientId || !clientSecret) {
-    throw new Error('GigaChat credentials not found in environment variables');
-  }
-
-  const authString = `${clientId}:${clientSecret}`;
-  const base64Auth = Buffer.from(authString).toString('base64');
-
-  const response = await fetch('https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${base64Auth}`,
-      'RqUID': 'vercel-scenario-req-' + Date.now(),
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
-    },
-    body: 'scope=GIGACHAT_API_PERS',
-    // В продакшене для self-signed сертификатов Сбера может понадобиться агент, 
-    // но на Vercel часто работает без rejectUnauthorized, либо используй process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0' для теста
+function sreq(method, urlStr, headers, body) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(urlStr);
+    const r = https.request({
+      hostname: u.hostname,
+      port: u.port || 443,
+      path: u.pathname + u.search,
+      method,
+      headers,
+      rejectUnauthorized: false,
+      timeout: 20000,
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => resolve({ status: res.statusCode, text: data }));
+    });
+    r.on('timeout', () => { r.destroy(new Error('upstream timeout')); });
+    r.on('error', reject);
+    if (body) r.write(body);
+    r.end();
   });
+}
 
-  if (!response.ok) {
-    throw new Error(`GigaChat auth failed: ${response.statusText}`);
-  }
+async function getToken() {
+  if (cache.token && Date.now() < cache.exp - 60000) return cache.token;
+  const auth = process.env.GIGACHAT_AUTH_KEY ||
+    Buffer.from((process.env.GIGACHAT_CLIENT_ID || '') + ':' + (process.env.GIGACHAT_CLIENT_SECRET || '')).toString('base64');
+  const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
+  
+  const r = await sreq('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
+    Authorization: 'Basic ' + auth,
+    RqUID: crypto.randomUUID(),
+    'Content-Type': 'application/x-www-form-urlencoded',
+  }, 'scope=' + scope);
+  
+  if (r.status !== 200) throw new Error('oauth ' + r.status + ': ' + r.text.slice(0, 120));
+  const j = JSON.parse(r.text);
+  cache = { token: j.access_token, exp: Date.now() + (j.expires_in || 1800) * 1000 };
+  return cache.token;
+}
 
-  const data = await response.json();
-  return data.access_token;
+async function giga(messages, temperature, maxTokens) {
+  const token = await getToken();
+  const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
+    Authorization: 'Bearer ' + token,
+    'Content-Type': 'application/json',
+  }, JSON.stringify({ 
+    model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro', 
+    messages, 
+    temperature, 
+    max_tokens: maxTokens 
+  }));
+  if (r.status !== 200) throw new Error('chat ' + r.status + ': ' + r.text.slice(0, 120));
+  const j = JSON.parse(r.text);
+  return (j.choices?.[0]?.message?.content || '').trim();
 }
 
 export default async function handler(req, res) {
-  // Разрешаем CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
+  const origin = req.headers.origin || '';
+  
+  if (allow.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
-    const { scenario_id, user_message, history = [] } = req.body;
+    const b = req.body || {};
+    const { scenario_id, user_message, history = [] } = b;
 
     if (!scenario_id || !user_message) {
       return res.status(400).json({ error: 'scenario_id and user_message are required' });
     }
 
-    // 1. Читаем сценарий из локальной папки (Vercel бандлит файлы проекта)
-    // Путь: корень репозитория / scenarios / {scenario_id}.json
+    // 1. Чтение сценария из файловой системы Vercel
     const scenarioPath = path.join(process.cwd(), 'scenarios', `${scenario_id}.json`);
-    
     let scenario;
     try {
       const fileContents = fs.readFileSync(scenarioPath, 'utf8');
@@ -73,7 +98,7 @@ export default async function handler(req, res) {
     const updatedElements = { ...scenario.active_elements };
     if (scenario.dynamic_triggers) {
       for (const trigger of scenario.dynamic_triggers) {
-        const regex = new RegExp(trigger.keyword, 'i'); // 'i' для регистронезависимого поиска
+        const regex = new RegExp(trigger.keyword, 'i');
         if (regex.test(user_message)) {
           if (trigger.action === 'show_calendar') updatedElements.calendar = true;
           if (trigger.action === 'show_dashboard') updatedElements.dashboard = true;
@@ -83,7 +108,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 3. Формируем системный промпт
+    // 3. Формирование системного промпта для ИИ-сотрудника
     const persona = scenario.ai_persona;
     const systemPrompt = `Ты играешь роль: ${persona.name}, ${persona.role}.
 Твое скрытое состояние: ${persona.hidden_state}.
@@ -104,40 +129,17 @@ export default async function handler(req, res) {
       { role: 'user', content: user_message }
     ];
 
-    // 4. Запрос к GigaChat
-    const token = await getGigaChatToken();
-    
-    const chatResponse = await fetch('https://ngw.devices.sberbank.ru:9443/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'GigaChat', // или 'GigaChat-Pro', если используешь его
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 150
-      })
-    });
+    // 4. Запрос к GigaChat (температура 0.7 для баланса креативности и предсказуемости)
+    const aiResponse = await giga(messages, 0.7, 150);
 
-    if (!chatResponse.ok) {
-      const errText = await chatResponse.text();
-      throw new Error(`GigaChat API failed: ${chatResponse.status} - ${errText}`);
-    }
-
-    const chatData = await chatResponse.json();
-    const aiResponse = chatData.choices[0].message.content.trim();
-
-    // 5. Возвращаем результат фронтенду
+    // 5. Возврат результата
     return res.status(200).json({
       ai_response: aiResponse,
       updated_elements: updatedElements
     });
 
-  } catch (error) {
-    console.error('Scenario chat error:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+  } catch (e) {
+    console.error('Scenario chat error:', e);
+    return res.status(502).json({ error: String(e.code || e.message || e) });
   }
 }
