@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Полная версия · Симулятор управленческих диалогов — My Pro Skills</title>
+  <title>RPG-симулятор руководителя: лаборатория лидеров · Полная версия — My Pro Skills</title>
   <meta name="description" content="Полная версия симулятора с ИИ-оценкой по 11 критериям. Доступ по паролю.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -13,11 +13,12 @@
   <div class="container">
     <div class="header">
       <a href="index.html" class="back-link">← Демо-режим</a>
-      <h1>🔒 Полная версия</h1>
-      <p class="subtitle">Доступ к симулятору с ИИ-оценкой по 11 критериям предоставляется по паролю.</p>
+      <h1>🎮 RPG-симулятор руководителя: лаборатория лидеров</h1>
+      <p class="subtitle">Полная версия с ИИ-оценкой по 11 критериям (ГОСТ Р ИСО 45003-2026 и бизнес-импровизация). Проведите диалог и получите детальный разбор.</p>
     </div>
     
-    <div class="workspace" style="min-height:auto">
+    <!-- Форма пароля -->
+    <div id="gateSection" class="workspace" style="min-height:auto">
       <div class="gate-card">
         <h2>Введите пароль</h2>
         <p class="gate-note">Пароли выдаются участникам тестовой группы. Если у вас нет пароля — пройдите <a href="index.html">демо-режим</a>.</p>
@@ -26,26 +27,200 @@
           <button type="submit" class="cta-btn">Войти</button>
         </form>
         <div id="gateError" class="gate-error" style="display:none">Неверный пароль или лимит сессий исчерпан.</div>
-        <div id="gateSuccess" class="gate-success" style="display:none">✅ Пароль принят. Загрузка сценария...</div>
+      </div>
+    </div>
+    
+    <!-- Интерфейс игры (скрыт до ввода пароля) -->
+    <div id="gameSection" class="workspace" style="display:none">
+      <div class="chat-section">
+        <div class="chat-header">
+          <div class="avatar">А</div>
+          <div class="chat-info">
+            <h3>Алексей · Ведущий разработчик</h3>
+            <div class="status">В сети</div>
+          </div>
+        </div>
+        
+        <div class="messages" id="messages">
+          <div class="message ai">
+            <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
+          </div>
+        </div>
+        
+        <div class="input-area">
+          <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Напишите ответ Алексею...">
+            <button class="send-btn" id="sendBtn">➤</button>
+          </div>
+          <div id="typingIndicator" class="typing-indicator" style="display:none">
+            <span>Алексей печатает</span><span class="dots">...</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="side-panel">
+        <div id="placeholder" class="placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/>
+          </svg>
+          <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
+        </div>
+        
+        <div id="dashboardCard" class="panel-card" style="display:none">
+          <h4>📊 Состояние команды</h4>
+          <div class="metric">
+            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value" id="stressLevel">92%</span></div>
+            <div class="progress-bar"><div class="progress-fill red" id="stressBar" style="width:92%"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value" id="trustLevel">45%</span></div>
+            <div class="progress-bar"><div class="progress-fill amber" id="trustBar" style="width:45%"></div></div>
+          </div>
+        </div>
+        
+        <div id="calendarCard" class="panel-card" style="display:none">
+          <h4>📅 Календарь</h4>
+          <div class="calendar-event urgent">
+            <div class="event-time">Пятница, 18:00</div>
+            <div class="event-title">Дедлайн: Проект Х</div>
+            <div class="event-desc">Сдать финальную версию клиенту</div>
+          </div>
+        </div>
+        
+        <div id="finalScreen" class="panel-card final-screen" style="display:none">
+          <h3>📊 Анализ диалога</h3>
+          <p class="final-note">ИИ анализирует ваш диалог по 11 критериям (ГОСТ Р ИСО 45003-2026 и бизнес-импровизация). Результаты будут доступны после завершения сессии.</p>
+          <button class="cta-btn" onclick="location.reload()">Начать заново</button>
+        </div>
       </div>
     </div>
   </div>
   
   <script>
-    // Заглушка: проверка пароля будет на Шаге 5 через Supabase
+    const SCENARIO_ID = 'burnout_alexey_01';
+    let chatHistory = [];
+    let isWaitingForResponse = false;
+    let messageCount = 0;
+    const MAX_MESSAGES = 10;
+    
+    // Обработка формы пароля
     document.getElementById('gateForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const code = document.getElementById('gateCode').value.trim();
       if (!code) return;
       
-      // Временная проверка: любой непустой пароль показывает успех
-      // На Шаге 5 здесь будет запрос к /api/verify-code
+      // TODO: на Шаге 5 здесь будет реальная проверка через Supabase
+      // Пока принимаем любой непустой пароль для теста API
       document.getElementById('gateError').style.display = 'none';
-      document.getElementById('gateSuccess').style.display = 'block';
-      
-      // TODO: после подключения API — редирект на полноценную игру
-      // window.location.href = 'play.html?code=' + encodeURIComponent(code);
+      document.getElementById('gateSection').style.display = 'none';
+      document.getElementById('gameSection').style.display = 'flex';
+      document.getElementById('userInput').focus();
     });
+    
+    // Отправка сообщения
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+    
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const userText = input.value.trim();
+      
+      if (!userText || isWaitingForResponse) return;
+      if (messageCount >= MAX_MESSAGES) {
+        showFinalScreen();
+        return;
+      }
+      
+      // Добавляем сообщение пользователя
+      addMessage('user', userText);
+      input.value = '';
+      messageCount++;
+      
+      // Показываем индикатор печати
+      isWaitingForResponse = true;
+      document.getElementById('typingIndicator').style.display = 'block';
+      document.getElementById('sendBtn').disabled = true;
+      
+      try {
+        // Вызов API
+        const response = await fetch('/api/scenario-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scenario_id: SCENARIO_ID,
+            user_message: userText,
+            history: chatHistory
+          })
+        });
+        
+        if (!response.ok) throw new Error('API error');
+        
+        const data = await response.json();
+        
+        // Добавляем ответ ИИ
+        addMessage('ai', data.ai_response);
+        
+        // Обновляем историю
+        chatHistory.push({ role: 'user', content: userText });
+        chatHistory.push({ role: 'assistant', content: data.ai_response });
+        
+        // Обрабатываем триггеры
+        if (data.updated_elements) {
+          updateUI(data.updated_elements);
+        }
+        
+        // Проверяем, не конец ли диалога
+        if (messageCount >= MAX_MESSAGES) {
+          setTimeout(showFinalScreen, 1500);
+        }
+        
+      } catch (error) {
+        console.error('API error:', error);
+        addMessage('ai', 'Извините, произошла ошибка соединения. Попробуйте еще раз.');
+      } finally {
+        isWaitingForResponse = false;
+        document.getElementById('typingIndicator').style.display = 'none';
+        document.getElementById('sendBtn').disabled = false;
+        input.focus();
+      }
+    }
+    
+    function addMessage(role, text) {
+      const messagesDiv = document.getElementById('messages');
+      const msg = document.createElement('div');
+      msg.className = 'message ' + role;
+      msg.innerHTML = '<div class="bubble">' + escapeHtml(text) + '</div>';
+      messagesDiv.appendChild(msg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function updateUI(elements) {
+      if (elements.dashboard) {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('dashboardCard').style.display = 'block';
+        document.getElementById('dashboardCard').classList.add('visible');
+      }
+      if (elements.calendar) {
+        document.getElementById('placeholder').style.display = 'none';
+        document.getElementById('calendarCard').style.display = 'block';
+        document.getElementById('calendarCard').classList.add('visible');
+      }
+    }
+    
+    function showFinalScreen() {
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('dashboardCard').style.display = 'none';
+      document.getElementById('calendarCard').style.display = 'none';
+      const final = document.getElementById('finalScreen');
+      final.style.display = 'block';
+      requestAnimationFrame(() => final.classList.add('visible'));
+    }
+    
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
   </script>
 </body>
 </html>
