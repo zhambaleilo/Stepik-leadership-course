@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Пятничный срыв · Симулятор управленческих диалогов — My Pro Skills</title>
+  <meta name="description" content="Попробуйте провести беседу с выгоревшим сотрудником. 2 минуты, без регистрации.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back-link">← My Pro Skills</a>
+      <h1>🎮 Пятничный срыв</h1>
+      <p class="subtitle">Проведите беседу с выгоревшим сотрудником. Нажмите на подсказки, чтобы увидеть, как реагирует интерфейс.</p>
+    </div>
+    
+    <div class="workspace">
+      <!-- Левая часть: Чат -->
+      <div class="chat-section">
+        <div class="chat-header">
+          <div class="avatar">А</div>
+          <div class="chat-info">
+            <h3>Алексей · Ведущий разработчик</h3>
+            <div class="status">В сети</div>
+          </div>
+        </div>
+        
+        <div class="messages" id="messages">
+          <div class="message ai">
+            <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
+          </div>
+        </div>
+        
+        <div class="input-area">
+          <div class="hints" id="hints">
+            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Валидация эмоций</button>
+            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
+          </div>
+          <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Напишите ответ или выберите подсказку..." disabled>
+            <button class="send-btn" disabled>➤</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Правая часть: Динамические окна -->
+      <div class="side-panel">
+        <div id="placeholder" class="placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/>
+          </svg>
+          <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
+        </div>
+        
+        <div id="dashboardCard" class="panel-card">
+          <h4>📊 Состояние команды</h4>
+          <div class="metric">
+            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value">92%</span></div>
+            <div class="progress-bar"><div class="progress-fill red" style="width:92%"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value">45%</span></div>
+            <div class="progress-bar"><div class="progress-fill amber" style="width:45%"></div></div>
+          </div>
+        </div>
+        
+        <div id="finalScreen" class="panel-card final-screen" style="display:none">
+          <h3>📊 Ваш результат</h3>
+          <div class="result-item"><span>Валидация эмоций</span><span class="success">2/2 ✅</span></div>
+          <div class="result-item"><span>Принцип «Да, и...»</span><span class="success">2/2 ✅</span></div>
+          <p class="final-note">В полной версии ИИ разберёт <strong>ваш собственный</strong> текст по 11 критериям.</p>
+          <a href="game.html" class="cta-btn">🔒 Полная версия по паролю</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
+</html>
