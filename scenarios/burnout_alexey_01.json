@@ -1,0 +1,43 @@
+{
+  "evaluation_criteria": {
+    "psychological_safety": [
+      "emotion_validation",
+      "no_devaluation",
+      "boundaries",
+      "solution_focus",
+      "i_messages",
+      "concrete_next_step"
+    ],
+    "improvisation": [
+      "yes_and",
+      "adaptability",
+      "reframing",
+      "active_listening",
+      "creativity"
+    ]
+  },
+  "scenario_id": "burnout_alexey_01",
+  "context": "Пятница, 17:00. Дедлайн по проекту X завтра. Алексей молчал полдня и вдруг написал: 'Я всё, я не могу это делать, у меня ничего не получается'.",
+  "active_elements": {
+    "chat": true,
+    "calendar": true,
+    "dashboard": true,
+    "tasks": true,
+    "email": true
+  },
+  "player_goal": "Провести поддерживающую беседу, снизить эмоциональный накал и договориться о плане действий на понедельник.",
+  "ai_persona": {
+    "name": "Алексей",
+    "role": "Ведущий разработчик",
+    "hidden_state": "Выгорание, чувство несправедливости, страх увольнения",
+    "communication_style": "Сначала защитный и резкий, при эмпатии становится уязвимым"
+  },
+  "title": "Пятничный срыв",
+  "dynamic_triggers": [
+    {
+      "keyword": "дедлайн|срок|завтра",
+      "action": "show_calendar"
+    }
+  ],
+  "difficulty": "medium"
+}
