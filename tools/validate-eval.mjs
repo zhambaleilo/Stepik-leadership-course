@@ -6,6 +6,23 @@ export function defaultTolerance(id) {
   return SUBJECTIVE_CRITERIA.includes(id) ? 1 : 0;
 }
 
+function norm(s) {
+  return String(s).toLowerCase()
+    .replace(/[«»"']/g, '')
+    .replace(/[—–‐-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Цитата дословна, если каждый её кусок (мнооточие = законный разрыв)
+// находится в нормализованном тексте реплик руководителя
+export function quoteIsVerbatim(quote, managerText) {
+  const t = norm(managerText);
+  const frags = String(quote).split(/…|\.\.\./).map(norm).filter(f => f.length > 0);
+  if (!frags.length) return false;
+  return frags.every(f => t.includes(f));
+}
+
 function wordOverlap(a, b) {
   const wa = new Set(a.split(/\s+/).filter(w => w.length > 3));
   const wb = new Set(b.split(/\s+/).filter(w => w.length > 3));
@@ -24,8 +41,8 @@ export function validateEvaluation(res, ctx) {
   for (const c of crit) {
     if (!(Number.isInteger(c.score) && c.score >= 0 && c.score <= 2))
       hard.push(`${c.id}: балл ${c.score} вне 0..2`);
-    if (c.quote && !managerText.includes(c.quote))
-      hard.push(`${c.id}: цитата не дословна из реплик руководителя`);
+    if (c.quote && !quoteIsVerbatim(c.quote, managerText))
+      hard.push(`${c.id}: цитата не найдена в репликах руководителя`);
   }
 
   const sum = crit.reduce((a, c) => a + (Number(c.score) || 0), 0);
@@ -38,12 +55,10 @@ export function validateEvaluation(res, ctx) {
     if (got !== exp) hard.push(`набор критериев не совпал: получен [${got}]`);
   }
 
-  // Повтор цитаты легален (полиинтенциональность), но идентичные/перефразные
-  // comment под одним quote = ленивое натягивание -> на ручную проверку
   const byQuote = new Map();
   for (const c of crit) {
     if (!c.quote) continue;
-    const k = c.quote.trim().toLowerCase();
+    const k = norm(c.quote);
     if (!byQuote.has(k)) byQuote.set(k, []);
     byQuote.get(k).push(c);
   }
