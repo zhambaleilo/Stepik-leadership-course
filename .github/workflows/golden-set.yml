@@ -1,0 +1,20 @@
+name: golden-set
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'api/evaluate.js'
+      - 'tests/golden/**'
+      - 'tools/run-golden-set.mjs'
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Прогон golden set
+        run: node tools/run-golden-set.mjs ${{ github.event_name == 'push' && '--wait=90' || '' }}
