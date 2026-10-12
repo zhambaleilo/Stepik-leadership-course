@@ -47,7 +47,7 @@ for (const f of readdirSync(goldenDir).filter(f => f.endsWith('.json')).sort()) 
   }
 
   const { hard, review } = validateEvaluation(res, { managerText, expectedIds });
-
+  if (res.error) hard.unshift('эндпоинт вернул ошибку: ' + res.error);
   const soft = [];
   for (const [id, exp] of Object.entries(g.expected_scores || {})) {
     const got = (res.criteria || []).find(c => c.id === id);
