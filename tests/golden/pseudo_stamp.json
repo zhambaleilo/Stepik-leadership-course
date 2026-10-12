@@ -1,0 +1,13 @@
+{
+  "id": "pseudo_stamp",
+  "scenario_id": "golden_master",
+  "purpose": "Псевдопсихологический штамп без называния чувства = не валидация",
+  "dialogue": [
+    {"role": "assistant", "content": "Мне тяжело."},
+    {"role": "user", "content": "Взгляни внутрь себя, все ответы там."},
+    {"role": "assistant", "content": "..."},
+    {"role": "user", "content": "Ну и соберись, конечно."}
+  ],
+  "expected_scores": {"emotion_validation": 0},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "partial_key_set",
+  "scenario_id": "golden_partial",
+  "purpose": "Частичный набор: оцениваются только 3 ключевых критерия, max_score = 6, остальные id не возвращаются",
+  "dialogue": [
+    {"role": "assistant", "content": "Я больше не вывожу."},
+    {"role": "user", "content": "Слышу, что ты на пределе, и это нормально после такого квартала. Давай договоримся: отчёт сдаёшь в понедельник утром, а сегодня я подстрахую тебя перед клиентом сам."},
+    {"role": "assistant", "content": "Хорошо, спасибо."}
+  ],
+  "expected_scores": {"emotion_validation": 2, "concrete_next_step": 2},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "покрытие пути частичного набора ключей"}]
+}

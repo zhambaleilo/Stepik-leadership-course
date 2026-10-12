@@ -1,0 +1,13 @@
+{
+  "id": "violation_with_repair",
+  "scenario_id": "golden_master",
+  "purpose": "Обесценивание + явное признание ошибки = 1, не 2 и не 0",
+  "dialogue": [
+    {"role": "assistant", "content": "Чувствую себя неудачником."},
+    {"role": "user", "content": "У тебя всё прекрасно, машина и карьера, не выдумывай."},
+    {"role": "assistant", "content": "Это не помогает."},
+    {"role": "user", "content": "Прости, я сейчас обесценил твои чувства, это было неуместно. Мне важно, что ты чувствуешь себя неудачником, и что это тяжело."}
+  ],
+  "expected_scores": {"no_devaluation": 1},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}

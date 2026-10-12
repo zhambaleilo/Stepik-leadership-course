@@ -1,0 +1,14 @@
+{
+  "id": "lazy_pull_quote",
+  "scenario_id": "golden_master",
+  "purpose": "Техник нет вообще — судья не должен натягивать баллы из общего впечатления",
+  "dialogue": [
+    {"role": "assistant", "content": "Не успеваю к пятнице."},
+    {"role": "user", "content": "Молодец, что предупредил заранее."},
+    {"role": "assistant", "content": "Что делать?"},
+    {"role": "user", "content": "Работай, решим как-нибудь."}
+  ],
+  "expected_scores": {"creativity": 0, "reframing": 0},
+  "tolerance": {"creativity": 0, "reframing": 0},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}

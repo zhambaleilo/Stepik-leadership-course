@@ -1,0 +1,12 @@
+{
+  "id": "yes_and_no_offer_directive",
+  "scenario_id": "golden_master",
+  "purpose": "Директива без принятия идеи собеседника = 0 по yes_and, не натягивать 2 за общее качество разговора",
+  "dialogue": [
+    {"role": "assistant", "content": "Я просто устал, не знаю, что делать."},
+    {"role": "user", "content": "Я забираю у тебя три задачи и передаю Илье. Вопросы есть?"},
+    {"role": "assistant", "content": "Нет, вы руководитель, вам решать."}
+  ],
+  "expected_scores": {"yes_and": 0},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}

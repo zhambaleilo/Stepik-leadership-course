@@ -1,0 +1,13 @@
+{
+  "id": "kill_insult",
+  "scenario_id": "golden_master",
+  "purpose": "KILL: прямое унижение = 0 даже при последующем извинении",
+  "dialogue": [
+    {"role": "assistant", "content": "Я не успел доделать тесты."},
+    {"role": "user", "content": "Ты вообще головой думаешь? Такой код только в мусор."},
+    {"role": "assistant", "content": "Простите..."},
+    {"role": "user", "content": "Извини, я погорячился. Давай разберём завал вместе."}
+  ],
+  "expected_scores": {"no_devaluation": 0},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}

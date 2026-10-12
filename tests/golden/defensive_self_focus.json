@@ -1,0 +1,12 @@
+{
+  "id": "defensive_self_focus",
+  "scenario_id": "golden_master",
+  "purpose": "Защитная реакция и перевод фокуса на себя = не валидация",
+  "dialogue": [
+    {"role": "assistant", "content": "Мне тяжело, кажется, никто не видит мой труд."},
+    {"role": "user", "content": "А ты думаешь, я в свои 39 лет стал руководителем просто потому что хороший и молодец? Всем тяжело."},
+    {"role": "assistant", "content": "Я не сравниваю себя с вами."}
+  ],
+  "expected_scores": {"emotion_validation": 0},
+  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+}
