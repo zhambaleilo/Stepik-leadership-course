@@ -194,7 +194,7 @@
         const response = await fetch(API_BASE + '/api/evaluate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dialogue: chatHistory })
+          body: JSON.stringify({ scenario_id: SCENARIO_ID, dialogue: chatHistory })
         });
         
         if (!response.ok) throw new Error('Evaluation failed');
@@ -209,14 +209,16 @@
 
     function renderResults(data) {
       const final = document.getElementById('finalScreen');
-      const percent = Math.round((data.total_score / data.max_score) * 100);
+      const sum = data.criteria.reduce((a, c) => a + (Number(c.score) || 0), 0);
+      const max = data.criteria.length * 2;
+      const percent = Math.round((sum / max) * 100);
       let gradeColor = percent > 70 ? '#3F6B4C' : (percent > 40 ? '#F59E0B' : '#EF4444');
-      
+           
       let html = `
         <h3> Разбор полетов</h3>
         <div class="score-circle" style="border-color: ${gradeColor}">
           <span class="score-value" style="color: ${gradeColor}">${percent}%</span>
-          <span class="score-label">Эффективность</span>
+          <span class="score-label">${sum} из ${max}</span>
         </div>
         <p class="summary-text">${data.summary}</p>
         <div class="criteria-list">
