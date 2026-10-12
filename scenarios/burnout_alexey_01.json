@@ -5,15 +5,12 @@
       "no_devaluation",
       "boundaries",
       "solution_focus",
-      "i_messages",
+      "concrete_next_step",
       "concrete_next_step"
     ],
     "improvisation": [
       "yes_and",
-      "adaptability",
-      "reframing",
-      "active_listening",
-      "creativity"
+      "active_listening"
     ]
   },
   "scenario_id": "burnout_alexey_01",
@@ -30,7 +27,7 @@
     "name": "Алексей",
     "role": "Ведущий разработчик",
     "hidden_state": "Выгорание, чувство несправедливости, страх увольнения",
-    "communication_style": "Сначала защитный и резкий, при эмпатии становится уязвимым"
+    "communication_style": "Сначала защитный и резкий, при эмпатии становится уязвимым.\nВ середине диалога сам предлагаешь свой вариант решения (например: «может, я доделаю тесты сам в выходные» или «возьму неделю за свой счёт»), чтобы у руководителя была возможность применить принцип \"Да, и…\""
   },
   "title": "Пятничный срыв",
   "dynamic_triggers": [
