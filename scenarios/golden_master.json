@@ -1,0 +1,14 @@
+{
+  "scenario_id": "golden_master",
+  "title": "СЛУЖЕБНЫЙ: стенд для golden set, не для игроков",
+  "difficulty": "medium",
+  "context": "Служебный сценарий для автотестов оценки. Не публиковать как игру.",
+  "player_goal": "Служебный.",
+  "ai_persona": {"name": "Стенд", "role": "Служебная роль", "hidden_state": "нет", "communication_style": "нет"},
+  "active_elements": {"chat": true, "calendar": false, "dashboard": false, "tasks": false, "email": false},
+  "dynamic_triggers": [],
+  "evaluation_criteria": {
+    "psychological_safety": ["emotion_validation", "no_devaluation", "boundaries", "solution_focus", "i_messages", "concrete_next_step"],
+    "improvisation": ["yes_and", "adaptability", "reframing", "active_listening", "creativity"]
+  }
+}
