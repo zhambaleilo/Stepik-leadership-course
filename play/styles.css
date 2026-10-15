@@ -106,3 +106,5 @@ h1{font-family:'Manrope',sans-serif;font-size:28px;margin-bottom:8px}
 .side-panel{width:100%;min-height:auto}
 .gate-form{flex-direction:column}
 }
+.goe-line{font-family:'Manrope',sans-serif;font-size:16px;font-weight:700;color:#3F6B4C;margin:-6px 0 12px}
+.block-title{font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#5B6673;margin:14px 0 8px;text-align:left}
