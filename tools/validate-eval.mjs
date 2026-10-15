@@ -8,6 +8,7 @@ export function defaultTolerance(id) {
 
 function norm(s) {
   return String(s).toLowerCase()
+    .replace(/ё/g, 'е')
     .replace(/[«»"']/g, '')
     .replace(/[—–‐-]/g, ' ')
     .replace(/\s+/g, ' ')
