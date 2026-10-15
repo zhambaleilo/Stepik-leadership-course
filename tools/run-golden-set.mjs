@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // node tools/run-golden-set.mjs [baseUrl] [--wait=90]
 import { readFileSync, readdirSync } from 'node:fs';
-import import { fileURLToPath } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import { validateEvaluation, defaultTolerance } from './validate-eval.mjs';
 
