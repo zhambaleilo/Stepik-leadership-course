@@ -8,7 +8,10 @@
     {"role": "assistant", "content": "Что делать?"},
     {"role": "user", "content": "Работай, решим как-нибудь."}
   ],
-  "expected_scores": {"creativity": 0, "reframing": 0},
+  "expected_scores": {"creativity": 0, "reframing": 0, "emotion_validation": "na", "boundaries": "na", "yes_and": "na"},
   "tolerance": {"creativity": 0, "reframing": 0},
-  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+  "revision": [
+    {"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"},
+    {"date": "2026-10-16", "by": "Жамбаленок", "reason": "условная применимость: сотрудник не высказывал эмоцию, не токсичил, не предлагал идею («Что делать?» — вопрос, не предложение)"}
+  ]
 }
