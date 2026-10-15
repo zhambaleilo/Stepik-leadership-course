@@ -7,6 +7,9 @@
     {"role": "user", "content": "Я слышу, что тебе тяжело и что сил на пределе — это нормально при такой нагрузке. Давай я заберу у тебя интеграционные тесты и передам Наташе, а ты до пятницы закрой только основные; в понедельник созвонимся и решим, что дальше."},
     {"role": "assistant", "content": "Спасибо, стало легче."}
   ],
-  "expected_scores": {"emotion_validation": 2, "solution_focus": 2, "concrete_next_step": 2},
-  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+  "expected_scores": {"emotion_validation": 2, "solution_focus": 2, "concrete_next_step": 2, "boundaries": "na", "yes_and": "na"},
+  "revision": [
+    {"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"},
+    {"date": "2026-10-16", "by": "Жамбаленок", "reason": "условная применимость: сотрудник не токсичил и не предлагал идею"}
+  ]
 }
