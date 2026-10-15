@@ -98,6 +98,7 @@ ${criteriaBlock}
 ПРАВИЛА:
 1. Цитата может доказывать несколько критериев, НО только если в comment для каждого из них ты явно укажешь, КАКОЙ ИМЕННО фрагмент или аспект этой фразы доказывает именно этот критерий. Если объяснить связь не можешь — найди другую цитату или снизь балл.
 2. quote — ТОЧНАЯ цитата из реплик Руководителя. Если техника не применялась — score 0 и quote "".
+2.5. Цитаты держи короткими (до 15 слов), комментарии — одним предложением. Итоговый JSON обязан целиком помещаться в лимит токенов.
 3. ПОЛИТИКА КРИТЕРИЕВ-НАРУШЕНИЙ (${VIOLATION.join(', ')}): 2 — нарушения не было; 1 — нарушение было, но руководитель позже явно признал ошибку или извинился; 0 — нарушение было и осталось непроработанным. Учитывай ВСЕ нарушения в диалоге, а не только первое.
 4. Не завышай: 2 — техника применена чисто и осознанно; 1 — частично или с оговорками; 0 — не применена или применена токсично.
 5. Псевдопсихологические штампы без конкретики («взгляни внутрь себя») НЕ считаются валидацией эмоций.
@@ -110,25 +111,35 @@ ${KILL_RULE}
 {"criteria":[{"id":"...","name":"...","score":0,"quote":"...","comment":"..."}],"total_score":0,"max_score":${keyIds.length * 2},"summary":"..."}`;
 
     const token = await getToken();
-    const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
-      Authorization: 'Bearer ' + token, 'Content-Type': 'application/json',
-    }, JSON.stringify({
+    const bodyFor = (temp) => JSON.stringify({
       model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: 'Проанализируй диалог:\n\n' + dialogueText }
       ],
-      temperature: 0.2,
-      max_tokens: 1500
-    }));
+      temperature: temp,
+      max_tokens: 3000
+    });
 
-    if (r.status !== 200) throw new Error('GigaChat ' + r.status + ': ' + r.text.slice(0, 200));
+    let parsed = null;
+    for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
+      const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
+        Authorization: 'Bearer ' + token, 'Content-Type': 'application/json',
+      }, bodyFor(attempt === 0 ? 0.2 : 0.1));
 
-    let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '')
-      .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-    const fb = content.indexOf('{'), lb = content.lastIndexOf('}');
-    if (fb !== -1 && lb !== -1) content = content.slice(fb, lb + 1);
-    const parsed = JSON.parse(content);
+      if (r.status !== 200) throw new Error('GigaChat ' + r.status + ': ' + r.text.slice(0, 200));
+
+      let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '')
+        .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      const fb = content.indexOf('{'), lb = content.lastIndexOf('}');
+      if (fb !== -1 && lb !== -1) content = content.slice(fb, lb + 1);
+
+      try { parsed = JSON.parse(content); }
+      catch (e) {
+        console.error('JSON parse attempt ' + attempt + ' failed: ' + e.message);
+      }
+    }
+    if (!parsed) throw new Error('GigaChat вернул невалидный JSON после двух попыток');
 
     // Серверная нормализация: модель не может соврать в цифрах
     const quoteCount = {};
