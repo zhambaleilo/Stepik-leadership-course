@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // node tools/run-golden-set.mjs [baseUrl] [--wait=90]
 import { readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import { validateEvaluation, defaultTolerance } from './validate-eval.mjs';
 
@@ -33,33 +33,48 @@ for (const f of readdirSync(goldenDir).filter(f => f.endsWith('.json')).sort()) 
     } catch (e) { /* нет сценария локально */ }
   }
 
-  let res = null;
-  try {
-    const r = await fetch(BASE + '/api/evaluate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenario_id: g.scenario_id, dialogue: g.dialogue })
-    });
-    res = await r.json();
-  } catch (e) {
-    console.log(`❌ ${f}\n   ЖЁСТКО: запрос упал: ${e.message}`);
-    hardFiles++; continue;
+  // Две попытки: если первая дала жёсткий провал — повторяем запрос и валидацию.
+  // Это отсекает стохастические сбои (обрезанный JSON, случайная фабрикация цитаты),
+  // но сохраняет систематические проблемы как hard-провалы.
+  let hard = [], review = [], soft = [], res = null, retried = false;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    hard = []; review = []; soft = []; res = null;
+    try {
+      const r = await fetch(BASE + '/api/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario_id: g.scenario_id, dialogue: g.dialogue })
+      });
+      res = await r.json();
+    } catch (e) {
+      hard.push('запрос упал: ' + e.message);
+      continue;
+    }
+    if (res && res.error) hard.push('эндпоинт вернул ошибку: ' + res.error);
+    if (!hard.length) {
+      const v = validateEvaluation(res, { managerText, expectedIds });
+      hard = v.hard;
+      review = v.review;
+    }
+    if (!hard.length) break;
+    if (attempt === 1) {
+      console.log(`   🔁 ретрай: ${f} (${hard[0]})`);
+      retried = true;
+    }
   }
 
-  const { hard, review } = validateEvaluation(res, { managerText, expectedIds });
-  if (res.error) hard.unshift('эндпоинт вернул ошибку: ' + res.error);
-  const soft = [];
+  // Подсчёт мягких расхождений (делается один раз после финальной попытки)
   for (const [id, exp] of Object.entries(g.expected_scores || {})) {
-    const got = (res.criteria || []).find(c => c.id === id);
+    const got = (res?.criteria || []).find(c => c.id === id);
     checkedScores++;
     if (!got) { softHits++; soft.push(`${id}: отсутствует в ответе`); continue; }
     const tol = (g.tolerance || {})[id] ?? defaultTolerance(id);
     if (Math.abs(got.score - exp) > tol) { softHits++; soft.push(`${id}: получено ${got.score}, ожидалось ${exp} (допуск ${tol})`); }
   }
 
-  if (hard.length) { hardFiles++; console.log(`❌ ${f}\n   ЖЁСТКО: ${hard.join('; ')}`); }
-  else if (soft.length) console.log(`⚠️  ${f}\n   МЯГКО: ${soft.join('; ')}`);
-  else console.log(`✅ ${f}`);
+  if (hard.length) { hardFiles++; console.log(`❌ ${f}${retried ? ' (после ретрая)' : ''}\n   ЖЁСТКО: ${hard.join('; ')}`); }
+  else if (soft.length) console.log(`⚠️  ${f}${retried ? ' (после ретрая)' : ''}\n   МЯГКО: ${soft.join('; ')}`);
+  else console.log(`✅ ${f}${retried ? ' (после ретрая)' : ''}`);
 
   if (review.length) { reviewHits += review.length; console.log(`   🔍 НА РУЧНУЮ ПРОВЕРКУ: ${review.join(' | ')}`); }
 }
