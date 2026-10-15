@@ -120,7 +120,6 @@ ${KILL_RULE}
       ],
       temperature: temp,
       max_tokens: 3000,
-      response_format: { type: 'json_object' },
     });
 
     let parsed = null;
