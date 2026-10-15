@@ -8,6 +8,10 @@
     {"role": "assistant", "content": "..."},
     {"role": "user", "content": "Ну и соберись, конечно."}
   ],
-  "expected_scores": {"emotion_validation": 0},
-  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+  "expected_scores": {"emotion_validation": 0, "boundaries": "na", "yes_and": "na"},
+  "tolerance": {"emotion_validation": 0},
+  "revision": [
+    {"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"},
+    {"date": "2026-10-16", "by": "Жамбаленок", "reason": "условная применимость: сотрудник не токсичил и не предлагал идею"}
+  ]
 }
