@@ -33,12 +33,9 @@ for (const f of readdirSync(goldenDir).filter(f => f.endsWith('.json')).sort()) 
     } catch (e) { /* нет сценария локально */ }
   }
 
-  // Две попытки: если первая дала жёсткий провал — повторяем запрос и валидацию.
-  // Это отсекает стохастические сбои (обрезанный JSON, случайная фабрикация цитаты),
-  // но сохраняет систематические проблемы как hard-провалы.
   let hard = [], review = [], soft = [], res = null, retried = false;
   for (let attempt = 1; attempt <= 2; attempt++) {
-    hard = []; review = []; soft = []; res = null;
+    hard = []; review = []; res = null;
     try {
       const r = await fetch(BASE + '/api/evaluate', {
         method: 'POST',
@@ -57,24 +54,27 @@ for (const f of readdirSync(goldenDir).filter(f => f.endsWith('.json')).sort()) 
       review = v.review;
     }
     if (!hard.length) break;
-    if (attempt === 1) {
-      console.log(`   🔁 ретрай: ${f} (${hard[0]})`);
-      retried = true;
-    }
+    if (attempt === 1) { console.log(`   🔁 ретрай: ${f} (${hard[0]})`); retried = true; }
   }
 
-  // Подсчёт мягких расхождений (делается один раз после финальной попытки)
+  soft = [];
   for (const [id, exp] of Object.entries(g.expected_scores || {})) {
     const got = (res?.criteria || []).find(c => c.id === id);
     checkedScores++;
     if (!got) { softHits++; soft.push(`${id}: отсутствует в ответе`); continue; }
+    if (exp === 'na') {
+      if (!got.na) { softHits++; soft.push(`${id}: ожидалось N/A, получен балл ${got.score}`); }
+      continue;
+    }
+    if (got.na) { softHits++; soft.push(`${id}: N/A, а ожидался балл ${exp}`); continue; }
     const tol = (g.tolerance || {})[id] ?? defaultTolerance(id);
     if (Math.abs(got.score - exp) > tol) { softHits++; soft.push(`${id}: получено ${got.score}, ожидалось ${exp} (допуск ${tol})`); }
   }
 
-  if (hard.length) { hardFiles++; console.log(`❌ ${f}${retried ? ' (после ретрая)' : ''}\n   ЖЁСТКО: ${hard.join('; ')}`); }
-  else if (soft.length) console.log(`⚠️  ${f}${retried ? ' (после ретрая)' : ''}\n   МЯГКО: ${soft.join('; ')}`);
-  else console.log(`✅ ${f}${retried ? ' (после ретрая)' : ''}`);
+  const tag = retried ? ' (после ретрая)' : '';
+  if (hard.length) { hardFiles++; console.log(`❌ ${f}${tag}\n   ЖЁСТКО: ${hard.join('; ')}`); }
+  else if (soft.length) console.log(`⚠️  ${f}${tag}\n   МЯГКО: ${soft.join('; ')}`);
+  else console.log(`✅ ${f}${tag}`);
 
   if (review.length) { reviewHits += review.length; console.log(`   🔍 НА РУЧНУЮ ПРОВЕРКУ: ${review.join(' | ')}`); }
 }
