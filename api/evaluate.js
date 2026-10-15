@@ -2,6 +2,7 @@ import https from 'https';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { hasToxicity, hasOffer, hasEmotion } from '../tools/offline-rules.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -80,7 +81,8 @@ export default async function handler(req, res) {
       (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content
     ).join('\n');
 
-    // Каждый критерий с явным условием N/A прямо в описании
+    const assistantText = dialogue.filter(m => m.role === 'assistant').map(m => m.content).join('\n');
+
     const criteriaBlock = keyIds.map((id, i) => {
       const [name, group, trigger] = META[id];
       let desc = (i + 1) + '. ' + id + ' [' + group + ']';
@@ -106,15 +108,9 @@ ${criteriaBlock}
 6. KILL: прямое оскорбление личности ("ты идиот", "такой код в мусор") = всегда 0 по no_devaluation, даже при извинении
 
 ПРИМЕРЫ JSON:
-
-Пример N/A (условие не выполнено):
-{"id":"boundaries","name":"Удержание границ","group":"base","score":null,"quote":"","comment":"N/A: сотрудник не был токсичен"}
-
-Пример 0 (провал):
-{"id":"no_devaluation","name":"Отсутствие обесценивания","group":"base","score":0,"quote":"соберись","comment":"обесценивание без извинений"}
-
-Пример 2 (отлично):
-{"id":"emotion_validation","name":"Валидация эмоций","group":"base","score":2,"quote":"вижу, что тебе тяжело","comment":"назвал чувство своими словами"}
+Пример N/A: {"id":"boundaries","name":"Удержание границ","group":"base","score":null,"quote":"","comment":"N/A: сотрудник не был токсичен"}
+Пример 0: {"id":"no_devaluation","name":"Отсутствие обесценивания","group":"base","score":0,"quote":"соберись","comment":"обесценивание без извинений"}
+Пример 2: {"id":"emotion_validation","name":"Валидация эмоций","group":"base","score":2,"quote":"вижу, что тебе тяжело","comment":"назвал чувство своими словами"}
 
 ФОРМАТ ОТВЕТА:
 {"criteria":[{"id":"...","name":"...","group":"base или goe","score":0,"quote":"...","comment":"..."}],"base_score":0,"base_max":0,"goe_score":0,"goe_max":0,"total_score":0,"max_score":0,"summary":"..."}`;
@@ -158,7 +154,13 @@ ${criteriaBlock}
     const criteria = keyIds.map(id => {
       const [name, group] = META[id];
       const m = (parsed.criteria || []).find(c => c.id === id) || {};
-      const isNa = m.score === null || m.score === 'na';
+      
+      // ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ТРИГГЕРОВ через зеркало оффлайн-правил
+      let isNa = m.score === null || m.score === 'na';
+      if (id === 'boundaries' && !hasToxicity(assistantText)) isNa = true;
+      if (id === 'yes_and' && !hasOffer(assistantText)) isNa = true;
+      if (id === 'emotion_validation' && !hasEmotion(assistantText)) isNa = true;
+      
       const score = isNa ? null : Math.max(0, Math.min(2, parseInt(m.score, 10) || 0));
       let quote = isNa ? '' : String(m.quote || '').trim();
       let reused = false;
