@@ -209,41 +209,46 @@
 
     function renderResults(data) {
       const final = document.getElementById('finalScreen');
-      const sum = data.criteria.reduce((a, c) => a + (Number(c.score) || 0), 0);
-      const max = data.criteria.length * 2;
-      const percent = Math.round((sum / max) * 100);
-      let gradeColor = percent > 70 ? '#3F6B4C' : (percent > 40 ? '#F59E0B' : '#EF4444');
-           
+      const basePct = data.base_max ? Math.round((data.base_score / data.base_max) * 100) : 0;
+      const gradeColor = basePct > 70 ? '#3F6B4C' : (basePct > 40 ? '#F59E0B' : '#EF4444');
+
       let html = `
-        <h3> Разбор полетов</h3>
+        <h3>📊 Разбор полетов</h3>
         <div class="score-circle" style="border-color: ${gradeColor}">
-          <span class="score-value" style="color: ${gradeColor}">${percent}%</span>
-          <span class="score-label">${sum} из ${max}</span>
+          <span class="score-value" style="color: ${gradeColor}">${basePct}%</span>
+          <span class="score-label">База ${data.base_score} из ${data.base_max}</span>
         </div>
+        <div class="goe-line">Исполнение (GOE): +${data.goe_score} из +${data.goe_max}</div>
         <p class="summary-text">${data.summary}</p>
-        <div class="criteria-list">
-      `;
-      
-      data.criteria.forEach(c => {
-        const isGood = c.score === 2;
-        const isBad = c.score === 0;
+        <h4 class="block-title">База: минимум безопасного разговора</h4>
+        <div class="criteria-list">` +
+        renderBlock(data.criteria.filter(c => c.group === 'base')) +
+        `</div>
+        <h4 class="block-title">Исполнение: техники и мастерство (GOE)</h4>
+        <div class="criteria-list">` +
+        renderBlock(data.criteria.filter(c => c.group === 'goe')) +
+        `</div>
+        <button class="cta-btn" onclick="location.reload()">🔄 Пройти еще раз</button>`;
+      final.innerHTML = html;
+    }
+
+    function renderBlock(list) {
+      return list.map(c => {
+        if (c.na) {
+          return `<div class="criterion-card" style="opacity:0.55">
+            <div class="criterion-header"><span class="criterion-name">➖ ${c.name}</span><span class="criterion-score" style="color:#5B6673">N/A</span></div>
+            <div class="criterion-comment">${c.comment}</div>
+          </div>`;
+        }
+        const isGood = c.score === 2, isBad = c.score === 0;
         const icon = isGood ? '✅' : (isBad ? '❌' : '⚠️');
         const statusColor = isGood ? '#3F6B4C' : (isBad ? '#EF4444' : '#F59E0B');
-        
-        html += `
-          <div class="criterion-card">
-            <div class="criterion-header">
-              <span class="criterion-name">${icon} ${c.name}</span>
-              <span class="criterion-score" style="color: ${statusColor}">${c.score}/2</span>
-            </div>
-            ${c.quote ? `<div class="criterion-quote">«${c.quote}»</div>` : ''}
-            ${c.comment ? `<div class="criterion-comment">${c.comment}</div>` : ''}
-          </div>
-        `;
-      });
-      
-      html += '</div><button class="cta-btn" onclick="location.reload()">🔄 Пройти еще раз</button>';
-      final.innerHTML = html;
+        return `<div class="criterion-card">
+          <div class="criterion-header"><span class="criterion-name">${icon} ${c.name}</span><span class="criterion-score" style="color: ${statusColor}">${c.score}/2</span></div>
+          ${c.quote ? `<div class="criterion-quote">«${c.quote}»</div>` : ''}
+          ${c.comment ? `<div class="criterion-comment">${c.comment}</div>` : ''}
+        </div>`;
+      }).join('');
     }
 
     // Инициализация после загрузки DOM
