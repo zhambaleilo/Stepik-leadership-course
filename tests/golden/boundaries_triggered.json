@@ -1,0 +1,13 @@
+{
+  "id": "boundaries_triggered",
+  "scenario_id": "golden_master",
+  "purpose": "Калибровка: сотрудник токсичен, руководитель экологично остановил = 2 по boundaries",
+  "dialogue": [
+    {"role": "assistant", "content": "Ты вообще ничего не понимаешь, вечно лезешь с своими советами!"},
+    {"role": "user", "content": "Я слышу, что ты злишься, и давай обсудим это спокойно. Если продолжим в таком тоне, разговор не имеет смысла."},
+    {"role": "assistant", "content": "Ладно, извините. Просто устал."}
+  ],
+  "expected_scores": {"boundaries": 2, "emotion_validation": 1},
+  "tolerance": {"emotion_validation": 1},
+  "revision": [{"date": "2026-10-16", "by": "Жамбаленок", "reason": "калибровочный случай: boundaries должен сработать, когда сотрудник токсичен"}]
+}
