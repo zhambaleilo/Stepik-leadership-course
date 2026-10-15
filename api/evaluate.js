@@ -43,8 +43,8 @@ const LIB = {
   boundaries: ['Удержание границ', 'Экологично остановил токсичность или хамство, не проваливаясь в агрессию или попустительство'],
   solution_focus: ['Фокус на решении', 'Перевёл разговор из жалоб в рабочую плоскость, не застревая в эмоциях'],
   i_messages: ['Я-сообщения', 'Говорил о фактах и своих наблюдениях/чувствах, не обвиняя («я заметил», а не «ты вечно»)'],
-  concrete_next_step: ['Конкретный следующий шаг', 'Завершил договорённостью о конкретном действии со сроком или условием'],
-  yes_and: ['Принцип «Да, и…»', 'Принял и развил ИДЕЮ или ПРЕДЛОЖЕНИЕ собеседника («да, …и поэтому/давай…»). Если собеседник ничего не предлагал, а руководитель действовал односторонне и директивно — 0'],
+  concrete_next_step: ['Конкретный следующий шаг', 'Завершил договорённостью о конкретном действии с сроком или условием'],
+  yes_and: ['Принцип «Да, и…»', 'Принял идею или чувство собеседника и развил их, не блокируя «нет / но / это неправильно»'],
   adaptability: ['Адаптивность', 'Менял стиль и тактику в ответ на реакцию сотрудника'],
   reframing: ['Переформулирование', 'Вернул смысл сказанного своими словами, открыв новый угол зрения'],
   active_listening: ['Активное слушание', 'Использовал слова собеседника, уточнял, проверял понимание'],
@@ -52,8 +52,9 @@ const LIB = {
 };
 const VIOLATION = ['no_devaluation', 'boundaries'];
 
-// ПОЛИТИКА KILL: true = прямое оскорбление/унижение/угроза всегда 0, даже при извинении.
-const KILL_POLICY = true;
+// KILL-асимметрия включена по умолчанию (согласовано с офлайн-движком).
+// Если решишь перейти на «репарацию»: поставь KILL_RULE = '' и поменяй лейбл в tests/golden/kill_insult.json на 1.
+const KILL_RULE = '9. KILL-уровень: прямое оскорбление, унижение или угроза в адрес личности = всегда 0 по no_devaluation и boundaries, независимо от любых последующих извинений.';
 
 export default async function handler(req, res) {
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
       const sc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'scenarios', scenario_id + '.json'), 'utf8'));
       const ec = sc.evaluation_criteria || {};
       keyIds = [...(ec.psychological_safety || []), ...(ec.improvisation || [])].filter(id => LIB[id]);
-    } catch (e) { /* сценарий не найден */ }
+    } catch (e) { /* сценарий не найден — оцениваем по всем */ }
     if (keyIds.length === 0) keyIds = Object.keys(LIB);
 
     const dialogueText = dialogue.map(m =>
@@ -89,10 +90,6 @@ export default async function handler(req, res) {
       (VIOLATION.includes(id) ? ' [КРИТЕРИЙ-НАРУШЕНИЕ]' : '')
     ).join('\n');
 
-    const rule3 = KILL_POLICY
-      ? 'KILL: прямое оскорбление, унижение, ярлык о личности или угроза (примеры: «ты вообще головой думаешь?», «такой код только в мусор», «соберись, тряпка») = ВСЕГДА 0 по no_devaluation и boundaries, ДАЖЕ если руководитель позже извинился. Извинение не ремонтирует KILL.'
-      : 'Прямое оскорбление или унижение = 0, но искреннее извинение сразу после даёт 1.';
-
     const systemPrompt = `Ты — строгий аудитор управленческих диалогов. Оценивай ТОЛЬКО реплики Руководителя. Верни СТРОГО валидный JSON без markdown и пояснений.
 
 КРИТЕРИИ (оценивай только этот список, каждый от 0 до 2 баллов):
@@ -100,48 +97,40 @@ ${criteriaBlock}
 
 ПРАВИЛА:
 1. Цитата может доказывать несколько критериев, НО только если в comment для каждого из них ты явно укажешь, КАКОЙ ИМЕННО фрагмент или аспект этой фразы доказывает именно этот критерий. Если объяснить связь не можешь — найди другую цитату или снизь балл.
-2. quote — ТОЧНАЯ цитата из реплик Руководителя, без перефразирования и без объединения разных реплик. Если техника не применялась — score 0 и quote "".
-3. ПОЛИТИКА КРИТЕРИЕВ-НАРУШЕНИЙ (${VIOLATION.join(', ')}): 2 — нарушения не было; 1 — нарушение было, но руководитель позже явно признал ошибку или извинился; 0 — нарушение осталось без признания. Учитывай ВСЕ нарушения в диалоге, а не только первое. ${rule3}
-4. Не завышай: псевдопсихологические штампы без конкретики («взгляни внутрь себя») НЕ считаются валидацией эмоций; защитная реакция и перевод фокуса на себя («а я в свои годы…») НЕ считаются эмпатией.
-5. yes_and = 0, если в диалоге не было идеи или предложения СОБЕСЕДНИКА, которое руководитель принял и развил. Общая доброта разговора и директивные решения руководителя этим критерием не оцениваются.
-6. Перед выводом ПРОВЕРЬ АРИФМЕТИКУ: total_score = сумма score по всем критериям списка; max_score = ${keyIds.length * 2}.
-7. summary: 2-3 предложения, начни с главной ошибки руководителя, затем отметь сильное место.
+2. quote — ТОЧНАЯ цитата из реплик Руководителя. Если техника не применялась — score 0 и quote "".
+3. ПОЛИТИКА КРИТЕРИЕВ-НАРУШЕНИЙ (${VIOLATION.join(', ')}): 2 — нарушения не было; 1 — нарушение было, но руководитель позже явно признал ошибку или извинился; 0 — нарушение было и осталось непроработанным. Учитывай ВСЕ нарушения в диалоге, а не только первое.
+4. Не завышай: 2 — техника применена чисто и осознанно; 1 — частично или с оговорками; 0 — не применена или применена токсично.
+5. Псевдопсихологические штампы без конкретики («взгляни внутрь себя») НЕ считаются валидацией эмоций.
+6. Защитная реакция и перевод фокуса на себя («а я в свои годы…») НЕ считаются эмпатией и снижают балл по emotion_validation и adaptability.
+7. Перед выводом ПРОВЕРЬ АРИФМЕТИКУ: total_score равен сумме score по всем критериям списка. max_score = ${keyIds.length * 2}.
+8. summary: 2-3 предложения, начни с главной ошибки руководителя, затем отметь сильное место.
+${KILL_RULE}
 
 ФОРМАТ JSON:
 {"criteria":[{"id":"...","name":"...","score":0,"quote":"...","comment":"..."}],"total_score":0,"max_score":${keyIds.length * 2},"summary":"..."}`;
 
-    // До двух попыток: если модель вернула битый JSON, просим ещё раз
-    let parsed = null;
-    for (let attempt = 1; attempt <= 2 && !parsed; attempt++) {
-      const token = await getToken();
-      const userMsg = attempt === 1
-        ? 'Проанализируй диалог:\n\n' + dialogueText
-        : 'Проанализируй диалог ещё раз и верни ТОЛЬКО валидный JSON без markdown и пояснений:\n\n' + dialogueText;
-      const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
-        Authorization: 'Bearer ' + token, 'Content-Type': 'application/json',
-      }, JSON.stringify({
-        model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMsg }
-        ],
-        temperature: 0.2,
-        max_tokens: 2000
-      }));
-      if (r.status !== 200) throw new Error('GigaChat ' + r.status + ': ' + r.text.slice(0, 200));
+    const token = await getToken();
+    const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
+      Authorization: 'Bearer ' + token, 'Content-Type': 'application/json',
+    }, JSON.stringify({
+      model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: 'Проанализируй диалог:\n\n' + dialogueText }
+      ],
+      temperature: 0.2,
+      max_tokens: 1500
+    }));
 
-      let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '')
-        .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-      const fb = content.indexOf('{'), lb = content.lastIndexOf('}');
-      if (fb !== -1 && lb !== -1) content = content.slice(fb, lb + 1);
-      try {
-        parsed = JSON.parse(content);
-      } catch (e) {
-        console.error('JSON parse fail, attempt ' + attempt + ': ' + content.slice(0, 300));
-      }
-    }
-    if (!parsed) throw new Error('model returned invalid JSON twice');
+    if (r.status !== 200) throw new Error('GigaChat ' + r.status + ': ' + r.text.slice(0, 200));
 
+    let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '')
+      .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const fb = content.indexOf('{'), lb = content.lastIndexOf('}');
+    if (fb !== -1 && lb !== -1) content = content.slice(fb, lb + 1);
+    const parsed = JSON.parse(content);
+
+    // Серверная нормализация: модель не может соврать в цифрах
     const quoteCount = {};
     const criteria = keyIds.map(id => {
       const m = (parsed.criteria || []).find(c => c.id === id) || {};
@@ -153,7 +142,14 @@ ${criteriaBlock}
         quoteCount[key] = (quoteCount[key] || 0) + 1;
         reused = quoteCount[key] > 1;
       }
-      return { id, name: LIB[id][0], score, quote, reused, comment: String(m.comment || '').trim() };
+      return {
+        id,
+        name: LIB[id][0],
+        score,
+        quote,
+        reused,
+        comment: String(m.comment || (m.score === undefined ? 'Критерий не оценён моделью' : '')).trim()
+      };
     });
 
     const total = criteria.reduce((a, c) => a + c.score, 0);
