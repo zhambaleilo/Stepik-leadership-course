@@ -1,5 +1,10 @@
 // Детерминированный аудитор оценки. Ноль токенов, ноль ИИ.
-export const VIOLATION_CRITERIA = ['no_devaluation', 'boundaries'];
+// Каноническая карта блоков — тестовый оракул; синхронизировать с META в api/evaluate.js.
+export const GROUPS = {
+  no_devaluation: 'base', i_messages: 'base', solution_focus: 'base', concrete_next_step: 'base',
+  emotion_validation: 'base', boundaries: 'base',
+  active_listening: 'goe', adaptability: 'goe', yes_and: 'goe', reframing: 'goe', creativity: 'goe'
+};
 export const SUBJECTIVE_CRITERIA = ['creativity', 'adaptability'];
 
 export function defaultTolerance(id) {
@@ -15,8 +20,6 @@ function norm(s) {
     .trim();
 }
 
-// Цитата дословна, если каждый её кусок (мнооточие = законный разрыв)
-// находится в нормализованном тексте реплик руководителя
 export function quoteIsVerbatim(quote, managerText) {
   const t = norm(managerText);
   const frags = String(quote).split(/…|\.\.\./).map(norm).filter(f => f.length > 0);
@@ -40,15 +43,30 @@ export function validateEvaluation(res, ctx) {
   const managerText = ctx.managerText || '';
 
   for (const c of crit) {
+    if (GROUPS[c.id] && c.group !== GROUPS[c.id])
+      hard.push(`${c.id}: группа ${c.group} != каноническая ${GROUPS[c.id]}`);
+    if (c.na) {
+      if (c.score !== null && c.score !== undefined) hard.push(`${c.id}: помечен N/A, но есть score`);
+      if (c.quote) hard.push(`${c.id}: цитата при N/A`);
+      continue;
+    }
     if (!(Number.isInteger(c.score) && c.score >= 0 && c.score <= 2))
       hard.push(`${c.id}: балл ${c.score} вне 0..2`);
     if (c.quote && !quoteIsVerbatim(c.quote, managerText))
       hard.push(`${c.id}: цитата не найдена в репликах руководителя`);
   }
 
-  const sum = crit.reduce((a, c) => a + (Number(c.score) || 0), 0);
-  if (res.total_score !== sum) hard.push(`total_score ${res.total_score} != сумма ${sum}`);
-  if (res.max_score !== crit.length * 2) hard.push(`max_score ${res.max_score} != ${crit.length * 2}`);
+  // Поблочная арифметика (база / GOE) и итоги
+  const base = crit.filter(c => (GROUPS[c.id] || c.group) === 'base' && !c.na);
+  const goe = crit.filter(c => (GROUPS[c.id] || c.group) === 'goe' && !c.na);
+  const baseSum = base.reduce((a, c) => a + c.score, 0);
+  const goeSum = goe.reduce((a, c) => a + c.score, 0);
+  if (res.base_score !== baseSum) hard.push(`base_score ${res.base_score} != сумма ${baseSum}`);
+  if (res.base_max !== base.length * 2) hard.push(`base_max ${res.base_max} != ${base.length * 2}`);
+  if (res.goe_score !== goeSum) hard.push(`goe_score ${res.goe_score} != сумма ${goeSum}`);
+  if (res.goe_max !== goe.length * 2) hard.push(`goe_max ${res.goe_max} != ${goe.length * 2}`);
+  if (res.total_score !== baseSum + goeSum) hard.push(`total_score ${res.total_score} != ${baseSum + goeSum}`);
+  if (res.max_score !== base.length * 2 + goe.length * 2) hard.push(`max_score ${res.max_score} != ${base.length * 2 + goe.length * 2}`);
 
   if (Array.isArray(ctx.expectedIds)) {
     const got = crit.map(c => c.id).sort().join(',');
@@ -56,6 +74,7 @@ export function validateEvaluation(res, ctx) {
     if (got !== exp) hard.push(`набор критериев не совпал: получен [${got}]`);
   }
 
+  // Ленивое натягивание: повтор цитаты легален, идентичные/перефразные comment — нет
   const byQuote = new Map();
   for (const c of crit) {
     if (!c.quote) continue;
