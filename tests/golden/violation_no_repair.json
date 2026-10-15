@@ -1,13 +1,16 @@
 {
   "id": "violation_no_repair",
   "scenario_id": "golden_master",
-  "purpose": "Обесценивание без признания = 0",
+  "purpose": "Обесценивание без признания ошибки = 0 по no_devaluation",
   "dialogue": [
     {"role": "assistant", "content": "Чувствую себя неудачником."},
     {"role": "user", "content": "Ну ты перегибаешь. У тебя всё прекрасно: карьера, машина, и это в 26 лет."},
     {"role": "assistant", "content": "Не надо мерить успех машинами."},
     {"role": "user", "content": "Просто соберись и доделай проект."}
   ],
-  "expected_scores": {"no_devaluation": 0},
-  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+  "expected_scores": {"no_devaluation": 0, "boundaries": "na", "yes_and": "na"},
+  "tolerance": {"no_devaluation": 0},
+  "revision": [
+    {"date": "2026-10-16", "by": "Жамбаленок", "reason": "восстановлены id/purpose/revision; условная применимость: сотрудник не токсичил и не предлагал идею"}
+  ]
 }
