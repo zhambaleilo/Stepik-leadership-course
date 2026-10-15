@@ -8,6 +8,10 @@
     {"role": "assistant", "content": "Простите..."},
     {"role": "user", "content": "Извини, я погорячился. Давай разберём завал вместе."}
   ],
-  "expected_scores": {"no_devaluation": 0},
-  "revision": [{"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"}]
+  "expected_scores": {"no_devaluation": 0, "emotion_validation": "na", "boundaries": "na", "yes_and": "na"},
+  "tolerance": {"no_devaluation": 0},
+  "revision": [
+    {"date": "2026-10-12", "by": "черновик Qwen", "reason": "первичная заморозка разметки, привязка к стенду golden_master"},
+    {"date": "2026-10-16", "by": "Жамбаленок", "reason": "условная применимость: сотрудник не высказывал эмоцию, не токсичил, не предлагал идею; KILL живёт только в no_devaluation"}
+  ]
 }
