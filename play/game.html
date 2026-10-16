@@ -1,279 +1,890 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RPG-симулятор руководителя: Лаборатория лидеров · Полная версия — My Pro Skills</title>
-  <meta name="description" content="Полная версия симулятора с ИИ-оценкой по 11 критериям. Доступ по паролю.">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Полная версия RPG-симулятора руководителя с ИИ-оценкой по 11 критериям. Проведите диалог и получите детальный разбор.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .back-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+    
+    .back-link:hover { opacity: 1; }
+    
+    /* Экран пароля */
+    #passwordScreen {
+      padding: 60px 40px;
+      text-align: center;
+    }
+    
+    #passwordScreen h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #1a202c;
+    }
+    
+    #passwordScreen p {
+      color: #4a5568;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    
+    .password-form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .password-form input {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-family: 'Manrope', sans-serif;
+      transition: border-color 0.3s;
+    }
+    
+    .password-form input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .password-form button {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      transition: transform 0.2s;
+    }
+    
+    .password-form button:hover {
+      transform: translateY(-2px);
+    }
+    
+    .error-message {
+      color: #e53e3e;
+      margin-top: 15px;
+      font-weight: 600;
+      display: none;
+    }
+    
+    .session-info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f0fff4;
+      border: 2px solid #48bb78;
+      border-radius: 10px;
+      color: #22543d;
+      font-weight: 600;
+      display: none;
+    }
+    
+    /* Экран чата с рабочим столом */
+    #chatScreen {
+      display: none;
+      height: 800px;
+    }
+    
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+      padding: 20px;
+      height: 100%;
+    }
+    
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      background: #f7fafc;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    
+    .chat-header {
+      background: white;
+      padding: 20px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 20px;
+    }
+    
+    .chat-header-info h3 {
+      font-size: 18px;
+      color: #1a202c;
+    }
+    
+    .chat-header-info p {
+      font-size: 14px;
+      color: #48bb78;
+      font-weight: 600;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .message {
+      max-width: 70%;
+      padding: 15px 20px;
+      border-radius: 15px;
+      line-height: 1.6;
+    }
+    
+    .message.assistant {
+      background: white;
+      align-self: flex-start;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .message.user {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      align-self: flex-end;
+    }
+    
+    .chat-input-area {
+      background: white;
+      padding: 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .chat-input-area input {
+      flex: 1;
+      padding: 15px 20px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-family: 'Manrope', sans-serif;
+    }
+    
+    .chat-input-area input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .chat-input-area button {
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+    }
+    
+    .chat-input-area button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Боковая панель рабочего стола */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .panel {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .panel h4 {
+      font-size: 16px;
+      color: #1a202c;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .team-state {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .state-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .state-label {
+      font-size: 14px;
+      color: #4a5568;
+      font-weight: 600;
+    }
+    
+    .state-bar {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .state-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .state-bar-fill.stress { background: #e53e3e; }
+    .state-bar-fill.trust { background: #48bb78; }
+    
+    .state-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+    
+    .calendar-item {
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .calendar-item .time {
+      font-size: 14px;
+      color: #667eea;
+      font-weight: 700;
+    }
+    
+    .calendar-item .event {
+      font-size: 14px;
+      color: #1a202c;
+      margin-top: 5px;
+    }
+    
+    .task-item {
+      padding: 12px;
+      background: #f7fafc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .task-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    
+    .task-item label {
+      font-size: 14px;
+      color: #1a202c;
+      cursor: pointer;
+      flex: 1;
+    }
+    
+    .task-item.completed label {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+    
+    .finish-btn {
+      width: 100%;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      background: #48bb78;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+      margin-top: 10px;
+    }
+    
+    .finish-btn:hover {
+      background: #38a169;
+    }
+    
+    /* Экран результатов */
+    #finalScreen {
+      display: none;
+      padding: 40px;
+    }
+    
+    .score-circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 8px solid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+    }
+    
+    .score-value {
+      font-size: 48px;
+      font-weight: 800;
+    }
+    
+    .score-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #4a5568;
+    }
+    
+    .goe-line {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #48bb78;
+      margin-bottom: 30px;
+    }
+    
+    .summary-text {
+      text-align: center;
+      font-size: 16px;
+      color: #4a5568;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .block-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #718096;
+      margin: 30px 0 15px;
+      font-weight: 700;
+    }
+    
+    .criteria-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+    }
+    
+    .criterion-card {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 20px;
+      border-left: 4px solid #667eea;
+    }
+    
+    .criterion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .criterion-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a202c;
+    }
+    
+    .criterion-score {
+      font-size: 20px;
+      font-weight: 800;
+    }
+    
+    .criterion-quote {
+      font-size: 14px;
+      color: #4a5568;
+      font-style: italic;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+    }
+    
+    .criterion-comment {
+      font-size: 14px;
+      color: #2d3748;
+      line-height: 1.5;
+    }
+    
+    .cta-btn {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 40px auto 0;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Manrope', sans-serif;
+    }
+    
+    .cta-btn:hover {
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <a href="index.html" class="back-link">← Демо-режим</a>
       <h1>🎮 RPG-симулятор руководителя: Лаборатория лидеров</h1>
-      <p class="subtitle">Полная версия с ИИ-оценкой по 11 критериям. Проведите диалог и получите детальный разбор.</p>
+      <p>Полная версия с ИИ-оценкой по 11 критериям. Проведите диалог и получите детальный разбор.</p>
     </div>
     
-    <div id="gateSection" class="workspace" style="min-height:auto">
-      <div class="gate-card">
-        <h2>Введите пароль</h2>
-        <p class="gate-note">Пароли выдаются участникам тестовой группы. Если у вас нет пароля — пройдите <a href="index.html">демо-режим</a>.</p>
-        <form id="gateForm" class="gate-form">
-          <input type="text" id="gateCode" placeholder="Например: ALPHA-7821" autocomplete="off">
-          <button type="submit" class="cta-btn">Войти</button>
-        </form>
-        <div id="gateError" class="gate-error" style="display:none">Неверный пароль или лимит сессий исчерпан.</div>
+    <!-- Экран пароля -->
+    <div id="passwordScreen">
+      <h2>🔐 Введите пароль</h2>
+      <p>Пароли выдаются участникам тестовой группы. Если у вас нет пароля — пройдите <a href="index.html">демо-режим</a>.</p>
+      <div class="password-form">
+        <input type="text" id="passwordInput" placeholder="Введите пароль" autocomplete="off">
+        <button onclick="verifyPassword()">Войти</button>
+        <div class="error-message" id="errorMessage">Неверный пароль или лимит сессий исчерпан.</div>
+        <div class="session-info" id="sessionInfo"></div>
       </div>
     </div>
     
-    <div id="gameSection" class="workspace" style="display:none">
-      <div class="chat-section">
-        <div class="chat-header">
-          <div class="avatar">А</div>
-          <div class="chat-info">
-            <h3>Алексей · Ведущий разработчик</h3>
-            <div class="status">В сети</div>
+    <!-- Экран чата с рабочим столом -->
+    <div id="chatScreen">
+      <div class="workspace">
+        <div class="chat-area">
+          <div class="chat-header">
+            <div class="avatar">А</div>
+            <div class="chat-header-info">
+              <h3>Алексей · Ведущий разработчик</h3>
+              <p>В сети</p>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Напишите ответ Алексею..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">➤</button>
           </div>
         </div>
         
-        <div class="messages" id="messages">
-          <div class="message ai">
-            <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
+        <div class="sidebar">
+          <div class="panel">
+            <h4>📊 Состояние команды</h4>
+            <div class="team-state">
+              <div class="state-item">
+                <span class="state-label">Уровень стресса</span>
+                <div class="state-bar">
+                  <div class="state-bar-fill stress" id="stressBar" style="width: 92%"></div>
+                </div>
+                <span class="state-value" id="stressValue">92%</span>
+              </div>
+              <div class="state-item">
+                <span class="state-label">Доверие к руководителю</span>
+                <div class="state-bar">
+                  <div class="state-bar-fill trust" id="trustBar" style="width: 45%"></div>
+                </div>
+                <span class="state-value" id="trustValue">45%</span>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div class="input-area">
-          <div class="input-wrapper">
-            <input type="text" id="userInput" placeholder="Напишите ответ Алексею...">
-            <button class="send-btn" id="sendBtn">➤</button>
+          
+          <div class="panel">
+            <h4>📅 Календарь</h4>
+            <div id="calendarPanel">
+              <div class="calendar-item">
+                <div class="time">Пятница, 18:00</div>
+                <div class="event">Дедлайн: Проект Х</div>
+              </div>
+            </div>
           </div>
-          <div id="typingIndicator" class="typing-indicator" style="display:none">
-            <span>Алексей печатает</span><span class="dots">...</span>
+          
+          <div class="panel">
+            <h4>✅ Задачи</h4>
+            <div id="taskPanel">
+              <div class="task-item">
+                <input type="checkbox" id="task1">
+                <label for="task1">Сдать финальную версию клиенту</label>
+              </div>
+            </div>
+            <button class="finish-btn" onclick="finishDialogue()">Завершить и получить разбор</button>
           </div>
         </div>
       </div>
-      
-      <div class="side-panel">
-        <div id="placeholder" class="placeholder">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/>
-          </svg>
-          <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
-        </div>
-        
-        <div id="dashboardCard" class="panel-card" style="display:none">
-          <h4>📊 Состояние команды</h4>
-          <div class="metric">
-            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value" id="stressLevel">92%</span></div>
-            <div class="progress-bar"><div class="progress-fill red" id="stressBar" style="width:92%"></div></div>
-          </div>
-          <div class="metric">
-            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value" id="trustLevel">45%</span></div>
-            <div class="progress-bar"><div class="progress-fill amber" id="trustBar" style="width:45%"></div></div>
-          </div>
-        </div>
-        
-        <div id="calendarCard" class="panel-card" style="display:none">
-          <h4>📅 Календарь</h4>
-          <div class="calendar-event urgent">
-            <div class="event-time">Пятница, 18:00</div>
-            <div class="event-title">Дедлайн: Проект Х</div>
-            <div class="event-desc">Сдать финальную версию клиенту</div>
-          </div>
-        </div>
-        
-        <div id="finalScreen" class="panel-card final-screen" style="display:none"></div>
-      </div>
+    </div>
+    
+    <!-- Экран результатов -->
+    <div id="finalScreen">
+      <h2 style="text-align: center; font-size: 32px; margin-bottom: 30px;">📊 Разбор полётов</h2>
+      <div id="resultsContent"></div>
     </div>
   </div>
-  
+
   <script>
     const SCENARIO_ID = 'burnout_alexey_01';
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
     let chatHistory = [];
-    let isWaitingForResponse = false;
-    let messageCount = 0;
-    const MAX_MESSAGES = 10;
-
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    function addMessage(role, text) {
-      const messagesDiv = document.getElementById('messages');
-      const msg = document.createElement('div');
-      msg.className = 'message ' + role;
-      msg.innerHTML = '<div class="bubble">' + escapeHtml(text) + '</div>';
-      messagesDiv.appendChild(msg);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    function updateUI(elements) {
-      if (elements.dashboard) {
-        document.getElementById('placeholder').style.display = 'none';
-        document.getElementById('dashboardCard').style.display = 'block';
-        setTimeout(() => document.getElementById('dashboardCard').classList.add('visible'), 10);
-      }
-      if (elements.calendar) {
-        document.getElementById('placeholder').style.display = 'none';
-        document.getElementById('calendarCard').style.display = 'block';
-        setTimeout(() => document.getElementById('calendarCard').classList.add('visible'), 10);
-      }
-    }
-
-    async function sendMessage() {
-      const input = document.getElementById('userInput');
-      const userText = input.value.trim();
+    let accessCodeId = null;
+    let remainingSessions = 0;
+    
+    // Состояние команды
+    let teamState = {
+      stress: 92,
+      trust: 45
+    };
+    
+    async function verifyPassword() {
+      const code = document.getElementById('passwordInput').value.trim();
+      const errorEl = document.getElementById('errorMessage');
+      const sessionInfoEl = document.getElementById('sessionInfo');
       
-      if (!userText || isWaitingForResponse) return;
-      if (messageCount >= MAX_MESSAGES) {
-        showFinalScreen();
+      if (!code) {
+        errorEl.textContent = 'Введите пароль';
+        errorEl.style.display = 'block';
         return;
       }
       
-      addMessage('user', userText);
-      input.value = '';
-      messageCount++;
+      try {
+        const res = await fetch(`${API_BASE}/api/verify-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        
+        const data = await res.json();
+        
+        if (data.valid) {
+          accessCodeId = data.access_code_id;
+          remainingSessions = data.remaining_sessions;
+          errorEl.style.display = 'none';
+          sessionInfoEl.textContent = `✓ Доступ разрешён. Осталось сессий: ${remainingSessions}`;
+          sessionInfoEl.style.display = 'block';
+          
+          setTimeout(() => {
+            document.getElementById('passwordScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'block';
+          }, 1500);
+        } else {
+          errorEl.textContent = data.reason || 'Неверный пароль';
+          errorEl.style.display = 'block';
+          sessionInfoEl.style.display = 'none';
+        }
+      } catch (e) {
+        errorEl.textContent = 'Ошибка подключения к серверу';
+        errorEl.style.display = 'block';
+        console.error('verifyPassword error:', e);
+      }
+    }
+    
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    }
+    
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
       
-      isWaitingForResponse = true;
-      document.getElementById('typingIndicator').style.display = 'block';
-      document.getElementById('sendBtn').disabled = true;
+      if (!message) return;
+      
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+      
+      // Добавляем сообщение пользователя
+      chatHistory.push({ role: 'user', content: message });
+      addMessageToChat('user', message);
+      input.value = '';
+      
+      // Показываем индикатор набора
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'message assistant';
+      typingIndicator.textContent = 'Алексей печатает...';
+      typingIndicator.id = 'typingIndicator';
+      document.getElementById('chatMessages').appendChild(typingIndicator);
+      scrollChatToBottom();
       
       try {
-        const response = await fetch(API_BASE + '/api/scenario-chat', {
+        const res = await fetch(`${API_BASE}/api/scenario-chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenario_id: SCENARIO_ID,
-            user_message: userText,
-            history: chatHistory
+            dialogue: chatHistory
           })
         });
         
-        if (!response.ok) throw new Error('API error: ' + response.status);
+        const data = await res.json();
         
-        const data = await response.json();
-        addMessage('ai', data.ai_response);
+        // Удаляем индикатор набора
+        document.getElementById('typingIndicator').remove();
         
-        chatHistory.push({ role: 'user', content: userText });
-        chatHistory.push({ role: 'assistant', content: data.ai_response });
-        
-        if (data.updated_elements) {
-          updateUI(data.updated_elements);
+        if (data.response) {
+          chatHistory.push({ role: 'assistant', content: data.response });
+          addMessageToChat('assistant', data.response);
+          
+          // Обновляем состояние команды
+          updateTeamState(message, data.response);
+        } else {
+          addMessageToChat('assistant', 'Произошла ошибка. Попробуйте ещё раз.');
         }
-        
-        if (messageCount >= MAX_MESSAGES) {
-          setTimeout(showFinalScreen, 1500);
-        }
-        
-      } catch (error) {
-        console.error('API error:', error);
-        addMessage('ai', 'Извините, произошла ошибка соединения. Попробуйте еще раз.');
-      } finally {
-        isWaitingForResponse = false;
-        document.getElementById('typingIndicator').style.display = 'none';
-        document.getElementById('sendBtn').disabled = false;
-        input.focus();
+      } catch (e) {
+        document.getElementById('typingIndicator').remove();
+        addMessageToChat('assistant', 'Ошибка подключения к серверу.');
+        console.error('sendMessage error:', e);
       }
-    }
-
-    async function showFinalScreen() {
-      document.getElementById('placeholder').style.display = 'none';
-      document.getElementById('dashboardCard').style.display = 'none';
-      document.getElementById('calendarCard').style.display = 'none';
       
-      const final = document.getElementById('finalScreen');
-      final.style.display = 'block';
-      final.innerHTML = '<h3> ИИ анализирует ваш диалог...</h3><p class="final-note">Это может занять до 30 секунд. GigaChat читает каждое ваше сообщение.</p><div class="loader"></div>';
-      requestAnimationFrame(() => final.classList.add('visible'));
-
+      sendBtn.disabled = false;
+    }
+    
+    function addMessageToChat(role, content) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${role}`;
+      messageDiv.textContent = content;
+      chatMessages.appendChild(messageDiv);
+      scrollChatToBottom();
+    }
+    
+    function scrollChatToBottom() {
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function updateTeamState(userMessage, assistantResponse) {
+      // Простая эвристика обновления состояния
+      const lowerMsg = userMessage.toLowerCase();
+      
+      // Если пользователь использует эмпатию — доверие растёт, стресс падает
+      if (lowerMsg.includes('понимаю') || lowerMsg.includes('слышу') || lowerMsg.includes('чувствую')) {
+        teamState.trust = Math.min(100, teamState.trust + 5);
+        teamState.stress = Math.max(0, teamState.stress - 3);
+      }
+      
+      // Если пользователь даёт конкретные решения — стресс падает
+      if (lowerMsg.includes('давай') || lowerMsg.includes('решим') || lowerMsg.includes('план')) {
+        teamState.stress = Math.max(0, teamState.stress - 5);
+      }
+      
+      // Если пользователь обесценивает — доверие падает, стресс растёт
+      if (lowerMsg.includes('соберись') || lowerMsg.includes('всё будет хорошо') || lowerMsg.includes('не ной')) {
+        teamState.trust = Math.max(0, teamState.trust - 10);
+        teamState.stress = Math.min(100, teamState.stress + 5);
+      }
+      
+      renderTeamState();
+    }
+    
+    function renderTeamState() {
+      document.getElementById('stressBar').style.width = teamState.stress + '%';
+      document.getElementById('stressValue').textContent = teamState.stress + '%';
+      document.getElementById('trustBar').style.width = teamState.trust + '%';
+      document.getElementById('trustValue').textContent = teamState.trust + '%';
+    }
+    
+    async function finishDialogue() {
+      if (chatHistory.length === 0) {
+        alert('Проведите хотя бы один диалог перед завершением.');
+        return;
+      }
+      
+      const finishBtn = document.querySelector('.finish-btn');
+      finishBtn.disabled = true;
+      finishBtn.textContent = 'Получаем разбор...';
+      
       try {
-        const response = await fetch(API_BASE + '/api/evaluate', {
+        // Получаем оценку от ИИ
+        const evalRes = await fetch(`${API_BASE}/api/evaluate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenario_id: SCENARIO_ID, dialogue: chatHistory })
+          body: JSON.stringify({
+            scenario_id: SCENARIO_ID,
+            dialogue: chatHistory
+          })
         });
         
-        if (!response.ok) throw new Error('Evaluation failed');
-        const data = await response.json();
-        renderResults(data);
+        const evaluation = await evalRes.json();
         
-      } catch (error) {
-        console.error('Eval error:', error);
-        final.innerHTML = '<h3>⚠️ Ошибка анализа</h3><p class="final-note">Не удалось получить оценку. Попробуйте начать заново.</p><button class="cta-btn" onclick="location.reload()">Начать заново</button>';
+        // Сохраняем сессию в БД
+        await saveSession(evaluation);
+        
+        // Показываем результаты
+        showResults(evaluation);
+      } catch (e) {
+        alert('Ошибка при получении разбора. Попробуйте ещё раз.');
+        console.error('finishDialogue error:', e);
+        finishBtn.disabled = false;
+        finishBtn.textContent = 'Завершить и получить разбор';
       }
     }
-
-    function renderResults(data) {
-      const final = document.getElementById('finalScreen');
-      const basePct = data.base_max ? Math.round((data.base_score / data.base_max) * 100) : 0;
-      const gradeColor = basePct > 70 ? '#3F6B4C' : (basePct > 40 ? '#F59E0B' : '#EF4444');
-
+    
+    async function saveSession(evaluation) {
+      try {
+        const payload = {
+          access_code_id: accessCodeId,
+          scenario_id: SCENARIO_ID,
+          dialogue: chatHistory,
+          evaluation,
+          base_score: evaluation.base_score,
+          base_max: evaluation.base_max,
+          goe_score: evaluation.goe_score,
+          goe_max: evaluation.goe_max,
+          total_score: evaluation.total_score,
+          max_score: evaluation.max_score,
+          summary: evaluation.summary
+        };
+        
+        const res = await fetch(`${API_BASE}/api/save-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          console.log('Сессия сохранена:', data.session_id);
+        }
+      } catch (e) {
+        console.error('saveSession error:', e);
+      }
+    }
+    
+    function showResults(evaluation) {
+      document.getElementById('chatScreen').style.display = 'none';
+      document.getElementById('finalScreen').style.display = 'block';
+      
+      const basePct = evaluation.base_max ? Math.round((evaluation.base_score / evaluation.base_max) * 100) : 0;
+      const gradeColor = basePct > 70 ? '#48bb78' : (basePct > 40 ? '#ecc94b' : '#e53e3e');
+      
       let html = `
-        <h3>📊 Разбор полетов</h3>
         <div class="score-circle" style="border-color: ${gradeColor}">
           <span class="score-value" style="color: ${gradeColor}">${basePct}%</span>
-          <span class="score-label">База ${data.base_score} из ${data.base_max}</span>
+          <span class="score-label">База ${evaluation.base_score} из ${evaluation.base_max}</span>
         </div>
-        <div class="goe-line">Исполнение (GOE): +${data.goe_score} из +${data.goe_max}</div>
-        <p class="summary-text">${data.summary}</p>
+        <div class="goe-line">Исполнение (GOE): +${evaluation.goe_score} из +${evaluation.goe_max}</div>
+        <p class="summary-text">${evaluation.summary}</p>
         <h4 class="block-title">База: минимум безопасного разговора</h4>
-        <div class="criteria-list">` +
-        renderBlock(data.criteria.filter(c => c.group === 'base')) +
-        `</div>
+        <div class="criteria-list">
+          ${renderBlock(evaluation.criteria.filter(c => c.group === 'base'))}
+        </div>
         <h4 class="block-title">Исполнение: техники и мастерство (GOE)</h4>
-        <div class="criteria-list">` +
-        renderBlock(data.criteria.filter(c => c.group === 'goe')) +
-        `</div>
-        <button class="cta-btn" onclick="location.reload()">🔄 Пройти еще раз</button>`;
-      final.innerHTML = html;
+        <div class="criteria-list">
+          ${renderBlock(evaluation.criteria.filter(c => c.group === 'goe'))}
+        </div>
+        <button class="cta-btn" onclick="location.reload()"> Пройти ещё раз</button>
+      `;
+      
+      document.getElementById('resultsContent').innerHTML = html;
     }
-
+    
     function renderBlock(list) {
       return list.map(c => {
         if (c.na) {
           return `<div class="criterion-card" style="opacity:0.55">
-            <div class="criterion-header"><span class="criterion-name">➖ ${c.name}</span><span class="criterion-score" style="color:#5B6673">N/A</span></div>
+            <div class="criterion-header">
+              <span class="criterion-name">➖ ${c.name}</span>
+              <span class="criterion-score" style="color:#718096">N/A</span>
+            </div>
             <div class="criterion-comment">${c.comment}</div>
           </div>`;
         }
         const isGood = c.score === 2, isBad = c.score === 0;
         const icon = isGood ? '✅' : (isBad ? '❌' : '⚠️');
-        const statusColor = isGood ? '#3F6B4C' : (isBad ? '#EF4444' : '#F59E0B');
+        const statusColor = isGood ? '#48bb78' : (isBad ? '#e53e3e' : '#ecc94b');
         return `<div class="criterion-card">
-          <div class="criterion-header"><span class="criterion-name">${icon} ${c.name}</span><span class="criterion-score" style="color: ${statusColor}">${c.score}/2</span></div>
+          <div class="criterion-header">
+            <span class="criterion-name">${icon} ${c.name}</span>
+            <span class="criterion-score" style="color: ${statusColor}">${c.score}/2</span>
+          </div>
           ${c.quote ? `<div class="criterion-quote">«${c.quote}»</div>` : ''}
           ${c.comment ? `<div class="criterion-comment">${c.comment}</div>` : ''}
         </div>`;
       }).join('');
     }
-
-    // Инициализация после загрузки DOM
-    document.addEventListener('DOMContentLoaded', function() {
-      const gateForm = document.getElementById('gateForm');
-      if (gateForm) {
-        gateForm.addEventListener('submit', function(e) {
-          e.preventDefault();
-          const code = document.getElementById('gateCode').value.trim();
-          if (!code) return;
-          document.getElementById('gateError').style.display = 'none';
-          document.getElementById('gateSection').style.display = 'none';
-          document.getElementById('gameSection').style.display = 'flex';
-          document.getElementById('userInput').focus();
-        });
-      }
-      
-      const sendBtn = document.getElementById('sendBtn');
-      const userInput = document.getElementById('userInput');
-      
-      if (sendBtn) sendBtn.addEventListener('click', sendMessage);
-      if (userInput) userInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMessage();
-      });
-    });
   </script>
 </body>
 </html>
