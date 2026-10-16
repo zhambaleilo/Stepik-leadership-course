@@ -669,6 +669,26 @@
     }
 
     function showResults(evaluation) {
+      console.log('showResults вызвана с данными:', evaluation);
+      
+      // Защита: если evaluation пустой или без criteria
+      if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
+        console.error('evaluation.criteria отсутствует или не массив:', evaluation);
+        document.getElementById('desktopEnvironment').style.display = 'none';
+        document.getElementById('resultsScreen').classList.remove('hidden');
+        document.getElementById('resultsScreen').innerHTML = `
+          <div class="window" style="padding: 40px; text-align: center;">
+            <h2 style="color: var(--danger); margin-bottom: 20px;">️ Ошибка при получении разбора</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Данные оценки повреждены или неполны.</p>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px;">
+              Сессия сохранена в БД. Вы можете пройти сценарий заново.
+            </p>
+            <button class="btn btn-primary" onclick="location.reload()">🔄 Пройти ещё раз</button>
+          </div>
+        `;
+        return;
+      }
+    
       document.getElementById('desktopEnvironment').style.display = 'none';
       document.getElementById('resultsScreen').classList.remove('hidden');
       
@@ -679,10 +699,22 @@
       document.getElementById('scoreValue').style.color = gradeColor;
       document.getElementById('scoreValue').textContent = basePct + '%';
       document.getElementById('goeLine').textContent = `Исполнение (GOE): +${evaluation.goe_score} из +${evaluation.goe_max}`;
-      document.getElementById('summaryText').textContent = evaluation.summary;
-
-      document.getElementById('baseCriteria').innerHTML = renderBlock(evaluation.criteria.filter(c => c.group === 'base'));
-      document.getElementById('goeCriteria').innerHTML = renderBlock(evaluation.criteria.filter(c => c.group === 'goe'));
+      document.getElementById('summaryText').textContent = evaluation.summary || 'Разбор недоступен';
+    
+      try {
+        const baseCriteria = evaluation.criteria.filter(c => c.group === 'base');
+        const goeCriteria = evaluation.criteria.filter(c => c.group === 'goe');
+        
+        console.log('Base criteria:', baseCriteria);
+        console.log('GOE criteria:', goeCriteria);
+        
+        document.getElementById('baseCriteria').innerHTML = renderBlock(baseCriteria);
+        document.getElementById('goeCriteria').innerHTML = renderBlock(goeCriteria);
+      } catch (e) {
+        console.error('Ошибка при рендере критериев:', e);
+        document.getElementById('baseCriteria').innerHTML = '<p style="color: var(--danger);">Ошибка отображения критериев</p>';
+        document.getElementById('goeCriteria').innerHTML = '<p style="color: var(--danger);">Ошибка отображения критериев</p>';
+      }
     }
 
     function renderBlock(list) {
