@@ -611,42 +611,52 @@
 
     // 5. ЗАВЕРШЕНИЕ И ОЦЕНКА
     async function finishDialogue() {
-      if (chatHistory.length < 2) {
-        alert('Проведите хотя бы один диалог перед завершением.');
-        return;
-      }
-      
-      const finishBtn = document.querySelector('.btn-finish');
-      finishBtn.disabled = true;
-      finishBtn.textContent = 'Анализируем диалог...';
-      
-      try {
-        const evalRes = await fetch(`${API_BASE}/api/evaluate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ scenario_id: currentScenarioId, dialogue: chatHistory })
-        });
+      const userMessages = chatHistory.filter(m => m.role === 'user').length;
         
-        const evaluation = await evalRes.json();
-        
-        // ЗАЩИТА: проверяем наличие criteria перед продолжением
-        if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
-          console.error('Некорректный ответ от /api/evaluate:', evaluation);
-          throw new Error(evaluation.error || 'Сервер вернул некорректные данные оценки');
+        // Мягкое предупреждение для коротких диалогов
+        if (userMessages < 2) {
+          const proceed = confirm(
+            `У вас только ${userMessages} ответ(ов) сотруднику.\n\n` +
+            `Оценка может быть менее точной — не все критерии проявятся в коротком диалоге.\n\n` +
+            `Продолжить или провести ещё несколько обменов репликами?`
+          );
+          if (!proceed) return;
         }
         
-        // Сохраняем БЕЗ await, чтобы не блокировать показ результата
-        saveSession(evaluation).catch(e => console.error('saveSession error:', e));
+        const finishBtn = document.querySelector('.btn-finish');
+        finishBtn.disabled = true;
+        finishBtn.textContent = 'Анализируем диалог...';
         
-        showResults(evaluation);
-        
-      } catch (e) {
-        console.error('finishDialogue error:', e);
-        alert('Ошибка при получении разбора: ' + e.message + '\n\nПопробуйте ещё раз.');
-        finishBtn.disabled = false;
-        finishBtn.textContent = 'Завершить диалог и получить разбор';
+        try {
+          const evalRes = await fetch(`${API_BASE}/api/evaluate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              scenario_id: currentScenarioId, 
+              dialogue: chatHistory,
+              user_message_count: userMessages // <-- передаём количество для адаптивной оценки
+            })
+          });
+          
+          const evaluation = await evalRes.json();
+          
+          if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
+            console.error('Некорректный ответ от /api/evaluate:', evaluation);
+            throw new Error(evaluation.error || 'Сервер вернул некорректные данные оценки');
+          }
+          
+          // Сохраняем БЕЗ await, чтобы не блокировать показ результата
+          saveSession(evaluation).catch(e => console.error('saveSession error:', e));
+          
+          showResults(evaluation);
+          
+        } catch (e) {
+          console.error('finishDialogue error:', e);
+          alert('Ошибка при получении разбора: ' + e.message + '\n\nПопробуйте ещё раз.');
+          finishBtn.disabled = false;
+          finishBtn.textContent = 'Завершить диалог и получить разбор';
+        }
       }
-    }
 
     async function saveSession(evaluation) {
       try {
