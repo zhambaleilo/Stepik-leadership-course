@@ -33,7 +33,7 @@
       justify-content: center;
       padding: 20px;
       color: var(--text-main);
-      overflow: hidden; /* Чтобы не было скролла страницы, скроллим только окна */
+      overflow: hidden;
     }
 
     /* --- Общие стили окон --- */
@@ -60,10 +60,7 @@
       color: var(--text-muted);
     }
 
-    .window-dots {
-      display: flex;
-      gap: 8px;
-    }
+    .window-dots { display: flex; gap: 8px; }
     .dot { width: 12px; height: 12px; border-radius: 50%; }
     .dot.red { background: #ef4444; }
     .dot.yellow { background: #f59e0b; }
@@ -121,11 +118,7 @@
     .success-msg { color: var(--success); font-size: 14px; margin-top: 8px; display: none; font-weight: 600; }
 
     /* --- Сетка сценариев --- */
-    .scenario-grid {
-      display: grid;
-      gap: 16px;
-      text-align: left;
-    }
+    .scenario-grid { display: grid; gap: 16px; text-align: left; }
     .scenario-card {
       background: white;
       border: 2px solid #e2e8f0;
@@ -145,7 +138,7 @@
 
     /* --- Рабочий стол (Основной интерфейс) --- */
     #desktopEnvironment {
-      display: none; /* Скрыт до ввода пароля */
+      display: none;
       width: 100%;
       max-width: 1200px;
       height: 85vh;
@@ -153,12 +146,7 @@
       grid-template-columns: 1fr 320px;
     }
 
-    /* Окно чата */
-    #chatWindow {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+    #chatWindow { flex: 1; display: flex; flex-direction: column; }
     
     #chatMessages {
       flex: 1;
@@ -203,16 +191,8 @@
     .chat-input-area input { flex: 1; }
 
     /* Панель виджетов */
-    #widgetPanel {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .widget {
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.9);
-    }
+    #widgetPanel { display: flex; flex-direction: column; gap: 16px; }
+    .widget { padding: 20px; background: rgba(255, 255, 255, 0.9); }
 
     .widget h4 {
       font-size: 13px;
@@ -245,17 +225,12 @@
     }
     .task-item input { cursor: pointer; }
 
-    .btn-finish {
-      width: 100%;
-      background: var(--success);
-      color: white;
-      margin-top: auto;
-    }
+    .btn-finish { width: 100%; background: var(--success); color: white; margin-top: auto; }
     .btn-finish:hover { background: #059669; }
 
     /* --- Экран результатов --- */
-    #resultsScreen {
-      display: none;
+    /* ВАЖНО: display: none убран отсюда, управляется только классом .hidden */
+    #resultsScreen .window {
       width: 100%;
       max-width: 900px;
       max-height: 90vh;
@@ -263,10 +238,7 @@
       padding: 40px;
     }
 
-    .score-hero {
-      text-align: center;
-      margin-bottom: 32px;
-    }
+    .score-hero { text-align: center; margin-bottom: 32px; }
     .score-circle {
       width: 160px;
       height: 160px;
@@ -314,6 +286,41 @@
     .c-comment { font-size: 13px; line-height: 1.5; color: var(--text-main); }
 
     .hidden { display: none !important; }
+
+    /* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
+    @media (max-width: 768px) {
+      body { padding: 10px; overflow: auto; }
+      #desktopEnvironment {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+      }
+      #chatWindow { min-height: 400px; }
+      #chatMessages { max-height: 300px; }
+      .message { max-width: 90% !important; font-size: 14px; padding: 12px 16px; }
+      #widgetPanel { order: -1; }
+      .widget { padding: 16px; }
+      .window-header { font-size: 12px; padding: 10px 16px; }
+      .chat-input-area { flex-direction: column; padding: 12px; }
+      .chat-input-area input, .chat-input-area button { width: 100%; }
+      .modal-content { padding: 24px 20px !important; max-width: 95% !important; }
+      .modal-content h2 { font-size: 20px; }
+      .scenario-grid { grid-template-columns: 1fr !important; }
+      #resultsScreen { padding: 10px !important; }
+      #resultsScreen .window { padding: 20px !important; }
+      .score-circle { width: 120px !important; height: 120px !important; }
+      .score-value { font-size: 32px !important; }
+      .criteria-grid { grid-template-columns: 1fr !important; }
+      .criterion-card { padding: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      .window-dots { display: none; }
+      .btn { padding: 12px 16px; font-size: 14px; }
+      input[type="text"] { padding: 12px 14px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
@@ -337,32 +344,26 @@
     <div class="window modal-content" style="max-width: 700px;">
       <h2>📂 Выберите сценарий</h2>
       <p>Выберите ситуацию, которую хотите отработать. Ваш прогресс и разбор будут сохранены.</p>
-      <div class="scenario-grid" id="scenarioList">
-        <!-- Заполняется через JS -->
-      </div>
+      <div class="scenario-grid" id="scenarioList"></div>
       <button class="btn" style="margin-top: 24px; background: #e2e8f0; color: var(--text-main);" onclick="location.reload()">← Выйти</button>
     </div>
   </div>
 
   <!-- 3. Рабочий стол (Чат + Виджеты) -->
   <div id="desktopEnvironment">
-    <!-- Окно чата -->
     <div id="chatWindow" class="window">
       <div class="window-header">
         <div class="window-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
         <span id="chatWindowTitle">Чат: Алексей · Ведущий разработчик</span>
         <span style="font-size: 12px; color: var(--success);">● В сети</span>
       </div>
-      <div id="chatMessages">
-        <!-- Сообщения -->
-      </div>
+      <div id="chatMessages"></div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="Напишите ответ и нажмите Enter..." onkeypress="handleKeyPress(event)">
         <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">➤</button>
       </div>
     </div>
 
-    <!-- Панель виджетов -->
     <div id="widgetPanel">
       <div class="window widget">
         <h4>📊 Состояние сотрудника</h4>
@@ -393,7 +394,7 @@
 
   <!-- 4. Экран результатов -->
   <div id="resultsScreen" class="modal-overlay hidden">
-    <div class="window" style="padding: 40px;">
+    <div class="window">
       <div class="score-hero">
         <div class="score-circle" id="scoreCircle">
           <span class="score-value" id="scoreValue">0%</span>
@@ -416,7 +417,6 @@
   <script>
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
     
-    // Реестр сценариев. Чтобы добавить новый, просто добавь объект в этот массив.
     const AVAILABLE_SCENARIOS = [
       {
         id: 'burnout_alexey_01',
@@ -425,7 +425,6 @@
         desc: 'Алексей работает без выходных и теряет мотивацию. Ваша задача — провести разговор, не усугубив выгорание, и найти рабочее решение.',
         initialMessage: 'Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.'
       }
-      // В будущем здесь появятся сценарии из Decap
     ];
 
     let accessCodeId = null;
@@ -434,7 +433,7 @@
     let chatHistory = [];
     let teamState = { stress: 92, trust: 45 };
 
-    // 1. ПРОВЕРКА ПАРОЛЯ (Исправлено: функция теперь глобально видна)
+    // 1. ПРОВЕРКА ПАРОЛЯ
     async function verifyPassword() {
       const code = document.getElementById('passwordInput').value.trim();
       const errorEl = document.getElementById('errorMessage');
@@ -512,7 +511,7 @@
       addMessageToChat('assistant', scenario.initialMessage);
     }
 
-    // 4. ОТПРАВКА СООБЩЕНИЯ (Исправлено: user_message и data.ai_response)
+    // 4. ОТПРАВКА СООБЩЕНИЯ
     async function sendMessage() {
       const input = document.getElementById('chatInput');
       const message = input.value.trim();
@@ -539,7 +538,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenario_id: currentScenarioId,
-            user_message: message // <-- Исправлено: отправляем строку, а не массив
+            user_message: message // Исправлено: отправляем строку
           })
         });
         
@@ -547,8 +546,7 @@
         const typing = document.getElementById('typingIndicator');
         if (typing) typing.remove();
         
-        // <-- Исправлено: используем правильный ключ ответа от сервера
-        if (data.ai_response) {
+        if (data.ai_response) { // Исправлено: используем правильный ключ
           chatHistory.push({ role: 'assistant', content: data.ai_response });
           addMessageToChat('assistant', data.ai_response);
           updateTeamState(message, data.ai_response);
@@ -630,11 +628,21 @@
         });
         
         const evaluation = await evalRes.json();
-        await saveSession(evaluation);
+        
+        // ЗАЩИТА: проверяем наличие criteria перед продолжением
+        if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
+          console.error('Некорректный ответ от /api/evaluate:', evaluation);
+          throw new Error(evaluation.error || 'Сервер вернул некорректные данные оценки');
+        }
+        
+        // Сохраняем БЕЗ await, чтобы не блокировать показ результата
+        saveSession(evaluation).catch(e => console.error('saveSession error:', e));
+        
         showResults(evaluation);
+        
       } catch (e) {
-        alert('Ошибка при получении разбора. Попробуйте ещё раз.');
         console.error('finishDialogue error:', e);
+        alert('Ошибка при получении разбора: ' + e.message + '\n\nПопробуйте ещё раз.');
         finishBtn.disabled = false;
         finishBtn.textContent = 'Завершить диалог и получить разбор';
       }
@@ -669,26 +677,8 @@
     }
 
     function showResults(evaluation) {
-      console.log('showResults вызвана с данными:', evaluation);
+      console.log('showResults вызвана. evaluation:', evaluation);
       
-      // Защита: если evaluation пустой или без criteria
-      if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
-        console.error('evaluation.criteria отсутствует или не массив:', evaluation);
-        document.getElementById('desktopEnvironment').style.display = 'none';
-        document.getElementById('resultsScreen').classList.remove('hidden');
-        document.getElementById('resultsScreen').innerHTML = `
-          <div class="window" style="padding: 40px; text-align: center;">
-            <h2 style="color: var(--danger); margin-bottom: 20px;">️ Ошибка при получении разбора</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Данные оценки повреждены или неполны.</p>
-            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px;">
-              Сессия сохранена в БД. Вы можете пройти сценарий заново.
-            </p>
-            <button class="btn btn-primary" onclick="location.reload()">🔄 Пройти ещё раз</button>
-          </div>
-        `;
-        return;
-      }
-    
       document.getElementById('desktopEnvironment').style.display = 'none';
       document.getElementById('resultsScreen').classList.remove('hidden');
       
@@ -700,13 +690,10 @@
       document.getElementById('scoreValue').textContent = basePct + '%';
       document.getElementById('goeLine').textContent = `Исполнение (GOE): +${evaluation.goe_score} из +${evaluation.goe_max}`;
       document.getElementById('summaryText').textContent = evaluation.summary || 'Разбор недоступен';
-    
+
       try {
         const baseCriteria = evaluation.criteria.filter(c => c.group === 'base');
         const goeCriteria = evaluation.criteria.filter(c => c.group === 'goe');
-        
-        console.log('Base criteria:', baseCriteria);
-        console.log('GOE criteria:', goeCriteria);
         
         document.getElementById('baseCriteria').innerHTML = renderBlock(baseCriteria);
         document.getElementById('goeCriteria').innerHTML = renderBlock(goeCriteria);
