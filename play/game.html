@@ -706,22 +706,17 @@
         const typing = document.getElementById('typingIndicator');
         if (typing) typing.remove();
         
-        if (data.response) {
-          chatHistory.push({ role: 'assistant', content: data.response });
-          addMessageToChat('assistant', data.response);
-          
-          // Обновляем состояние команды
-          updateTeamState(message, data.response);
-        } else if (data.error) {
-          addMessageToChat('assistant', 'Ошибка: ' + data.error);
-        } else {
-          addMessageToChat('assistant', 'Произошла ошибка. Попробуйте ещё раз.');
-        }
-      } catch (e) {
-        const typing = document.getElementById('typingIndicator');
-        if (typing) typing.remove();
-        addMessageToChat('assistant', 'Ошибка подключения к серверу.');
-        console.error('sendMessage error:', e);
+        if (data.ai_response) {
+        chatHistory.push({ role: 'assistant', content: data.ai_response });
+        addMessageToChat('assistant', data.ai_response);
+        
+        // Обновляем состояние команды (исправлено: data.ai_response)
+        updateTeamState(message, data.ai_response);
+      } else if (data.error) {
+        addMessageToChat('assistant', 'Ошибка: ' + data.error);
+      } else {
+        addMessageToChat('assistant', 'Неожиданный ответ сервера.');
+        console.log('Полный ответ от сервера:', data);
       }
       
       sendBtn.disabled = false;
