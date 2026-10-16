@@ -674,8 +674,9 @@
       
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.disabled = true;
+      input.disabled = true;
       
-      // Добавляем сообщение пользователя
+      // Добавляем сообщение пользователя в локальную историю
       chatHistory.push({ role: 'user', content: message });
       addMessageToChat('user', message);
       input.value = '';
@@ -689,19 +690,21 @@
       scrollChatToBottom();
       
       try {
+        // ВАЖНО: отправляем user_message (последнее сообщение), а не dialogue
         const res = await fetch(`${API_BASE}/api/scenario-chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenario_id: SCENARIO_ID,
-            dialogue: chatHistory
+            user_message: message  // ← здесь было dialogue, меняем на user_message
           })
         });
         
         const data = await res.json();
         
         // Удаляем индикатор набора
-        document.getElementById('typingIndicator').remove();
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
         
         if (data.response) {
           chatHistory.push({ role: 'assistant', content: data.response });
@@ -709,16 +712,21 @@
           
           // Обновляем состояние команды
           updateTeamState(message, data.response);
+        } else if (data.error) {
+          addMessageToChat('assistant', 'Ошибка: ' + data.error);
         } else {
           addMessageToChat('assistant', 'Произошла ошибка. Попробуйте ещё раз.');
         }
       } catch (e) {
-        document.getElementById('typingIndicator').remove();
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
         addMessageToChat('assistant', 'Ошибка подключения к серверу.');
         console.error('sendMessage error:', e);
       }
       
       sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
     }
     
     function addMessageToChat(role, content) {
