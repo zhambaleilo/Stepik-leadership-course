@@ -94,8 +94,9 @@ export default async function handler(req, res) {
       return desc;
     }).join('\n');
 
-    const userMessageCount = req.body.user_message_count || chatHistory.filter(m => m.role === 'user').length;
-
+    const userMessageCount = req.body.user_message_count || 
+    (req.body.dialogue && req.body.dialogue.filter(m => m.role === 'user').length) || 0;
+    
     const systemPrompt = `Оцени диалог руководителя по критериям ниже. Верни JSON.
 
 
