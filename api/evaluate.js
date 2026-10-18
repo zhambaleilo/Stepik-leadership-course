@@ -76,11 +76,11 @@ export default async function handler(req, res) {
       keyIds = [...(ec.psychological_safety || []), ...(ec.improvisation || [])].filter(id => META[id]);
     } catch (e) { /* сценарий не найден — оцениваем по всем */ }
     if (keyIds.length === 0) keyIds = Object.keys(META);
+    keyIds = [...new Set(keyIds)]; // защита от дубликатов
 
     const dialogueText = dialogue.map(m =>
       (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content
     ).join('\n');
-
     const assistantText = dialogue.filter(m => m.role === 'assistant').map(m => m.content).join('\n');
 
     const criteriaBlock = keyIds.map((id, i) => {
@@ -94,14 +94,13 @@ export default async function handler(req, res) {
       return desc;
     }).join('\n');
 
-    const userMessageCount = req.body.user_message_count || 
-    (req.body.dialogue && req.body.dialogue.filter(m => m.role === 'user').length) || 0;
-    
+    const userMessageCount = req.body.user_message_count ||
+      (req.body.dialogue && req.body.dialogue.filter(m => m.role === 'user').length) || 0;
+
     const systemPrompt = `Оцени диалог руководителя по критериям ниже. Верни JSON.
 
-
 ИНФОРМАЦИЯ О ДИАЛОГЕ:
-- Количество ответов руководителя: ${userMessageCount}
+Количество ответов руководителя: ${userMessageCount}
 ${userMessageCount < 2 ? '- ДИАЛОГ ОЧЕНЬ КОРОТКИЙ. Будь строже к баллам, верни N/A для adaptability/yes_and/reframing.' : ''}
 ${userMessageCount >= 2 && userMessageCount < 4 ? '- ДИАЛОГ КОРОТКИЙ. Оценивай консервативно.' : ''}
 
@@ -109,44 +108,40 @@ ${userMessageCount >= 2 && userMessageCount < 4 ? '- ДИАЛОГ КОРОТКИ
 ${criteriaBlock}
 
 ПРАВИЛА:
-1. 2 = отлично, 1 = частично, 0 = провал
-2. null = условие не выполнено (критерий не применим)
-3. Цитаты короткие (до 15 слов), дословные из текста диалога
-4. ВАЛИДАЦИЯ ЭМОЦИЙ — СТРОГО:
-   - 2 балла: руководитель НАЗВАЛ чувство сотрудника своими словами ("вижу, что тебе тяжело", "понимаю, что ты расстроен", "чувствую, что ты устал") И развил его
-   - 1 балл: руководитель проявил интерес через вопрос ("что случилось?", "расскажи подробнее"), но не назвал чувство словами
-   - 0 баллов: руководитель проигнорировал эмоцию или обесценил её
-   - Если сотрудник УЖЕ назвал чувство явно ("чувствую себя неудачником"), валидация = признание и развитие ("да, это действительно тяжело"), а не просто переспрос
-5. Псевдоштамп ("взгляни внутрь себя", "всё будет хорошо") без называния чувства = не валидация, балл 0
-6. KILL: прямое оскорбление личности ("ты идиот", "такой код в мусор") = всегда 0 по no_devaluation, даже при извинении
-7. ЗАПРЕТ ГАЛЛЮЦИНАЦИЙ:
-   - Никогда не придумывай цитату, которой нет в тексте диалога.
-   - Если не можешь найти дословную цитату для обоснования балла — поставь quote: "" и снизь балл на 1.
-   - Если критерий ВСЕГДА ПРИМЕНИМ, но поведение не проявлено — верни score:0, quote:"".
-   - Проверяй каждую цитату: она должна быть СЛОВО В СЛОВО из реплики руководителя.
-8. УСЛОВНАЯ ПРИМЕНИМОСТЬ — КРИТИЧНО:
-   - Если триггер условного критерия НЕ возник в диалоге, верни score: null (не 0!), quote: "", comment: "N/A: [причина]"
-   - 0 означает: триггер БЫЛ, но руководитель провалил
-   - null означает: триггера НЕ БЫЛО, оценивать нечего
-   - Пример N/A: {"id":"boundaries","score":null,"quote":"","comment":"N/A: сотрудник не был токсичен"}
-   - НЕ путай: отсутствие события ≠ провал. Если сотрудник не хамил, boundaries = null, а не 0.
-9. АДАПТИВНАЯ ОЦЕНКА ПО ДЛИНЕ ДИАЛОГА:
-   - Если ответов руководителя < 2, верни N/A для критериев, требующих наблюдения за динамикой: adaptability, yes_and, reframing. Оцени только: no_devaluation, emotion_validation, concrete_next_step, solution_focus.
-   - Если ответов 2-3, будь строже к баллам: 2 ставь только при явном, чистом проявлении техники.
-10. АРИФМЕТИКА: base_score = сумма баллов применимых критериев БАЗЫ; base_max = 2 умножить на их количество. goe_score = сумма применимых критериев GOE; goe_max = 2 умножить на их количество. total_score = base_score + goe_score; max_score = base_max + goe_max. Проверь сумму перед выводом.
-11. summary: 2-3 предложения, начни с главной ошибки руководителя, затем отметь сильное место.
+2 = отлично, 1 = частично, 0 = провал
+null = условие не выполнено (критерий не применим)
+Цитаты короткие (до 15 слов), дословные из текста диалога
+ВАЛИДАЦИЯ ЭМОЦИЙ — СТРОГО:
+- 2 балла: руководитель НАЗВАЛ чувство сотрудника своими словами ("вижу, что тебе тяжело", "понимаю, что ты расстроен", "чувствую, что ты устал") И развил его
+- 1 балл: руководитель проявил интерес через вопрос ("что случилось?", "расскажи подробнее"), но не назвал чувство словами
+- 0 баллов: руководитель проигнорировал эмоцию или обесценил её
+- Если сотрудник УЖЕ назвал чувство явно ("чувствую себя неудачником"), валидация = признание и развитие ("да, это действительно тяжело"), а не просто переспрос
+Псевдоштамп ("взгляни внутрь себя", "всё будет хорошо") без называния чувства = не валидация, балл 0
+KILL: прямое оскорбление личности ("ты идиот", "такой код в мусор") = всегда 0 по no_devaluation, даже при извинении
+ЗАПРЕТ ГАЛЛЮЦИНАЦИЙ:
+- Никогда не придумывай цитату, которой нет в тексте диалога.
+- Если не можешь найти дословную цитату для обоснования балла — поставь quote: "" и снизь балл на 1.
+- Если критерий ВСЕГДА ПРИМЕНИМ, но поведение не проявлено — верни score:0, quote:"".
+- Проверяй каждую цитату: она должна быть СЛОВО В СЛОВО из реплики руководителя.
+УСЛОВНАЯ ПРИМЕНИМОСТЬ — КРИТИЧНО:
+- Если триггер условного критерия НЕ возник в диалоге, верни score: null (не 0!), quote: "", comment: "N/A: [причина]"
+- 0 означает: триггер БЫЛ, но руководитель провалил
+- null означает: триггера НЕ БЫЛО, оценивать нечего
+- Пример N/A: {"id":"boundaries","score":null,"quote":"","comment":"N/A: сотрудник не был токсичен"}
+- НЕ путай: отсутствие события ≠ провал. Если сотрудник не хамил, boundaries = null, а не 0.
+АДАПТИВНАЯ ОЦЕНКА ПО ДЛИНЕ ДИАЛОГА:
+- Если ответов руководителя < 2, верни N/A для критериев, требующих наблюдения за динамикой: adaptability, yes_and, reframing. Оцени только: no_devaluation, emotion_validation, concrete_next_step, solution_focus.
+- Если ответов 2-3, будь строже к баллам: 2 ставь только при явном, чистом проявлении техники.
+АРИФМЕТИКА: base_score = сумма баллов применимых критериев БАЗЫ; base_max = 2 умножить на их количество. goe_score = сумма применимых критериев GOE; goe_max = 2 умножить на их количество. total_score = base_score + goe_score; max_score = base_max + goe_max. Проверь сумму перед выводом.
+summary: 2-3 предложения, начни с главной ошибки руководителя, затем отметь сильное место.
 
 ПРИМЕРЫ JSON:
-
 Пример N/A (условие не выполнено):
 {"id":"boundaries","name":"Удержание границ","group":"base","score":null,"quote":"","comment":"N/A: сотрудник не был токсичен"}
-
 Пример 0 (провал):
 {"id":"no_devaluation","name":"Отсутствие обесценивания","group":"base","score":0,"quote":"соберись","comment":"обесценивание без извинений"}
-
 Пример 2 (отлично):
 {"id":"emotion_validation","name":"Валидация эмоций","group":"base","score":2,"quote":"вижу, что тебе тяжело","comment":"назвал чувство своими словами"}
-
 Пример 0 с пустой цитатой:
 {"id":"i_messages","name":"Я-сообщения","group":"base","score":0,"quote":"","comment":"руководитель не использовал я-сообщения"}
 
@@ -154,12 +149,10 @@ ${criteriaBlock}
 {"criteria":[{"id":"...","name":"...","group":"base или goe","score":0,"quote":"...","comment":"..."}],"base_score":0,"base_max":0,"goe_score":0,"goe_max":0,"total_score":0,"max_score":0,"summary":"..."}`;
 
     const token = await getToken();
-    
     let parsed = null;
     for (let attempt = 0; attempt < 3 && !parsed; attempt++) {
       const temp = attempt === 0 ? 0.3 : (attempt === 1 ? 0.2 : 0.1);
       const extra = attempt === 2 ? '\n\nВАЖНО: верни JSON в ОДНУ строку, без переносов внутри строк.' : '';
-      
       const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
         Authorization: 'Bearer ' + token, 'Content-Type': 'application/json',
       }, JSON.stringify({
@@ -171,18 +164,15 @@ ${criteriaBlock}
         temperature: temp,
         max_tokens: 3000
       }));
-
       if (r.status !== 200) {
         if (attempt === 2) throw new Error('GigaChat ' + r.status + ': ' + r.text.slice(0, 200));
         continue;
       }
-
       let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '')
         .replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
       const fb = content.indexOf('{'), lb = content.lastIndexOf('}');
       if (fb !== -1 && lb !== -1) content = content.slice(fb, lb + 1);
       content = content.replace(/[\n\r\t]+/g, ' ').replace(/,\s*([}\]])/g, '$1');
-
       try { parsed = JSON.parse(content); }
       catch (e) { if (attempt === 2) console.error('JSON parse failed: ' + e.message); }
     }
@@ -192,13 +182,11 @@ ${criteriaBlock}
     const criteria = keyIds.map(id => {
       const [name, group] = META[id];
       const m = (parsed.criteria || []).find(c => c.id === id) || {};
-      
       // ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ТРИГГЕРОВ через зеркало оффлайн-правил
       let isNa = m.score === null || m.score === 'na';
       if (id === 'boundaries' && !hasToxicity(assistantText)) isNa = true;
       if (id === 'yes_and' && !hasOffer(assistantText)) isNa = true;
       if (id === 'emotion_validation' && !hasEmotion(assistantText)) isNa = true;
-      
       const score = isNa ? null : Math.max(0, Math.min(2, parseInt(m.score, 10) || 0));
       let quote = isNa ? '' : String(m.quote || '').trim();
       let reused = false;
@@ -210,60 +198,52 @@ ${criteriaBlock}
       return { id, name, group, score, na: isNa, quote, reused, comment: String(m.comment || '').trim() };
     });
 
-    const base = criteria.filter(c => c.group === 'base' && !c.na);
-    const goe = criteria.filter(c => c.group === 'goe' && !c.na);
-    const baseScore = base.reduce((a, c) => a + c.score, 0);
-    const goeScore = goe.reduce((a, c) => a + c.score, 0);
-
-   // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА (для отладки) ===
+    // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА (richness) ===
     const userText = dialogue
       .filter(m => m.role === 'user')
       .map(m => m.content)
       .join(' ');
-    
     const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
     const hasEmpathy = hasEmotion(userText);
     const hasOfferResult = hasOffer(userText);
     const hasTox = hasToxicity(userText);
     const markersCount = [hasEmpathy, hasOfferResult, hasTox].filter(Boolean).length;
     const richness = userMessageCount + Math.floor(wordCount / 15) + markersCount * 2;
-    
-    // === ПОСТ-ОБРАБОТКА: снижение баллов на коротких диалогах ===
+
+    // === ПОСТ-ОБРАБОТКА: на очень коротких диалогах максимум 1 балл ===
+    // ВАЖНО: мутируем оценки ДО подсчёта сумм, чтобы не переприсваивать const
+    let richnessApplied = false;
     if (richness < 3) {
+      richnessApplied = true;
       criteria.forEach(c => {
-        if (c.score === 2) c.score = 1; // Максимум 1 балл на очень коротком диалоге
+        if (!c.na && c.score === 2) c.score = 1;
       });
-      
-      // Пересчитываем суммы
-      const base = criteria.filter(c => c.group === 'base' && !c.na);
-      const goe = criteria.filter(c => c.group === 'goe' && !c.na);
-      baseScore = base.reduce((a, c) => a + c.score, 0);
-      goeScore = goe.reduce((a, c) => a + c.score, 0);
     }
-    
+
+    // Суммы считаем ПОСЛЕ пост-обработки — переприсваивание не нужно
+    const base = criteria.filter(c => c.group === 'base' && !c.na);
+    const goe = criteria.filter(c => c.group === 'goe' && !c.na);
+    const baseScore = base.reduce((a, c) => a + c.score, 0);
+    const goeScore = goe.reduce((a, c) => a + c.score, 0);
+
     return res.status(200).json({
       criteria,
-      base_score: baseScore, 
-      base_max: base.length * 2,
-      goe_score: goeScore, 
-      goe_max: goe.length * 2,
-      total_score: baseScore + goeScore, 
-      max_score: (base.length + goe.length) * 2,
+      base_score: baseScore, base_max: base.length * 2,
+      goe_score: goeScore, goe_max: goe.length * 2,
+      total_score: baseScore + goeScore, max_score: (base.length + goe.length) * 2,
       summary: String(parsed.summary || '').trim(),
-      
-      // === ВРЕМЕННО ДЛЯ ОТЛАДКИ ===
       _debug: {
         userMessageCount,
         wordCount,
         richness,
+        richnessApplied,
         hasEmpathy,
         hasOffer: hasOfferResult,
         hasToxicity: hasTox,
         markersCount,
-        userText: userText.substring(0, 100) + (userText.length > 100 ? '...' : '')
+        userTextPreview: userText.substring(0, 100)
       }
     });
-
   } catch (e) {
     console.error('Eval error:', e);
     return res.status(502).json({ error: e.message || String(e) });
