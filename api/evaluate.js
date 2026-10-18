@@ -221,6 +221,14 @@ ${criteriaBlock}
       goe_score: goeScore, goe_max: goe.length * 2,
       total_score: baseScore + goeScore, max_score: (base.length + goe.length) * 2,
       summary: String(parsed.summary || '').trim()
+      // === ВРЕМЕННО ДЛЯ ОТЛАДКИ (удалим потом) ===
+      _debug: {
+        userMessageCount,
+        richness,
+        hasEmotion: hasEmotion(userText),
+        hasOffer: hasOffer(userText),
+        hasToxicity: hasToxicity(userText)
+      }
     });
 
   } catch (e) {
