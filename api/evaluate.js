@@ -215,19 +215,52 @@ ${criteriaBlock}
     const baseScore = base.reduce((a, c) => a + c.score, 0);
     const goeScore = goe.reduce((a, c) => a + c.score, 0);
 
+   // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА (для отладки) ===
+    const userText = dialogue
+      .filter(m => m.role === 'user')
+      .map(m => m.content)
+      .join(' ');
+    
+    const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
+    const hasEmpathy = hasEmotion(userText);
+    const hasOfferResult = hasOffer(userText);
+    const hasTox = hasToxicity(userText);
+    const markersCount = [hasEmpathy, hasOfferResult, hasTox].filter(Boolean).length;
+    const richness = userMessageCount + Math.floor(wordCount / 15) + markersCount * 2;
+    
+    // === ПОСТ-ОБРАБОТКА: снижение баллов на коротких диалогах ===
+    if (richness < 3) {
+      criteria.forEach(c => {
+        if (c.score === 2) c.score = 1; // Максимум 1 балл на очень коротком диалоге
+      });
+      
+      // Пересчитываем суммы
+      const base = criteria.filter(c => c.group === 'base' && !c.na);
+      const goe = criteria.filter(c => c.group === 'goe' && !c.na);
+      baseScore = base.reduce((a, c) => a + c.score, 0);
+      goeScore = goe.reduce((a, c) => a + c.score, 0);
+    }
+    
     return res.status(200).json({
       criteria,
-      base_score: baseScore, base_max: base.length * 2,
-      goe_score: goeScore, goe_max: goe.length * 2,
-      total_score: baseScore + goeScore, max_score: (base.length + goe.length) * 2,
-      summary: String(parsed.summary || '').trim()
-      // === ВРЕМЕННО ДЛЯ ОТЛАДКИ (удалим потом) ===
+      base_score: baseScore, 
+      base_max: base.length * 2,
+      goe_score: goeScore, 
+      goe_max: goe.length * 2,
+      total_score: baseScore + goeScore, 
+      max_score: (base.length + goe.length) * 2,
+      summary: String(parsed.summary || '').trim(),
+      
+      // === ВРЕМЕННО ДЛЯ ОТЛАДКИ ===
       _debug: {
         userMessageCount,
+        wordCount,
         richness,
-        hasEmotion: hasEmotion(userText),
-        hasOffer: hasOffer(userText),
-        hasToxicity: hasToxicity(userText)
+        hasEmpathy,
+        hasOffer: hasOfferResult,
+        hasToxicity: hasTox,
+        markersCount,
+        userText: userText.substring(0, 100) + (userText.length > 100 ? '...' : '')
       }
     });
 
