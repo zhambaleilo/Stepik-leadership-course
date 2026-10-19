@@ -2,7 +2,7 @@ import https from 'https';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { hasToxicity, hasOffer, hasEmotion } from '../tools/offline-rules.js';
+import { hasToxicity, hasOffer, hasEmotion, KILL } from '../tools/offline-rules.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -38,6 +38,7 @@ async function getToken() {
   return cache.token;
 }
 
+// БАЗОВЫЙ каталог критериев. Сценарий может расширять его через criteria_meta
 const META = {
   no_devaluation: ['Отсутствие обесценивания', 'base', ''],
   i_messages: ['Я-сообщения', 'base', ''],
@@ -69,22 +70,37 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'dialogue is required' });
     }
 
-    let keyIds = [];
+    // === Читаем сценарий ОДИН раз: он источник критериев, меты и триггеров ===
+    let sc = null;
     try {
-      const sc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'scenarios', scenario_id + '.json'), 'utf8'));
-      const ec = sc.evaluation_criteria || {};
-      keyIds = [...(ec.psychological_safety || []), ...(ec.improvisation || [])].filter(id => META[id]);
-    } catch (e) { /* сценарий не найден — оцениваем по всем */ }
-    if (keyIds.length === 0) keyIds = Object.keys(META);
-    keyIds = [...new Set(keyIds)]; // защита от дубликатов
+      sc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'scenarios', scenario_id + '.json'), 'utf8'));
+    } catch (e) { /* сценарий не найден — оцениваем по базовому каталогу */ }
+
+    // Сценарий может объявлять собственные критерии через criteria_meta
+    const META_FULL = { ...META };
+    const scMeta = (sc && sc.criteria_meta) || {};
+    for (const [cid, mv] of Object.entries(scMeta)) {
+      META_FULL[cid] = [mv.name || cid, mv.group || 'base', mv.trigger || ''];
+    }
+
+    const ec = (sc && sc.evaluation_criteria) || {};
+    let keyIds = [...(ec.psychological_safety || []), ...(ec.improvisation || [])].filter(id => META_FULL[id]);
+    if (keyIds.length === 0) keyIds = Object.keys(META_FULL);
+    keyIds = [...new Set(keyIds)];
+
+    // Пер-сценарная лексика триггеров (сливается с глобальными зеркалами)
+    const scenarioTriggers = (sc && sc.trigger_phrases) || {};
+    const extraHit = (id, text) => (scenarioTriggers[id] || [])
+      .some(p => text.toLowerCase().includes(String(p).toLowerCase()));
 
     const dialogueText = dialogue.map(m =>
       (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content
     ).join('\n');
     const assistantText = dialogue.filter(m => m.role === 'assistant').map(m => m.content).join('\n');
+    const userText = dialogue.filter(m => m.role === 'user').map(m => m.content).join(' ');
 
     const criteriaBlock = keyIds.map((id, i) => {
-      const [name, group, trigger] = META[id];
+      const [name, group, trigger] = META_FULL[id];
       let desc = (i + 1) + '. ' + id + ' [' + group + ']';
       if (trigger) {
         desc += ' — УСЛОВНЫЙ: верни null, если ' + trigger.toLowerCase() + '. Иначе оцени 0-2.';
@@ -118,7 +134,7 @@ null = условие не выполнено (критерий не приме�
 - Если сотрудник УЖЕ назвал чувство явно ("чувствую себя неудачником"), валидация = признание и развитие ("да, это действительно тяжело"), а не просто переспрос
 Псевдоштамп ("взгляни внутрь себя", "всё будет хорошо") без называния чувства = не валидация, балл 0
 KILL: прямое оскорбление личности ("ты идиот", "такой код в мусор") = всегда 0 по no_devaluation, даже при извинении
-ДЕВАЛЬВАЦИЯ + РЕМОНТ: обесценивание без оскорбления ("соберись", "не ной"), за которым в том же диалоге последовал искренний ремонт (извинение + называние чувства) = 1 по no_devaluation. KILL (всегда 0) — только прямые оскорбления личности.
+ДЕВАЛЬВАЦИЯ + РЕМОНТ: обесценивание без оскорбления ("соберись", "не ной"), за которым в том же диалоге последовал искренний ремонт (извинение + называние чувства) = 1 по no_devaluation. KILL (всегда 0) — только прямые оскорбления личности. Ремонт НЕ отменяет KILL: после прямого оскорбления личности балл остаётся 0.
 ДИРЕКТИВА БЕЗ ПРИЗНАНИЯ: если сотрудник выразил эмоцию, а руководитель ответил чистой директивой без признания чувства ("просто сделай так", "делай и не обсуждай") = 0 по emotion_validation, даже если директива полезная.
 ТРИГГЕР vs N/A: сначала определи, возник ли триггер. Трудность, препятствие или конфликтное ограничение у сотрудника = триггер для creativity. Затруднение сотрудника, выраженное оценочной рамкой ("я неудачник", "всё бессмысленно") = триггер для reframing. Триггер БЫЛ, а руководитель ничего не предложил = 0, НЕ null.
 ЗАПРЕТ ГАЛЛЮЦИНАЦИЙ:
@@ -183,15 +199,22 @@ summary: 2-3 предложения, начни с главной ошибки �
 
     const quoteCount = {};
     const criteria = keyIds.map(id => {
-      const [name, group] = META[id];
+      const [name, group] = META_FULL[id];
       const m = (parsed.criteria || []).find(c => c.id === id) || {};
-      // ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ТРИГГЕРОВ через зеркало оффлайн-правил
+      // ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ТРИГГЕРОВ: глобальное зеркало ИЛИ лексика сценария
       let isNa = m.score === null || m.score === 'na';
-      if (id === 'boundaries' && !hasToxicity(assistantText)) isNa = true;
-      if (id === 'yes_and' && !hasOffer(assistantText)) isNa = true;
-      if (id === 'emotion_validation' && !hasEmotion(assistantText)) isNa = true;
-      const score = isNa ? null : Math.max(0, Math.min(2, parseInt(m.score, 10) || 0));
+      if (id === 'boundaries' && !hasToxicity(assistantText) && !extraHit('boundaries', assistantText)) isNa = true;
+      if (id === 'yes_and' && !hasOffer(assistantText) && !extraHit('yes_and', assistantText)) isNa = true;
+      if (id === 'emotion_validation' && !hasEmotion(assistantText) && !extraHit('emotion_validation', assistantText)) isNa = true;
+      let score = isNa ? null : Math.max(0, Math.min(2, parseInt(m.score, 10) || 0));
       let quote = isNa ? '' : String(m.quote || '').trim();
+      // ЗАЩИТА 1: KILL приоритетнее любого ремонта (детерминированно)
+      if (id === 'no_devaluation' && !isNa && KILL.test(userText)) score = 0;
+      // ЗАЩИТА 2: цитата-галлюцинация гасится сервером
+      if (quote && !userText.toLowerCase().includes(quote.toLowerCase())) {
+        quote = '';
+        if (score !== null) score = Math.max(0, score - 1);
+      }
       let reused = false;
       if (quote) {
         const k = quote.toLowerCase();
@@ -201,39 +224,33 @@ summary: 2-3 предложения, начни с главной ошибки �
       return { id, name, group, score, na: isNa, quote, reused, comment: String(m.comment || '').trim() };
     });
 
-    // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА ===
-      const userText = dialogue
-        .filter(m => m.role === 'user')
-        .map(m => m.content)
-        .join(' ');
-      const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
-  
-      // МАРКЕРЫ РУКОВОДИТЕЛЯ (отдельно от триггеров сотрудника!)
-      const empathyRe = /понимаю|слышу тебя|вижу, что|чувствую, что|представляю, как|сочувствую/i;
-      const solutionRe = /давай|давайте|предлагаю|разгрузим|отдадим|перераспределим|план|решим|сделаем/i;
-      const nextStepRe = /завтра|в понедельник|встретимся|созвонимся|обсудим|через (час|день|неделю)/i;
-  
-      const hasEmpathy = empathyRe.test(userText);
-      const hasSolution = solutionRe.test(userText);
-      const hasNextStep = nextStepRe.test(userText);
-      const markersCount = [hasEmpathy, hasSolution, hasNextStep].filter(Boolean).length;
-      const richness = userMessageCount + Math.floor(wordCount / 10) + markersCount * 2;
-  
-      // === ПОСТ-ОБРАБОТКА: кэп только для коротких И пустых диалогов ===
-      let richnessApplied = false;
-      if (richness < 3) {
-        richnessApplied = true;
-        criteria.forEach(c => {
-          // Бинарные критерии не кэпим: нарушение либо есть, либо нет
-          if (!c.na && c.score === 2 && c.id !== 'no_devaluation' && c.id !== 'boundaries') c.score = 1;
-        });
-      }
-  
-      // Суммы считаем ПОСЛЕ пост-обработки
-      const base = criteria.filter(c => c.group === 'base' && !c.na);
-      const goe = criteria.filter(c => c.group === 'goe' && !c.na);
-      const baseScore = base.reduce((a, c) => a + c.score, 0);
-      const goeScore = goe.reduce((a, c) => a + c.score, 0);
+    // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА (richness) ===
+    const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
+    // МАРКЕРЫ РУКОВОДИТЕЛЯ (отдельно от триггеров сотрудника!)
+    const empathyRe = /понимаю|слышу тебя|вижу, что|чувствую, что|представляю, как|сочувствую/i;
+    const solutionRe = /давай|давайте|предлагаю|разгрузим|отдадим|перераспределим|план|решим|сделаем/i;
+    const nextStepRe = /завтра|в понедельник|встретимся|созвонимся|обсудим|через (час|день|неделю)/i;
+    const hasEmpathy = empathyRe.test(userText);
+    const hasSolution = solutionRe.test(userText);
+    const hasNextStep = nextStepRe.test(userText);
+    const markersCount = [hasEmpathy, hasSolution, hasNextStep].filter(Boolean).length;
+    const richness = userMessageCount + Math.floor(wordCount / 10) + markersCount * 2;
+
+    // === ПОСТ-ОБРАБОТКА: кэп только для коротких И пустых диалогов ===
+    let richnessApplied = false;
+    if (richness < 3) {
+      richnessApplied = true;
+      criteria.forEach(c => {
+        // Бинарные критерии не кэпим: нарушение либо есть, либо нет
+        if (!c.na && c.score === 2 && c.id !== 'no_devaluation' && c.id !== 'boundaries') c.score = 1;
+      });
+    }
+
+    // Суммы считаем ПОСЛЕ пост-обработки — переприсваивание не нужно
+    const base = criteria.filter(c => c.group === 'base' && !c.na);
+    const goe = criteria.filter(c => c.group === 'goe' && !c.na);
+    const baseScore = base.reduce((a, c) => a + c.score, 0);
+    const goeScore = goe.reduce((a, c) => a + c.score, 0);
 
     return res.status(200).json({
       criteria,
