@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import https from 'https';
 import crypto from 'crypto';
+import { hasToxicity } from '../tools/offline-rules.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -60,7 +61,9 @@ async function giga(messages, temperature, maxTokens) {
   }));
   if (r.status !== 200) throw new Error('chat ' + r.status + ': ' + r.text.slice(0, 120));
   const j = JSON.parse(r.text);
-  return (j.choices?.[0]?.message?.content || '').trim();
+  const content = (j.choices?.[0]?.message?.content || '').trim();
+  if (!content) throw new Error('GigaChat вернул пустой ответ');
+  return content;
 }
 
 export default async function handler(req, res) {
@@ -84,7 +87,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'scenario_id and user_message are required' });
     }
 
-    // 1. Чтение сценария из файловой системы Vercel
+    // 1. Чтение сценария
     const scenarioPath = path.join(process.cwd(), 'scenarios', `${scenario_id}.json`);
     let scenario;
     try {
@@ -94,34 +97,49 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Scenario not found' });
     }
 
-    // 2. Проверка динамических триггеров
-    const updatedElements = { ...scenario.active_elements };
+    // 2. Валидация обязательных полей сценария
+    const persona = scenario.ai_persona || {};
+    if (!persona.name || !persona.role) {
+      console.error('Scenario missing ai_persona.name or ai_persona.role:', scenario_id);
+      return res.status(500).json({ error: 'Scenario misconfigured: missing persona' });
+    }
+
+    // 3. Проверка динамических триггеров
+    const updatedElements = { ...(scenario.active_elements || {}) };
     if (scenario.dynamic_triggers) {
       for (const trigger of scenario.dynamic_triggers) {
-        const regex = new RegExp(trigger.keyword, 'i');
-        if (regex.test(user_message)) {
-          if (trigger.action === 'show_calendar') updatedElements.calendar = true;
-          if (trigger.action === 'show_dashboard') updatedElements.dashboard = true;
-          if (trigger.action === 'show_tasks') updatedElements.tasks = true;
-          if (trigger.action === 'show_email') updatedElements.email = true;
+        try {
+          const regex = new RegExp(trigger.keyword, 'i');
+          if (regex.test(user_message)) {
+            if (trigger.action === 'show_calendar') updatedElements.calendar = true;
+            if (trigger.action === 'show_dashboard') updatedElements.dashboard = true;
+            if (trigger.action === 'show_tasks') updatedElements.tasks = true;
+            if (trigger.action === 'show_email') updatedElements.email = true;
+          }
+        } catch (e) {
+          console.error('Bad regex in dynamic_triggers:', trigger.keyword, e.message);
         }
       }
     }
 
-    // 3. Формирование системного промпта для ИИ-сотрудника
-    const persona = scenario.ai_persona;
+    // 4. Детерминированный детект токсичности игрока
+    const playerIsToxic = hasToxicity(user_message);
+
+    // 5. Формирование системного промпта
     const systemPrompt = `Ты играешь роль: ${persona.name}, ${persona.role}.
-Твое скрытое состояние: ${persona.hidden_state}.
-Твой стиль общения: ${persona.communication_style}.
-Контекст ситуации: ${scenario.context}.
-Цель игрока (руководителя): ${scenario.player_goal}.
+Твое скрытое состояние: ${persona.hidden_state || 'не указано'}.
+Твой стиль общения: ${persona.communication_style || 'нейтральный, деловой'}.
+Контекст ситуации: ${scenario.context || ''}.
+Цель игрока (руководителя): ${scenario.player_goal || ''}.
+${playerIsToxic ? '\nВАЖНО: Последняя реплика игрока токсична (давление, обвинения, угрозы). Реагируй соответственно — замыкайся, будь односложным или с пассивной агрессией.' : ''}
 
 Правила:
 1. Отвечай ТОЛЬКО от лица персонажа, коротко (1-3 предложения), как в рабочем мессенджере.
 2. Не используй форматирование Markdown, пиши как живой человек.
 3. Если игрок проявляет эмпатию, постепенно раскрывай свое скрытое состояние.
 4. Если игрок токсичен или давит, замыкайся, отвечай односложно или с пассивной агрессией.
-5. НИКОГДА не раскрывай, что ты ИИ или что это игра.`;
+5. НИКОГДА не раскрывай, что ты ИИ или что это игра.
+6. Помни предыдущие реплики — диалог развивается, не начинай каждый раз сначала.`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -129,10 +147,12 @@ export default async function handler(req, res) {
       { role: 'user', content: user_message }
     ];
 
-    // 4. Запрос к GigaChat (температура 0.7 для баланса креативности и предсказуемости)
-    const aiResponse = await giga(messages, 0.7, 150);
+    // 6. Запрос к GigaChat
+    // Температура 0.55 — баланс между ролевой игрой и предсказуемостью
+    // max_tokens 220 — с запасом для русского языка
+    const aiResponse = await giga(messages, 0.55, 220);
 
-    // 5. Возврат результата
+    // 7. Возврат результата
     return res.status(200).json({
       ai_response: aiResponse,
       updated_elements: updatedElements
