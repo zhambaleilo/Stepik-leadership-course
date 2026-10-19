@@ -20,7 +20,7 @@ collections:
       - {label: "Slug (адрес статьи латиницей)", name: "slug", widget: "string", pattern: ["^[a-z0-9-]+$", "Только строчные латинские буквы, цифры и дефисы"], hint: "Короткий адрес через дефисы, например: express-audit-psihosocialnyh-riskov. Дата подставится автоматически."}
       - {label: "Дата", name: "date", widget: "datetime"}
       - {label: "Краткое описание для карточки (одна строка)", name: "description", widget: "string"}
-      - {label: "Подзаголовок статьи (можно длинный, не обяз.)", name: "lead", widget: "text", required: false}      
+      - {label: "Подзаголовок статьи (можно длинный, не обяз.)", name: "lead", widget: "text", required: false}
       - {label: "Теги через запятую", name: "tags", widget: "string", required: false}
       - {label: "Обложка (необязательно)", name: "cover", widget: "image", required: false}
       - {label: "Текст статьи", name: "body", widget: "markdown"}
@@ -34,11 +34,11 @@ collections:
     fields:
       - {label: "ID сценария (латиница, без пробелов)", name: "scenario_id", widget: "string", pattern: ["^[a-z0-9_]+$", "Только строчные буквы, цифры и подчеркивание"], hint: "Например: burnout_alexey_01"}
       - {label: "Название сценария", name: "title", widget: "string", hint: "Например: Пятничный срыв"}
-      - {label: "Первое сообщение сотрудника", name: "initial_message", widget: "text", hint: "Фраза, которой сотрудник начинает диалог. Попадает на карточку и в чат.", required: true}
+      - {label: "Первое сообщение сотрудника", name: "initial_message", widget: "text", required: true, hint: "Фраза, которой сотрудник начинает диалог. Попадает на карточку и в чат."}
       - {label: "Сложность", name: "difficulty", widget: "select", options: ["easy", "medium", "hard"]}
       - {label: "Контекст ситуации", name: "context", widget: "text", hint: "Описание ситуации для игрока"}
       - {label: "Цель игрока", name: "player_goal", widget: "text", hint: "Что должен достичь игрок"}
-      
+
       - label: "Персонаж ИИ"
         name: "ai_persona"
         widget: "object"
@@ -47,7 +47,7 @@ collections:
           - {label: "Роль в компании", name: "role", widget: "string"}
           - {label: "Скрытое состояние", name: "hidden_state", widget: "string", hint: "Что он чувствует на самом деле (не видно игроку)"}
           - {label: "Стиль коммуникации", name: "communication_style", widget: "text", hint: "Как он обычно общается"}
-          
+
       - label: "Активные элементы UI"
         name: "active_elements"
         widget: "object"
@@ -57,7 +57,7 @@ collections:
           - {label: "Дашборд команды", name: "dashboard", widget: "boolean", default: false}
           - {label: "Доска задач", name: "tasks", widget: "boolean", default: false}
           - {label: "Почта", name: "email", widget: "boolean", default: false}
-          
+
       - label: "Динамические триггеры"
         name: "dynamic_triggers"
         widget: "list"
@@ -65,37 +65,40 @@ collections:
         fields:
           - {label: "Ключевые слова (через |)", name: "keyword", widget: "string", hint: "Например: дедлайн|срок|завтра"}
           - {label: "Действие", name: "action", widget: "select", options: ["show_calendar", "show_dashboard", "show_tasks", "show_email"]}
-          
+
       - label: "Критерии оценки"
         name: "evaluation_criteria"
         widget: "object"
         fields:
-          - label: "Психологическая безопасность (6 критериев)"
+          - label: "Психологическая безопасность (база)"
             name: "psychological_safety"
-            widget: "list"
-            field: {label: "ID критерия", name: "criterion", widget: "string", hint: "Например: emotion_validation"}
-          - label: "Импровизация (5 критериев)"
+            widget: "select"
+            multiple: true
+            hint: "Отметь нужные базовые критерии. Список фиксирует методику — опечатки невозможны."
+            options:
+              - {label: "Отсутствие обесценивания", value: "no_devaluation"}
+              - {label: "Я-сообщения", value: "i_messages"}
+              - {label: "Фокус на решении", value: "solution_focus"}
+              - {label: "Конкретный следующий шаг", value: "concrete_next_step"}
+              - {label: "Валидация эмоций", value: "emotion_validation"}
+              - {label: "Удержание границ", value: "boundaries"}
+          - label: "Импровизация (GOE)"
             name: "improvisation"
-            widget: "list"
-            field: {label: "ID критерия", name: "criterion", widget: "string", hint: "Например: yes_and"}
+            widget: "select"
+            multiple: true
+            hint: "Отметь нужные техники мастерства."
+            options:
+              - {label: "Активное слушание", value: "active_listening"}
+              - {label: "Адаптивность", value: "adaptability"}
+              - {label: "Принцип «Да, и…»", value: "yes_and"}
+              - {label: "Переформулирование", value: "reframing"}
+              - {label: "Креативность", value: "creativity"}
 
       - label: "Лексика сотрудника (триггеры оценки)"
         name: "trigger_phrases"
         widget: "object"
-        hint: "Уникальные фразы сотрудника этого сценария. Сливаются с глобальными regex, чтобы критерии не уходили в N/A по ошибке."
+        hint: "Уникальные фразы сотрудника этого сценария. Сливаются с глобальными regex, чтобы критерии не уходили в N/A по ошибке. Одна фраза = одна строка."
         fields:
-          - label: "Фразы эмоций"
-            name: "emotion_validation"
-            widget: "list"
-            required: false
-            field: {label: "Фраза", name: "phrase", widget: "string"}
-          - label: "Фразы предложений и идей"
-            name: "yes_and"
-            widget: "list"
-            required: false
-            field: {label: "Фраза", name: "phrase", widget: "string"}
-          - label: "Фразы токсичности и давления"
-            name: "boundaries"
-            widget: "list"
-            required: false
-            field: {label: "Фраза", name: "phrase", widget: "string"}
+          - {label: "Фразы эмоций (для Валидации эмоций)", name: "emotion_validation", widget: "list", required: false, string: {label: "Фраза"}}
+          - {label: "Фразы предложений и идей (для Да, и…)", name: "yes_and", widget: "list", required: false, string: {label: "Фраза"}}
+          - {label: "Фразы токсичности и давления (для Границ)", name: "boundaries", widget: "list", required: false, string: {label: "Фраза"}}
