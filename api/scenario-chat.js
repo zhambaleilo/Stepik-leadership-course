@@ -104,7 +104,7 @@ export default async function handler(req, res) {
     }
 
     // 3. Проверка динамических триггеров (УНИВЕРСАЛЬНОЕ РЕШЕНИЕ)
-    // Инициализируем все возможные виджеты в false, затем накладываем настройки сценария
+    // Инициализируем базовые элементы, затем динамически включаем нужные по action
     const updatedElements = { 
       chat: true, 
       calendar: false, 
@@ -117,10 +117,10 @@ export default async function handler(req, res) {
     if (scenario.dynamic_triggers && Array.isArray(scenario.dynamic_triggers)) {
       for (const trigger of scenario.dynamic_triggers) {
         try {
-          // Универсальный regex с игнорированием регистра
+          // Универсальный regex с игнорированием регистра (работает для "ai|нейросеть|...")
           const regex = new RegExp(trigger.keyword, 'i');
           if (regex.test(user_message)) {
-            // Динамически извлекаем ключ из action (например, "show_tasks" -> "tasks")
+            // Динамически извлекаем ключ: "show_tasks" -> "tasks"
             const actionKey = trigger.action.replace('show_', '');
             if (actionKey in updatedElements) {
               updatedElements[actionKey] = true;
