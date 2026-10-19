@@ -32,7 +32,7 @@ function sreq(method, urlStr, headers, body) {
 
 async function getToken() {
   if (cache.token && Date.now() < cache.exp - 60000) return cache.token;
-  const auth = process.env.GIGACHAT_AUTH_KEY ||
+  const auth = process.env.GIGACHAT_AUTH_KEY || 
     Buffer.from((process.env.GIGACHAT_CLIENT_ID || '') + ':' + (process.env.GIGACHAT_CLIENT_SECRET || '')).toString('base64');
   const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
   
@@ -53,12 +53,13 @@ async function giga(messages, temperature, maxTokens) {
   const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', {
     Authorization: 'Bearer ' + token,
     'Content-Type': 'application/json',
-  }, JSON.stringify({ 
-    model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro', 
-    messages, 
-    temperature, 
-    max_tokens: maxTokens 
+  }, JSON.stringify({
+    model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
+    messages,
+    temperature,
+    max_tokens: maxTokens
   }));
+  
   if (r.status !== 200) throw new Error('chat ' + r.status + ': ' + r.text.slice(0, 120));
   const j = JSON.parse(r.text);
   const content = (j.choices?.[0]?.message?.content || '').trim();
@@ -69,20 +70,18 @@ async function giga(messages, temperature, maxTokens) {
 export default async function handler(req, res) {
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
   const origin = req.headers.origin || '';
-  
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   }
-  
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   try {
     const b = req.body || {};
     const { scenario_id, user_message, history = [] } = b;
-
+    
     if (!scenario_id || !user_message) {
       return res.status(400).json({ error: 'scenario_id and user_message are required' });
     }
@@ -104,20 +103,37 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Scenario misconfigured: missing persona' });
     }
 
-    // 3. Проверка динамических триггеров
-    const updatedElements = { ...(scenario.active_elements || {}) };
-    if (scenario.dynamic_triggers) {
+    // 3. Проверка динамических триггеров (УНИВЕРСАЛЬНОЕ РЕШЕНИЕ)
+    // Инициализируем все возможные виджеты в false, затем накладываем настройки сценария
+    const updatedElements = { 
+      chat: true, 
+      calendar: false, 
+      dashboard: false, 
+      tasks: false, 
+      email: false,
+      ...(scenario.active_elements || {}) 
+    };
+
+    if (scenario.dynamic_triggers && Array.isArray(scenario.dynamic_triggers)) {
       for (const trigger of scenario.dynamic_triggers) {
         try {
+          // Универсальный regex с игнорированием регистра
           const regex = new RegExp(trigger.keyword, 'i');
           if (regex.test(user_message)) {
-            if (trigger.action === 'show_calendar') updatedElements.calendar = true;
-            if (trigger.action === 'show_dashboard') updatedElements.dashboard = true;
-            if (trigger.action === 'show_tasks') updatedElements.tasks = true;
-            if (trigger.action === 'show_email') updatedElements.email = true;
+            // Динамически извлекаем ключ из action (например, "show_tasks" -> "tasks")
+            const actionKey = trigger.action.replace('show_', '');
+            if (actionKey in updatedElements) {
+              updatedElements[actionKey] = true;
+            }
           }
         } catch (e) {
-          console.error('Bad regex in dynamic_triggers:', trigger.keyword, e.message);
+          // Fallback на случай невалидного regex в JSON (чтобы бэкенд не упал)
+          if (user_message.toLowerCase().includes(trigger.keyword.toLowerCase())) {
+            const actionKey = trigger.action.replace('show_', '');
+            if (actionKey in updatedElements) {
+              updatedElements[actionKey] = true;
+            }
+          }
         }
       }
     }
@@ -132,14 +148,13 @@ export default async function handler(req, res) {
 Контекст ситуации: ${scenario.context || ''}.
 Цель игрока (руководителя): ${scenario.player_goal || ''}.
 ${playerIsToxic ? '\nВАЖНО: Последняя реплика игрока токсична (давление, обвинения, угрозы). Реагируй соответственно — замыкайся, будь односложным или с пассивной агрессией.' : ''}
-
 Правила:
-1. Отвечай ТОЛЬКО от лица персонажа, коротко (1-3 предложения), как в рабочем мессенджере.
-2. Не используй форматирование Markdown, пиши как живой человек.
-3. Если игрок проявляет эмпатию, постепенно раскрывай свое скрытое состояние.
-4. Если игрок токсичен или давит, замыкайся, отвечай односложно или с пассивной агрессией.
-5. НИКОГДА не раскрывай, что ты ИИ или что это игра.
-6. Помни предыдущие реплики — диалог развивается, не начинай каждый раз сначала.`;
+Отвечай ТОЛЬКО от лица персонажа, коротко (1-3 предложения), как в рабочем мессенджере.
+Не используй форматирование Markdown, пиши как живой человек.
+Если игрок проявляет эмпатию, постепенно раскрывай свое скрытое состояние.
+Если игрок токсичен или давит, замыкайся, отвечай односложно или с пассивной агрессией.
+НИКОГДА не раскрывай, что ты ИИ или что это игра.
+Помни предыдущие реплики — диалог развивается, не начинай каждый раз сначала.`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -148,8 +163,6 @@ ${playerIsToxic ? '\nВАЖНО: Последняя реплика игрока 
     ];
 
     // 6. Запрос к GigaChat
-    // Температура 0.55 — баланс между ролевой игрой и предсказуемостью
-    // max_tokens 220 — с запасом для русского языка
     const aiResponse = await giga(messages, 0.55, 220);
 
     // 7. Возврат результата
@@ -157,7 +170,6 @@ ${playerIsToxic ? '\nВАЖНО: Последняя реплика игрока 
       ai_response: aiResponse,
       updated_elements: updatedElements
     });
-
   } catch (e) {
     console.error('Scenario chat error:', e);
     return res.status(502).json({ error: String(e.code || e.message || e) });
