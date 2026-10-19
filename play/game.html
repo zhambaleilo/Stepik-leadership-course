@@ -36,7 +36,6 @@
       overflow: hidden;
     }
 
-    /* --- Общие стили окон --- */
     .window {
       background: var(--window-bg);
       backdrop-filter: blur(12px);
@@ -66,7 +65,6 @@
     .dot.yellow { background: #f59e0b; }
     .dot.green { background: #10b981; }
 
-    /* --- Экраны входа и выбора (Модальные окна) --- */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -89,7 +87,7 @@
     .modal-content p { color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
 
     .input-group { display: flex; flex-direction: column; gap: 12px; }
-    
+
     input[type="text"] {
       padding: 14px 16px;
       border: 2px solid #e2e8f0;
@@ -117,7 +115,6 @@
     .error-msg { color: var(--danger); font-size: 14px; margin-top: 8px; display: none; }
     .success-msg { color: var(--success); font-size: 14px; margin-top: 8px; display: none; font-weight: 600; }
 
-    /* --- Сетка сценариев --- */
     .scenario-grid { display: grid; gap: 16px; text-align: left; }
     .scenario-card {
       background: white;
@@ -136,18 +133,18 @@
     .scenario-card .role { font-size: 12px; text-transform: uppercase; color: var(--primary); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; }
     .scenario-card p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
-    /* --- Рабочий стол (Основной интерфейс) --- */
     #desktopEnvironment {
-      display: none;
+      display: grid;
       width: 100%;
       max-width: 1200px;
       height: 85vh;
       gap: 24px;
       grid-template-columns: 1fr 320px;
     }
+    #desktopEnvironment.hidden { display: none !important; }
 
     #chatWindow { flex: 1; display: flex; flex-direction: column; }
-    
+
     #chatMessages {
       flex: 1;
       overflow-y: auto;
@@ -190,7 +187,6 @@
     }
     .chat-input-area input { flex: 1; }
 
-    /* Панель виджетов */
     #widgetPanel { display: flex; flex-direction: column; gap: 16px; }
     .widget { padding: 20px; background: rgba(255, 255, 255, 0.9); }
 
@@ -223,13 +219,11 @@
       margin-bottom: 8px;
       font-size: 14px;
     }
-    .task-item input { cursor: pointer; }
 
     .btn-finish { width: 100%; background: var(--success); color: white; margin-top: auto; }
     .btn-finish:hover { background: #059669; }
 
-    /* --- Экран результатов --- */
-    /* ВАЖНО: display: none убран отсюда, управляется только классом .hidden */
+    /* Экран результатов: управляется ТОЛЬКО классом .hidden */
     #resultsScreen .window {
       width: 100%;
       max-width: 900px;
@@ -278,7 +272,7 @@
       border-left: 4px solid var(--primary);
     }
     .criterion-card.na { opacity: 0.6; border-left-color: var(--text-muted); }
-    
+
     .c-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .c-name { font-size: 15px; font-weight: 700; }
     .c-score { font-size: 18px; font-weight: 800; }
@@ -291,15 +285,15 @@
     @media (max-width: 768px) {
       body { padding: 10px; overflow: auto; }
       #desktopEnvironment {
-        grid-template-columns: 1fr !important;
-        height: auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
+        grid-template-columns: 1fr;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
       }
       #chatWindow { min-height: 400px; }
       #chatMessages { max-height: 300px; }
-      .message { max-width: 90% !important; font-size: 14px; padding: 12px 16px; }
+      .message { max-width: 90%; font-size: 14px; padding: 12px 16px; }
       #widgetPanel { order: -1; }
       .widget { padding: 16px; }
       .window-header { font-size: 12px; padding: 10px 16px; }
@@ -350,11 +344,11 @@
   </div>
 
   <!-- 3. Рабочий стол (Чат + Виджеты) -->
-  <div id="desktopEnvironment">
+  <div id="desktopEnvironment" class="hidden">
     <div id="chatWindow" class="window">
       <div class="window-header">
         <div class="window-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
-        <span id="chatWindowTitle">Чат: Алексей · Ведущий разработчик</span>
+        <span id="chatWindowTitle">Чат</span>
         <span style="font-size: 12px; color: var(--success);">● В сети</span>
       </div>
       <div id="chatMessages"></div>
@@ -416,7 +410,8 @@
 
   <script>
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
-    
+
+    // Fallback-список, если /api/scenarios недоступен
     const AVAILABLE_SCENARIOS = [
       {
         id: 'burnout_alexey_01',
@@ -427,6 +422,7 @@
       }
     ];
 
+    let SCENARIOS = [];
     let accessCodeId = null;
     let remainingSessions = 0;
     let currentScenarioId = '';
@@ -438,29 +434,29 @@
       const code = document.getElementById('passwordInput').value.trim();
       const errorEl = document.getElementById('errorMessage');
       const sessionInfoEl = document.getElementById('sessionInfo');
-      
+
       if (!code) {
         errorEl.textContent = 'Введите пароль';
         errorEl.style.display = 'block';
         return;
       }
-      
+
       try {
         const res = await fetch(`${API_BASE}/api/verify-code`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code })
         });
-        
+
         const data = await res.json();
-        
+
         if (data.valid) {
           accessCodeId = data.access_code_id;
           remainingSessions = data.remaining_sessions;
           errorEl.style.display = 'none';
           sessionInfoEl.textContent = `✓ Доступ разрешён. Осталось сессий: ${remainingSessions}`;
           sessionInfoEl.style.display = 'block';
-          
+
           setTimeout(() => {
             document.getElementById('passwordScreen').classList.add('hidden');
             document.getElementById('scenarioScreen').classList.remove('hidden');
@@ -478,10 +474,22 @@
       }
     }
 
-    // 2. ОТРИСОВКА СПИСКА СЦЕНАРИЕВ
-    function renderScenarios() {
+    // 2. СПИСОК СЦЕНАРИЕВ: сначала с сервера, fallback — локальный список
+    async function loadScenarios() {
+      try {
+        const res = await fetch(`${API_BASE}/api/scenarios`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.scenarios) && data.scenarios.length) return data.scenarios;
+        }
+      } catch (e) { console.warn('Список сценариев недоступен, использую fallback'); }
+      return AVAILABLE_SCENARIOS;
+    }
+
+    async function renderScenarios() {
+      SCENARIOS = await loadScenarios();
       const container = document.getElementById('scenarioList');
-      container.innerHTML = AVAILABLE_SCENARIOS.map(scenario => `
+      container.innerHTML = SCENARIOS.map(scenario => `
         <div class="scenario-card" onclick="selectScenario('${scenario.id}')">
           <h3>${scenario.title}</h3>
           <div class="role">${scenario.role}</div>
@@ -493,19 +501,21 @@
     // 3. ВЫБОР СЦЕНАРИЯ И ЗАПУСК
     function selectScenario(scenarioId) {
       currentScenarioId = scenarioId;
-      const scenario = AVAILABLE_SCENARIOS.find(s => s.id === scenarioId);
-      
+      const scenario = SCENARIOS.find(s => s.id === scenarioId) ||
+                       AVAILABLE_SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario) { alert('Сценарий не найден'); return; }
+
       document.getElementById('chatWindowTitle').textContent = `Чат: ${scenario.title}`;
-      
+
       chatHistory = [];
       teamState = { stress: 92, trust: 45 };
       renderTeamState();
-      
+
       chatHistory.push({ role: 'assistant', content: scenario.initialMessage });
-      
+
       document.getElementById('scenarioScreen').classList.add('hidden');
-      document.getElementById('desktopEnvironment').style.display = 'grid';
-      
+      document.getElementById('desktopEnvironment').classList.remove('hidden');
+
       const chatMessages = document.getElementById('chatMessages');
       chatMessages.innerHTML = '';
       addMessageToChat('assistant', scenario.initialMessage);
@@ -516,37 +526,37 @@
       const input = document.getElementById('chatInput');
       const message = input.value.trim();
       if (!message) return;
-      
+
       const sendBtn = document.getElementById('sendBtn');
       sendBtn.disabled = true;
       input.disabled = true;
-      
+
       chatHistory.push({ role: 'user', content: message });
       addMessageToChat('user', message);
       input.value = '';
-      
+
       const typingIndicator = document.createElement('div');
       typingIndicator.className = 'message assistant';
       typingIndicator.textContent = 'Печатает...';
       typingIndicator.id = 'typingIndicator';
       document.getElementById('chatMessages').appendChild(typingIndicator);
       scrollChatToBottom();
-      
+
       try {
         const res = await fetch(`${API_BASE}/api/scenario-chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenario_id: currentScenarioId,
-            user_message: message // Исправлено: отправляем строку
+            user_message: message
           })
         });
-        
+
         const data = await res.json();
         const typing = document.getElementById('typingIndicator');
         if (typing) typing.remove();
-        
-        if (data.ai_response) { // Исправлено: используем правильный ключ
+
+        if (data.ai_response) {
           chatHistory.push({ role: 'assistant', content: data.ai_response });
           addMessageToChat('assistant', data.ai_response);
           updateTeamState(message, data.ai_response);
@@ -562,7 +572,7 @@
         addMessageToChat('assistant', 'Ошибка подключения к серверу.');
         console.error('sendMessage error:', e);
       }
-      
+
       sendBtn.disabled = false;
       input.disabled = false;
       input.focus();
@@ -612,51 +622,51 @@
     // 5. ЗАВЕРШЕНИЕ И ОЦЕНКА
     async function finishDialogue() {
       const userMessages = chatHistory.filter(m => m.role === 'user').length;
-        
-        // Мягкое предупреждение для коротких диалогов
-        if (userMessages < 2) {
-          const proceed = confirm(
-            `У вас только ${userMessages} ответ(ов) сотруднику.\n\n` +
-            `Оценка может быть менее точной — не все критерии проявятся в коротком диалоге.\n\n` +
-            `Продолжить или провести ещё несколько обменов репликами?`
-          );
-          if (!proceed) return;
-        }
-        
-        const finishBtn = document.querySelector('.btn-finish');
-        finishBtn.disabled = true;
-        finishBtn.textContent = 'Анализируем диалог...';
-        
-        try {
-          const evalRes = await fetch(`${API_BASE}/api/evaluate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              scenario_id: currentScenarioId, 
-              dialogue: chatHistory,
-              user_message_count: userMessages // <-- передаём количество для адаптивной оценки
-            })
-          });
-          
-          const evaluation = await evalRes.json();
-          
-          if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
-            console.error('Некорректный ответ от /api/evaluate:', evaluation);
-            throw new Error(evaluation.error || 'Сервер вернул некорректные данные оценки');
-          }
-          
-          // Сохраняем БЕЗ await, чтобы не блокировать показ результата
-          saveSession(evaluation).catch(e => console.error('saveSession error:', e));
-          
-          showResults(evaluation);
-          
-        } catch (e) {
-          console.error('finishDialogue error:', e);
-          alert('Ошибка при получении разбора: ' + e.message + '\n\nПопробуйте ещё раз.');
-          finishBtn.disabled = false;
-          finishBtn.textContent = 'Завершить диалог и получить разбор';
-        }
+
+      // Мягкое предупреждение для очень коротких диалогов
+      if (userMessages < 2) {
+        const proceed = confirm(
+          `У вас только ${userMessages} ответ(ов) сотруднику.\n\n` +
+          `Оценка может быть менее точной — не все критерии проявятся в коротком диалоге.\n\n` +
+          `Продолжить или провести ещё несколько обменов репликами?`
+        );
+        if (!proceed) return;
       }
+
+      const finishBtn = document.querySelector('.btn-finish');
+      finishBtn.disabled = true;
+      finishBtn.textContent = 'Анализируем диалог...';
+
+      try {
+        const evalRes = await fetch(`${API_BASE}/api/evaluate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scenario_id: currentScenarioId,
+            dialogue: chatHistory,
+            user_message_count: userMessages
+          })
+        });
+
+        const evaluation = await evalRes.json();
+
+        if (!evaluation || !evaluation.criteria || !Array.isArray(evaluation.criteria)) {
+          console.error('Некорректный ответ от /api/evaluate:', evaluation);
+          throw new Error(evaluation.error || 'Сервер вернул некорректные данные оценки');
+        }
+
+        // Сохраняем БЕЗ await, чтобы не блокировать показ результата
+        saveSession(evaluation).catch(e => console.error('saveSession error:', e));
+
+        showResults(evaluation);
+
+      } catch (e) {
+        console.error('finishDialogue error:', e);
+        alert('Ошибка при получении разбора: ' + e.message + '\n\nПопробуйте ещё раз.');
+        finishBtn.disabled = false;
+        finishBtn.textContent = 'Завершить диалог и получить разбор';
+      }
+    }
 
     async function saveSession(evaluation) {
       try {
@@ -673,7 +683,7 @@
           max_score: evaluation.max_score,
           summary: evaluation.summary
         };
-        
+
         const res = await fetch(`${API_BASE}/api/save-session`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -688,13 +698,13 @@
 
     function showResults(evaluation) {
       console.log('showResults вызвана. evaluation:', evaluation);
-      
-      document.getElementById('desktopEnvironment').style.display = 'none';
+
+      document.getElementById('desktopEnvironment').classList.add('hidden');
       document.getElementById('resultsScreen').classList.remove('hidden');
-      
+
       const basePct = evaluation.base_max ? Math.round((evaluation.base_score / evaluation.base_max) * 100) : 0;
       const gradeColor = basePct > 70 ? 'var(--success)' : (basePct > 40 ? 'var(--warning)' : 'var(--danger)');
-      
+
       document.getElementById('scoreCircle').style.borderColor = gradeColor;
       document.getElementById('scoreValue').style.color = gradeColor;
       document.getElementById('scoreValue').textContent = basePct + '%';
@@ -704,7 +714,7 @@
       try {
         const baseCriteria = evaluation.criteria.filter(c => c.group === 'base');
         const goeCriteria = evaluation.criteria.filter(c => c.group === 'goe');
-        
+
         document.getElementById('baseCriteria').innerHTML = renderBlock(baseCriteria);
         document.getElementById('goeCriteria').innerHTML = renderBlock(goeCriteria);
       } catch (e) {
