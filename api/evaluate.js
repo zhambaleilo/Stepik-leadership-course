@@ -198,33 +198,39 @@ summary: 2-3 предложения, начни с главной ошибки �
       return { id, name, group, score, na: isNa, quote, reused, comment: String(m.comment || '').trim() };
     });
 
-    // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА (richness) ===
-    const userText = dialogue
-      .filter(m => m.role === 'user')
-      .map(m => m.content)
-      .join(' ');
-    const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
-    const hasEmpathy = hasEmotion(userText);
-    const hasOfferResult = hasOffer(userText);
-    const hasTox = hasToxicity(userText);
-    const markersCount = [hasEmpathy, hasOfferResult, hasTox].filter(Boolean).length;
-    const richness = userMessageCount + Math.floor(wordCount / 15) + markersCount * 2;
-
-    // === ПОСТ-ОБРАБОТКА: на очень коротких диалогах максимум 1 балл ===
-    // ВАЖНО: мутируем оценки ДО подсчёта сумм, чтобы не переприсваивать const
-    let richnessApplied = false;
-    if (richness < 3) {
-      richnessApplied = true;
-      criteria.forEach(c => {
-        if (!c.na && c.score === 2) c.score = 1;
-      });
-    }
-
-    // Суммы считаем ПОСЛЕ пост-обработки — переприсваивание не нужно
-    const base = criteria.filter(c => c.group === 'base' && !c.na);
-    const goe = criteria.filter(c => c.group === 'goe' && !c.na);
-    const baseScore = base.reduce((a, c) => a + c.score, 0);
-    const goeScore = goe.reduce((a, c) => a + c.score, 0);
+    // === РАСЧЁТ НАСЫЩЕННОСТИ ДИАЛОГА ===
+      const userText = dialogue
+        .filter(m => m.role === 'user')
+        .map(m => m.content)
+        .join(' ');
+      const wordCount = userText.split(/\s+/).filter(w => w.length > 2).length;
+  
+      // МАРКЕРЫ РУКОВОДИТЕЛЯ (отдельно от триггеров сотрудника!)
+      const empathyRe = /понимаю|слышу тебя|вижу, что|чувствую, что|представляю, как|сочувствую/i;
+      const solutionRe = /давай|давайте|предлагаю|разгрузим|отдадим|перераспределим|план|решим|сделаем/i;
+      const nextStepRe = /завтра|в понедельник|встретимся|созвонимся|обсудим|через (час|день|неделю)/i;
+  
+      const hasEmpathy = empathyRe.test(userText);
+      const hasSolution = solutionRe.test(userText);
+      const hasNextStep = nextStepRe.test(userText);
+      const markersCount = [hasEmpathy, hasSolution, hasNextStep].filter(Boolean).length;
+      const richness = userMessageCount + Math.floor(wordCount / 10) + markersCount * 2;
+  
+      // === ПОСТ-ОБРАБОТКА: кэп только для коротких И пустых диалогов ===
+      let richnessApplied = false;
+      if (richness < 3) {
+        richnessApplied = true;
+        criteria.forEach(c => {
+          // Бинарные критерии не кэпим: нарушение либо есть, либо нет
+          if (!c.na && c.score === 2 && c.id !== 'no_devaluation' && c.id !== 'boundaries') c.score = 1;
+        });
+      }
+  
+      // Суммы считаем ПОСЛЕ пост-обработки
+      const base = criteria.filter(c => c.group === 'base' && !c.na);
+      const goe = criteria.filter(c => c.group === 'goe' && !c.na);
+      const baseScore = base.reduce((a, c) => a + c.score, 0);
+      const goeScore = goe.reduce((a, c) => a + c.score, 0);
 
     return res.status(200).json({
       criteria,
@@ -238,8 +244,8 @@ summary: 2-3 предложения, начни с главной ошибки �
         richness,
         richnessApplied,
         hasEmpathy,
-        hasOffer: hasOfferResult,
-        hasToxicity: hasTox,
+        hasSolution,
+        hasNextStep,
         markersCount,
         userTextPreview: userText.substring(0, 100)
       }
