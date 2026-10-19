@@ -90,9 +90,10 @@ export default async function handler(req, res) {
 
     // Пер-сценарная лексика триггеров (сливается с глобальными зеркалами)
     const scenarioTriggers = (sc && sc.trigger_phrases) || {};
+    const normPhrase = (p) => typeof p === 'string' ? p : (p && p.phrase) ? String(p.phrase) : '';
     const extraHit = (id, text) => (scenarioTriggers[id] || [])
-      .some(p => text.toLowerCase().includes(String(p).toLowerCase()));
-
+      .some(p => { const v = normPhrase(p).toLowerCase(); return v && text.toLowerCase().includes(v); });
+    
     const dialogueText = dialogue.map(m =>
       (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content
     ).join('\n');
