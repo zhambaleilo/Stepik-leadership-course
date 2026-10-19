@@ -336,7 +336,7 @@
   <!-- 2. Экран выбора сценария -->
   <div id="scenarioScreen" class="modal-overlay hidden">
     <div class="window modal-content" style="max-width: 700px;">
-      <h2>📂 Выберите сценарий</h2>
+      <h2> Выберите сценарий</h2>
       <p>Выберите ситуацию, которую хотите отработать. Ваш прогресс и разбор будут сохранены.</p>
       <div class="scenario-grid" id="scenarioList"></div>
       <button class="btn" style="margin-top: 24px; background: #e2e8f0; color: var(--text-main);" onclick="logout()">← Выйти из системы</button>
@@ -382,6 +382,33 @@
         </div>
       </div>
 
+      <!-- Динамические виджеты (изначально скрыты) -->
+      <div id="widget-dashboard" class="window widget hidden">
+        <h4> Дашборд</h4>
+        <p style="font-size: 14px; color: var(--text-muted);">Доступ к аналитике и метрикам открыт.</p>
+      </div>
+
+      <div id="widget-tasks" class="window widget hidden">
+        <h4>✅ Задачи</h4>
+        <div class="task-item">
+          <span>⚠️</span>
+          <div>
+            <div style="font-weight: 600;">Пересмотр роли</div>
+            <div style="font-size: 13px; color: var(--text-muted);">Обсудить зоны ответственности</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="widget-calendar" class="window widget hidden">
+        <h4>📅 Календарь</h4>
+        <p style="font-size: 14px; color: var(--text-muted);">Встреча перенесена на следующую неделю.</p>
+      </div>
+
+      <div id="widget-email" class="window widget hidden">
+        <h4>📧 Почта</h4>
+        <p style="font-size: 14px; color: var(--text-muted);">Новое письмо от HR.</p>
+      </div>
+
       <button class="btn btn-finish" onclick="finishDialogue()">Завершить диалог и получить разбор</button>
     </div>
   </div>
@@ -398,7 +425,7 @@
         <p id="summaryText" style="margin-top: 16px; color: var(--text-muted); line-height: 1.6;"></p>
       </div>
 
-      <div class="block-title">🛡️ База: минимум безопасного разговора</div>
+      <div class="block-title">️ База: минимум безопасного разговора</div>
       <div class="criteria-grid" id="baseCriteria"></div>
 
       <div class="block-title">🚀 Исполнение: техники и мастерство (GOE)</div>
@@ -539,6 +566,12 @@
       teamState = { stress: 92, trust: 45 };
       renderTeamState();
 
+      // Скрываем динамические виджеты при старте нового сценария
+      ['widget-dashboard', 'widget-tasks', 'widget-calendar', 'widget-email'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+
       chatHistory.push({ role: 'assistant', content: scenario.initialMessage });
 
       document.getElementById('scenarioScreen').classList.add('hidden');
@@ -589,6 +622,14 @@
           chatHistory.push({ role: 'assistant', content: data.ai_response });
           addMessageToChat('assistant', data.ai_response);
           updateTeamState(message, data.ai_response);
+
+          // === НОВОЕ: Включаем виджеты, если сервер прислал updated_elements ===
+          if (data.updated_elements) {
+            if (data.updated_elements.dashboard) document.getElementById('widget-dashboard')?.classList.remove('hidden');
+            if (data.updated_elements.tasks) document.getElementById('widget-tasks')?.classList.remove('hidden');
+            if (data.updated_elements.calendar) document.getElementById('widget-calendar')?.classList.remove('hidden');
+            if (data.updated_elements.email) document.getElementById('widget-email')?.classList.remove('hidden');
+          }
         } else if (data.error) {
           addMessageToChat('assistant', 'Ошибка: ' + data.error);
         } else {
@@ -708,7 +749,7 @@
           goe_score: evaluation.goe_score,
           goe_max: evaluation.goe_max,
           total_score: evaluation.total_score,
-          max_score: evaluation.total_max, // Исправлено на total_max для консистентности
+          max_score: evaluation.total_max, 
           summary: evaluation.summary
         };
 
