@@ -74,6 +74,7 @@ collections:
             name: "psychological_safety"
             widget: "select"
             multiple: true
+            default: []
             hint: "Отметь нужные базовые критерии. Список фиксирует методику — опечатки невозможны."
             options:
               - {label: "Отсутствие обесценивания", value: "no_devaluation"}
@@ -86,6 +87,7 @@ collections:
             name: "improvisation"
             widget: "select"
             multiple: true
+            default: []
             hint: "Отметь нужные техники мастерства."
             options:
               - {label: "Активное слушание", value: "active_listening"}
@@ -99,6 +101,18 @@ collections:
         widget: "object"
         hint: "Уникальные фразы сотрудника этого сценария. Сливаются с глобальными regex, чтобы критерии не уходили в N/A по ошибке. Одна фраза = одна строка."
         fields:
-          - {label: "Фразы эмоций (для Валидации эмоций)", name: "emotion_validation", widget: "list", required: false, string: {label: "Фраза"}}
-          - {label: "Фразы предложений и идей (для Да, и…)", name: "yes_and", widget: "list", required: false, string: {label: "Фраза"}}
-          - {label: "Фразы токсичности и давления (для Границ)", name: "boundaries", widget: "list", required: false, string: {label: "Фраза"}}
+          - label: "Фразы эмоций (для Валидации эмоций)"
+            name: "emotion_validation"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", widget: "string"}
+          - label: "Фразы предложений и идей (для Да, и…)"
+            name: "yes_and"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", widget: "string"}
+          - label: "Фразы токсичности и давления (для Границ)"
+            name: "boundaries"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", widget: "string"}
