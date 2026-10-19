@@ -258,18 +258,7 @@ summary: 2-3 предложения, начни с главной ошибки �
       base_score: baseScore, base_max: base.length * 2,
       goe_score: goeScore, goe_max: goe.length * 2,
       total_score: baseScore + goeScore, max_score: (base.length + goe.length) * 2,
-      summary: String(parsed.summary || '').trim(),
-      _debug: {
-        userMessageCount,
-        wordCount,
-        richness,
-        richnessApplied,
-        hasEmpathy,
-        hasSolution,
-        hasNextStep,
-        markersCount,
-        userTextPreview: userText.substring(0, 100)
-      }
+      summary: String(parsed.summary || '').trim(),      
     });
   } catch (e) {
     console.error('Eval error:', e);
