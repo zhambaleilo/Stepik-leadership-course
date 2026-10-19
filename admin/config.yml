@@ -34,6 +34,7 @@ collections:
     fields:
       - {label: "ID сценария (латиница, без пробелов)", name: "scenario_id", widget: "string", pattern: ["^[a-z0-9_]+$", "Только строчные буквы, цифры и подчеркивание"], hint: "Например: burnout_alexey_01"}
       - {label: "Название сценария", name: "title", widget: "string", hint: "Например: Пятничный срыв"}
+      - {label: "Первое сообщение сотрудника", name: "initial_message", widget: "text", hint: "Фраза, которой сотрудник начинает диалог. Попадает на карточку и в чат.", required: true}
       - {label: "Сложность", name: "difficulty", widget: "select", options: ["easy", "medium", "hard"]}
       - {label: "Контекст ситуации", name: "context", widget: "text", hint: "Описание ситуации для игрока"}
       - {label: "Цель игрока", name: "player_goal", widget: "text", hint: "Что должен достичь игрок"}
@@ -77,3 +78,24 @@ collections:
             name: "improvisation"
             widget: "list"
             field: {label: "ID критерия", name: "criterion", widget: "string", hint: "Например: yes_and"}
+
+      - label: "Лексика сотрудника (триггеры оценки)"
+        name: "trigger_phrases"
+        widget: "object"
+        hint: "Уникальные фразы сотрудника этого сценария. Сливаются с глобальными regex, чтобы критерии не уходили в N/A по ошибке."
+        fields:
+          - label: "Фразы эмоций"
+            name: "emotion_validation"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", name: "phrase", widget: "string"}
+          - label: "Фразы предложений и идей"
+            name: "yes_and"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", name: "phrase", widget: "string"}
+          - label: "Фразы токсичности и давления"
+            name: "boundaries"
+            widget: "list"
+            required: false
+            field: {label: "Фраза", name: "phrase", widget: "string"}
