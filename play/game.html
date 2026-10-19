@@ -339,7 +339,7 @@
       <h2>📂 Выберите сценарий</h2>
       <p>Выберите ситуацию, которую хотите отработать. Ваш прогресс и разбор будут сохранены.</p>
       <div class="scenario-grid" id="scenarioList"></div>
-      <button class="btn" style="margin-top: 24px; background: #e2e8f0; color: var(--text-main);" onclick="location.reload()">← Выйти</button>
+      <button class="btn" style="margin-top: 24px; background: #e2e8f0; color: var(--text-main);" onclick="logout()">← Выйти из системы</button>
     </div>
   </div>
 
@@ -429,6 +429,22 @@
     let chatHistory = [];
     let teamState = { stress: 92, trust: 45 };
 
+    // АВТО-ВХОД: проверяем сохраненную сессию при загрузке страницы
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedAccessCodeId = localStorage.getItem('accessCodeId');
+      const savedRemainingSessions = localStorage.getItem('remainingSessions');
+      
+      if (savedAccessCodeId && savedRemainingSessions) {
+        accessCodeId = savedAccessCodeId;
+        remainingSessions = parseInt(savedRemainingSessions, 10);
+        
+        // Скрываем экран пароля, сразу показываем выбор сценария
+        document.getElementById('passwordScreen').classList.add('hidden');
+        document.getElementById('scenarioScreen').classList.remove('hidden');
+        renderScenarios();
+      }
+    });
+
     // 1. ПРОВЕРКА ПАРОЛЯ
     async function verifyPassword() {
       const code = document.getElementById('passwordInput').value.trim();
@@ -453,6 +469,11 @@
         if (data.valid) {
           accessCodeId = data.access_code_id;
           remainingSessions = data.remaining_sessions;
+          
+          // СОХРАНЯЕМ в localStorage для сохранения сессии между перезагрузками
+          localStorage.setItem('accessCodeId', accessCodeId);
+          localStorage.setItem('remainingSessions', remainingSessions);
+          
           errorEl.style.display = 'none';
           sessionInfoEl.textContent = `✓ Доступ разрешён. Осталось сессий: ${remainingSessions}`;
           sessionInfoEl.style.display = 'block';
@@ -461,7 +482,7 @@
             document.getElementById('passwordScreen').classList.add('hidden');
             document.getElementById('scenarioScreen').classList.remove('hidden');
             renderScenarios();
-          }, 1000);
+          }, 800);
         } else {
           errorEl.textContent = data.reason || 'Неверный пароль';
           errorEl.style.display = 'block';
@@ -472,6 +493,13 @@
         errorEl.style.display = 'block';
         console.error('verifyPassword error:', e);
       }
+    }
+
+    // Функция полного выхода из системы
+    function logout() {
+      localStorage.removeItem('accessCodeId');
+      localStorage.removeItem('remainingSessions');
+      location.reload();
     }
 
     // 2. СПИСОК СЦЕНАРИЕВ: сначала с сервера, fallback — локальный список
@@ -548,7 +576,8 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             scenario_id: currentScenarioId,
-            user_message: message
+            user_message: message,
+            history: chatHistory // Передаем историю для контекста
           })
         });
 
@@ -623,7 +652,6 @@
     async function finishDialogue() {
       const userMessages = chatHistory.filter(m => m.role === 'user').length;
 
-      // Мягкое предупреждение для очень коротких диалогов
       if (userMessages < 2) {
         const proceed = confirm(
           `У вас только ${userMessages} ответ(ов) сотруднику.\n\n` +
@@ -680,7 +708,7 @@
           goe_score: evaluation.goe_score,
           goe_max: evaluation.goe_max,
           total_score: evaluation.total_score,
-          max_score: evaluation.max_score,
+          max_score: evaluation.total_max, // Исправлено на total_max для консистентности
           summary: evaluation.summary
         };
 
@@ -697,8 +725,6 @@
     }
 
     function showResults(evaluation) {
-      console.log('showResults вызвана. evaluation:', evaluation);
-
       document.getElementById('desktopEnvironment').classList.add('hidden');
       document.getElementById('resultsScreen').classList.remove('hidden');
 
