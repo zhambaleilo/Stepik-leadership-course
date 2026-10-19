@@ -105,14 +105,14 @@ collections:
             name: "emotion_validation"
             widget: "list"
             required: false
-            field: {label: "Фраза", widget: "string"}
+            field: {name: "phrase", label: "Фраза", widget: "string"}
           - label: "Фразы предложений и идей (для Да, и…)"
             name: "yes_and"
             widget: "list"
             required: false
-            field: {label: "Фраза", widget: "string"}
+            field: {name: "phrase", label: "Фраза", widget: "string"}
           - label: "Фразы токсичности и давления (для Границ)"
             name: "boundaries"
             widget: "list"
             required: false
-            field: {label: "Фраза", widget: "string"}
+            field: {name: "phrase", label: "Фраза", widget: "string"}
