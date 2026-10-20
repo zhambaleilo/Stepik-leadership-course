@@ -42,6 +42,7 @@ async function getToken() {
 const META = {
   no_devaluation: ['Отсутствие обесценивания', 'base', ''],
   i_messages: ['Я-сообщения', 'base', ''],
+  direct_feedback: ['Прямая обратная связь', 'base', ''],
   solution_focus: ['Фокус на решении', 'base', ''],
   concrete_next_step: ['Конкретный следующий шаг', 'base', ''],
   emotion_validation: ['Валидация эмоций', 'base', 'Сотрудник высказал эмоцию или чувство'],
