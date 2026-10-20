@@ -359,9 +359,34 @@
       }
     }
 
-    // Заглушки для следующих шагов
     async function simulateDays() {
-      alert('Функция намотки времени (api/simulate-days.js) будет подключена на следующем шаге!');
+      if (!currentSessionId) {
+        alert('Сессия не загружена');
+        return;
+      }
+      
+      showLoading('Симулируем пропущенные дни...');
+      try {
+        const res = await fetch(`${API_BASE}/api/simulate-days`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1 })
+        });
+        
+        const data = await res.json();
+        if (data.ok) {
+          // Перезагружаем дашборд с новыми данными
+          await loadFarmDashboard(currentSessionId);
+        } else {
+          hideLoading();
+          alert('Ошибка симуляции: ' + (data.reason || 'Неизвестная ошибка'));
+        }
+      } catch (e) {
+        hideLoading();
+        console.error(e);
+        alert('Ошибка сети при симуляции');
+      }
+    }
     }
     async function generateDocumentary() {
       alert('Функция генерации документалки (api/generate-documentary.js) будет подключена на следующем шаге!');
