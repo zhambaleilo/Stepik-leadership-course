@@ -95,6 +95,18 @@
       font-size: 14px; font-weight: 600;
     }
     .metric-badge span { color: var(--text-main); font-weight: 800; }
+
+    .dev-badge {
+      display: inline-block;
+      background: var(--warning);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+      letter-spacing: 0.05em;
+    }
   </style>
 </head>
 <body>
@@ -124,7 +136,7 @@
         </button>
 
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="btn btn-primary" onclick="startFarm()"> Запустить симуляцию</button>
+          <button class="btn btn-primary" onclick="startFarm()">🚀 Запустить симуляцию</button>
         </div>
       </div>
 
@@ -143,7 +155,7 @@
             🤝 Доверие: <span id="metricTrust">7</span>/10
           </div>
           <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
-             Продуктивность: <span id="metricProd">7</span>/10
+            ⚡ Продуктивность: <span id="metricProd">7</span>/10
           </div>
         </div>
 
@@ -168,7 +180,7 @@
     <!-- Оверлей загрузки -->
     <div id="loadingOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 16px;">
       <div style="text-align: center;">
-        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+        <div style="font-size: 32px; margin-bottom: 12px;"></div>
         <div style="font-weight: 600;" id="loadingText">Загрузка...</div>
       </div>
     </div>
@@ -176,12 +188,20 @@
 
   <script>
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
+    const DEV_CODE = 'DEV-ZHAMBA-2025'; // <-- Замените на ваш код разработчика
+    
     let memberCount = 0;
     let currentSessionId = null;
     let userCode = localStorage.getItem('userCode') || '';
+    const IS_DEV = userCode === DEV_CODE;
 
     // Инициализация при загрузке
     window.addEventListener('DOMContentLoaded', () => {
+      // Шаг 4: Визуальная метка разработчика
+      if (IS_DEV) {
+        document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма <span class="dev-badge">DEV MODE</span>';
+      }
+
       const urlParams = new URLSearchParams(window.location.search);
       const action = urlParams.get('action');
       const sessionId = urlParams.get('session_id');
@@ -308,6 +328,9 @@
 
         const session = data.session;
         document.getElementById('pageTitle').textContent = '🐜 Муравьиная ферма: Дашборд';
+        if (IS_DEV) {
+          document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма: Дашборд <span class="dev-badge">DEV MODE</span>';
+        }
         document.getElementById('constructorView').classList.add('hidden');
         document.getElementById('dashboardView').classList.remove('hidden');
 
@@ -338,26 +361,40 @@
       }
     }
 
+    // Шаг 3: Обновлённая функция удаления через api/delete-farm
     async function refundFarm() {
-      if (!confirm('Удалить эту ферму? Если это 1-й день без событий, сессия будет возвращена.')) return;
+      if (!confirm('Удалить эту ферму? Сессия будет возвращена только если это 1-й день без событий.')) return;
       
-      showLoading('Обрабатываем удаление...');
+      showLoading('Удаляем ферму...');
       try {
-        const res = await fetch(`${API_BASE}/api/refund-farm`, {
+        const res = await fetch(`${API_BASE}/api/delete-farm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: currentSessionId, user_code: userCode })
+          body: JSON.stringify({ 
+            session_id: currentSessionId, 
+            user_code: userCode
+          })
         });
         const data = await res.json();
         if (data.ok) {
-          alert('Ферма удалена, сессия возвращена!');
+          // Формируем сообщение в зависимости от режима
+          let msg = 'Ферма удалена.';
+          if (data.dev_mode) {
+            msg += ' (режим разработчика: сессия возвращена)';
+          } else if (data.refunded) {
+            msg += ' Сессия возвращена.';
+          } else {
+            msg += ' Сессия не возвращена (ферма уже развивалась).';
+          }
+          alert(msg);
           window.location.href = 'game.html';
         } else {
           hideLoading();
-          alert('Не удалось удалить: ' + (data.reason || 'Ферма уже зрелая, сессия не возвращается'));
+          alert('Не удалось удалить: ' + (data.reason || 'Неизвестная ошибка'));
         }
       } catch (e) {
         hideLoading();
+        console.error(e);
         alert('Ошибка сети');
       }
     }
