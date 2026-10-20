@@ -79,6 +79,7 @@ collections:
             options:
               - {label: "Отсутствие обесценивания", value: "no_devaluation"}
               - {label: "Я-сообщения", value: "i_messages"}
+              - {label: "Прямая обратная связь", value: "direct_feedback"} # <-- ДОБАВЛЕНО
               - {label: "Фокус на решении", value: "solution_focus"}
               - {label: "Конкретный следующий шаг", value: "concrete_next_step"}
               - {label: "Валидация эмоций", value: "emotion_validation"}
