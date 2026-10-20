@@ -44,6 +44,7 @@
       width: 100%;
       max-width: 800px;
       max-height: 90vh;
+      position: relative;
     }
     .window-header {
       background: rgba(241, 245, 249, 0.8);
@@ -66,6 +67,7 @@
     .btn-secondary { background: #e2e8f0; color: var(--text-main); }
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #dc2626; }
     
     .form-group { margin-bottom: 20px; }
     .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
@@ -73,7 +75,7 @@
       width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;
       font-size: 15px; font-family: inherit;
     }
-    .form-group input:focus { outline: none; border-color: var(--primary); }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
     
     .team-member-card {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
@@ -84,6 +86,7 @@
       background: none; border: none; color: var(--danger);
       cursor: pointer; font-size: 20px; font-weight: bold; line-height: 1;
     }
+    .remove-member:hover { color: #dc2626; }
     .hidden { display: none !important; }
     
     .metric-badge {
@@ -121,7 +124,7 @@
         </button>
 
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="btn btn-primary" onclick="startFarm()">🚀 Запустить симуляцию</button>
+          <button class="btn btn-primary" onclick="startFarm()"> Запустить симуляцию</button>
         </div>
       </div>
 
@@ -140,7 +143,7 @@
             🤝 Доверие: <span id="metricTrust">7</span>/10
           </div>
           <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
-            ⚡ Продуктивность: <span id="metricProd">7</span>/10
+             Продуктивность: <span id="metricProd">7</span>/10
           </div>
         </div>
 
@@ -375,7 +378,6 @@
         
         const data = await res.json();
         if (data.ok) {
-          // Перезагружаем дашборд с новыми данными
           await loadFarmDashboard(currentSessionId);
         } else {
           hideLoading();
@@ -387,9 +389,9 @@
         alert('Ошибка сети при симуляции');
       }
     }
-    }
+
     async function generateDocumentary() {
-      alert('Функция генерации документалки (api/generate-documentary.js) будет подключена на следующем шаге!');
+      alert('Функция генерации документалки будет подключена на следующем шаге!');
     }
   </script>
 </body>
