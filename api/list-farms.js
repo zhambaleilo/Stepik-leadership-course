@@ -1,19 +1,21 @@
-// Получение списка активных ферм для текущего кода
+// api/list-farms.js — получение списка активных ферм для текущего кода
 export default async function handler(req, res) {
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
   const origin = req.headers.origin || '';
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-access-code');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   }
+  if (req.method === 'OPTIONS') return res.status(200).end(); // <-- ДОБАВЛЕНО
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const code = req.headers['x-access-code']; // Передаем код через заголовок для безопасности
+  const code = req.headers['x-access-code'];
 
   if (!code || !SUPABASE_URL || !SUPABASE_KEY) {
-    return res.status(400).json({ error: 'Missing code or config' });
+    return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 });
   }
 
   try {
@@ -45,6 +47,6 @@ export default async function handler(req, res) {
 
   } catch (e) {
     console.error('list-farms error:', e);
-    return res.status(502).json({ error: 'Ошибка сервера' });
+    return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 });
   }
 }
