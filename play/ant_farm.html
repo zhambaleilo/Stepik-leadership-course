@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Муравьиная ферма · My Pro Skills</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      --window-bg: rgba(255, 255, 255, 0.95);
+      --window-border: 1px solid rgba(255, 255, 255, 0.3);
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text-main);
+    }
+    .window {
+      background: var(--window-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      border: var(--window-border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 800px;
+      max-height: 90vh;
+    }
+    .window-header {
+      background: rgba(241, 245, 249, 0.8);
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .window-content { padding: 32px; overflow-y: auto; flex: 1; }
+    .btn {
+      padding: 12px 24px; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-danger { background: var(--danger); color: white; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;
+      font-size: 15px; font-family: inherit;
+    }
+    .form-group input:focus { outline: none; border-color: var(--primary); }
+    
+    .team-member-card {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+      padding: 16px; margin-bottom: 12px; position: relative;
+    }
+    .remove-member {
+      position: absolute; top: 12px; right: 12px;
+      background: none; border: none; color: var(--danger);
+      cursor: pointer; font-size: 20px; font-weight: bold; line-height: 1;
+    }
+    .hidden { display: none !important; }
+    
+    .metric-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: #f1f5f9; border-radius: 20px;
+      font-size: 14px; font-weight: 600;
+    }
+    .metric-badge span { color: var(--text-main); font-weight: 800; }
+  </style>
+</head>
+<body>
+
+  <div class="window">
+    <div class="window-header">
+      <span id="pageTitle">🐜 Муравьиная ферма</span>
+      <button class="btn btn-secondary" onclick="window.location.href='game.html'">← Назад к сценариям</button>
+    </div>
+
+    <div class="window-content">
+      <!-- ЭКРАН 1: Конструктор команды -->
+      <div id="constructorView">
+        <p style="margin-bottom: 24px; color: var(--text-muted);">
+          Соберите команду из 2–5 сотрудников. ИИ будет симулировать их поведение, конфликты и рост в течение нескольких "рабочих дней".
+        </p>
+
+        <div class="form-group">
+          <label>Название команды / проекта</label>
+          <input type="text" id="teamName" placeholder="Например: Отдел разработки 'Альфа'" value="Моя команда">
+        </div>
+
+        <div id="membersContainer"></div>
+
+        <button class="btn btn-secondary" onclick="addMember()" style="width: 100%; margin-bottom: 24px; border: 2px dashed #cbd5e1;">
+          + Добавить сотрудника
+        </button>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button class="btn btn-primary" onclick="startFarm()">🚀 Запустить симуляцию</button>
+        </div>
+      </div>
+
+      <!-- ЭКРАН 2: Дашборд фермы -->
+      <div id="dashboardView" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <h2 id="dashTeamName" style="font-size: 24px;"></h2>
+          <div class="metric-badge">День: <span id="dashDay">1</span></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
+            😊 Настроение: <span id="metricMood">7</span>/10
+          </div>
+          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
+            🤝 Доверие: <span id="metricTrust">7</span>/10
+          </div>
+          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
+            ⚡ Продуктивность: <span id="metricProd">7</span>/10
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 10px; padding: 20px; min-height: 200px; margin-bottom: 24px;">
+          <h4 style="margin-bottom: 12px;">📜 Журнал событий</h4>
+          <div id="eventLogContainer">
+            <p id="eventLogPlaceholder" style="color: var(--text-muted); font-style: italic;">Пока событий нет...</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap;">
+          <button class="btn btn-danger" onclick="refundFarm()">🗑️ Удалить ферму</button>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary" onclick="simulateDays()">⏳ Промотать время (+1 день)</button>
+            <button class="btn btn-primary" onclick="generateDocumentary()">🎬 Сгенерировать документалку</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    
+    <!-- Оверлей загрузки -->
+    <div id="loadingOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 16px;">
+      <div style="text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+        <div style="font-weight: 600;" id="loadingText">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://stepik-leadership-course.vercel.app';
+    let memberCount = 0;
+    let currentSessionId = null;
+    let userCode = localStorage.getItem('userCode') || '';
+
+    // Инициализация при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      const sessionId = urlParams.get('session_id');
+
+      if (action === 'create') {
+        addMember(); 
+        addMember(); 
+      } else if (sessionId) {
+        currentSessionId = sessionId;
+        loadFarmDashboard(sessionId);
+      } else {
+        window.location.href = 'game.html';
+      }
+    });
+
+    function addMember() {
+      if (memberCount >= 5) {
+        alert('Максимум 5 сотрудников в команде');
+        return;
+      }
+      memberCount++;
+      const container = document.getElementById('membersContainer');
+      const div = document.createElement('div');
+      div.className = 'team-member-card';
+      div.id = `member-${memberCount}`;
+      div.innerHTML = `
+        <button class="remove-member" onclick="removeMember(${memberCount})">×</button>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Имя и роль</label>
+          <input type="text" class="m-name" placeholder="Например: Олег, Senior Backend">
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Скрытый триггер / Стрессор</label>
+          <select class="m-trigger">
+            <option value="burnout">Выгорание и усталость</option>
+            <option value="imposter">Синдром самозванца</option>
+            <option value="conflict">Конфликт с другими отделами</option>
+            <option value="ai_fear">Страх замены ИИ / автоматизацией</option>
+            <option value="toxic">Скрытая токсичность и высокомерие</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Стиль общения</label>
+          <input type="text" class="m-style" placeholder="Например: Саркастичный, отвечает односложно">
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeMember(id) {
+      const el = document.getElementById(`member-${id}`);
+      if (el) {
+        el.remove();
+        memberCount--;
+      }
+    }
+
+    function showLoading(text) {
+      document.getElementById('loadingText').textContent = text;
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+
+    async function startFarm() {
+      const teamName = document.getElementById('teamName').value.trim() || 'Безымянная команда';
+      const members = [];
+      document.querySelectorAll('.team-member-card').forEach(card => {
+        members.push({
+          name_role: card.querySelector('.m-name').value.trim(),
+          trigger: card.querySelector('.m-trigger').value,
+          style: card.querySelector('.m-style').value.trim()
+        });
+      });
+
+      if (members.length < 2) {
+        alert('Добавьте минимум 2 сотрудников');
+        return;
+      }
+
+      showLoading('Создаем команду и списываем сессию...');
+
+      try {
+        const res = await fetch(`${API_BASE}/api/start-game`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: userCode,
+            kind: 'ant_farm',
+            payload: {
+              team_config: { team_name: teamName, members },
+              metrics: { mood: 7, trust: 7, productivity: 7 }
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = `ant_farm.html?session_id=${data.session_id}`;
+        } else {
+          hideLoading();
+          alert('Ошибка: ' + (data.reason || 'Не удалось создать ферму'));
+        }
+      } catch (e) {
+        hideLoading();
+        console.error(e);
+        alert('Ошибка сети при создании фермы');
+      }
+    }
+
+    async function loadFarmDashboard(sessionId) {
+      showLoading('Загружаем состояние фермы...');
+      try {
+        const res = await fetch(`${API_BASE}/api/get-session?id=${sessionId}`);
+        const data = await res.json();
+        
+        if (!data.session) {
+          hideLoading();
+          alert('Сессия не найдена');
+          window.location.href = 'game.html';
+          return;
+        }
+
+        const session = data.session;
+        document.getElementById('pageTitle').textContent = '🐜 Муравьиная ферма: Дашборд';
+        document.getElementById('constructorView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+
+        document.getElementById('dashTeamName').textContent = session.team_config?.team_name || 'Команда';
+        document.getElementById('dashDay').textContent = session.current_day || 1;
+        
+        const m = session.metrics || {};
+        document.getElementById('metricMood').textContent = m.mood ?? 7;
+        document.getElementById('metricTrust').textContent = m.trust ?? 7;
+        document.getElementById('metricProd').textContent = m.productivity ?? 7;
+
+        const logContainer = document.getElementById('eventLogContainer');
+        if (session.event_log && session.event_log.length > 0) {
+          document.getElementById('eventLogPlaceholder').classList.add('hidden');
+          session.event_log.forEach(e => {
+            const div = document.createElement('div');
+            div.style.cssText = 'margin-bottom: 8px; padding: 12px; background: white; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary);';
+            div.innerHTML = `<strong>День ${e.day}:</strong> ${e.text}`;
+            logContainer.appendChild(div);
+          });
+        }
+
+      } catch (e) {
+        console.error(e);
+        alert('Ошибка загрузки данных фермы');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function refundFarm() {
+      if (!confirm('Удалить эту ферму? Если это 1-й день без событий, сессия будет возвращена.')) return;
+      
+      showLoading('Обрабатываем удаление...');
+      try {
+        const res = await fetch(`${API_BASE}/api/refund-farm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId, user_code: userCode })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Ферма удалена, сессия возвращена!');
+          window.location.href = 'game.html';
+        } else {
+          hideLoading();
+          alert('Не удалось удалить: ' + (data.reason || 'Ферма уже зрелая, сессия не возвращается'));
+        }
+      } catch (e) {
+        hideLoading();
+        alert('Ошибка сети');
+      }
+    }
+
+    // Заглушки для следующих шагов
+    async function simulateDays() {
+      alert('Функция намотки времени (api/simulate-days.js) будет подключена на следующем шаге!');
+    }
+    async function generateDocumentary() {
+      alert('Функция генерации документалки (api/generate-documentary.js) будет подключена на следующем шаге!');
+    }
+  </script>
+</body>
+</html>
