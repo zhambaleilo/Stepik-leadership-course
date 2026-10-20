@@ -1,70 +1,52 @@
-// Проверка пароля доступа к полной версии игры
-// POST { code: "ALPHA-7821" }
-// Возвращает { valid: true, remaining_sessions: N, access_code_id } или { valid: false, reason }
+// api/list-farms.js — получение списка активных ферм для текущего кода
 export default async function handler(req, res) {
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
   const origin = req.headers.origin || '';
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-access-code'); // <-- ДОБАВЛЕНО x-access-code
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   }
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+  if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    return res.status(500).json({ error: 'Supabase not configured' });
+  const code = req.headers['x-access-code'];
+
+  if (!code || !SUPABASE_URL || !SUPABASE_KEY) {
+    return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 });
   }
 
   try {
-    const { code } = req.body;
-    if (!code || typeof code !== 'string') {
-      return res.status(400).json({ valid: false, reason: 'Код не указан' });
-    }
-
-    const trimmed = code.trim().toUpperCase();
-
-    // Ищем код (БЕЗ инкремента!)
-    const findRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/access_codes?code=eq.${encodeURIComponent(trimmed)}&select=id,max_sessions,used_sessions,active`,
-      {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
+    // 1. Получаем ID кода и остаток сессий
+    const codeRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/access_codes?code=eq.${encodeURIComponent(code.trim().toUpperCase())}&select=id,max_sessions,used_sessions,active`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
     );
-
-    if (!findRes.ok) throw new Error('Supabase find error: ' + findRes.status);
-    const rows = await findRes.json();
-
-    if (!rows.length) {
-      return res.status(200).json({ valid: false, reason: 'Неверный код' });
+    const codeRows = await codeRes.json();
+    if (!codeRows.length || !codeRows[0].active) {
+      return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 });
     }
 
-    const row = rows[0];
-    if (!row.active) {
-      return res.status(200).json({ valid: false, reason: 'Код деактивирован' });
-    }
+    const accessCodeId = codeRows[0].id;
+    const remainingSessions = codeRows[0].max_sessions - codeRows[0].used_sessions;
 
-    if (row.used_sessions >= row.max_sessions) {
-      return res.status(200).json({ valid: false, reason: 'Лимит сессий исчерпан' });
-    }
+    // 2. Получаем активные фермы
+    const farmsRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/sessions?access_code_id=eq.${accessCodeId}&kind=eq.ant_farm&status=neq.finished&select=id,team_config,current_day,metrics,last_saved_at`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+    const farms = await farmsRes.json();
 
-    // Просто возвращаем текущее состояние, списание сделает start-game.js
     return res.status(200).json({
-      valid: true,
-      access_code_id: row.id,
-      remaining_sessions: row.max_sessions - row.used_sessions,
-      code: trimmed
+      farms: farms || [],
+      remaining_sessions: remainingSessions,
+      active_farms_count: farms ? farms.length : 0
     });
 
   } catch (e) {
-    console.error('verify-code error:', e);
-    return res.status(502).json({ valid: false, reason: 'Ошибка сервера' });
+    console.error('list-farms error:', e);
+    return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 });
   }
 }
