@@ -1,7 +1,6 @@
 // Проверка пароля доступа к полной версии игры
 // POST { code: "ALPHA-7821" }
 // Возвращает { valid: true, remaining_sessions: N, access_code_id } или { valid: false, reason }
-
 export default async function handler(req, res) {
   const allow = ['https://my-pro-skills.ru', 'http://localhost:8000'];
   const origin = req.headers.origin || '';
@@ -15,7 +14,6 @@ export default async function handler(req, res) {
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(500).json({ error: 'Supabase not configured' });
   }
@@ -28,7 +26,7 @@ export default async function handler(req, res) {
 
     const trimmed = code.trim().toUpperCase();
 
-    // Ищем код
+    // Ищем код (БЕЗ инкремента!)
     const findRes = await fetch(
       `${SUPABASE_URL}/rest/v1/access_codes?code=eq.${encodeURIComponent(trimmed)}&select=id,max_sessions,used_sessions,active`,
       {
@@ -52,34 +50,17 @@ export default async function handler(req, res) {
     if (!row.active) {
       return res.status(200).json({ valid: false, reason: 'Код деактивирован' });
     }
+
     if (row.used_sessions >= row.max_sessions) {
       return res.status(200).json({ valid: false, reason: 'Лимит сессий исчерпан' });
     }
 
-    // Инкрементируем used_sessions атомарно
-    const updateRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/access_codes?id=eq.${row.id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify({ used_sessions: row.used_sessions + 1 })
-      }
-    );
-
-    if (!updateRes.ok) throw new Error('Supabase update error: ' + updateRes.status);
-    const updated = await updateRes.json();
-    const newUsed = updated[0]?.used_sessions ?? row.used_sessions + 1;
-    const remaining = row.max_sessions - newUsed;
-
+    // Просто возвращаем текущее состояние, списание сделает start-game.js
     return res.status(200).json({
       valid: true,
       access_code_id: row.id,
-      remaining_sessions: remaining
+      remaining_sessions: row.max_sessions - row.used_sessions,
+      code: trimmed
     });
 
   } catch (e) {
