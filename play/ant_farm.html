@@ -68,6 +68,7 @@
     .btn-secondary:hover { background: #cbd5e1; }
     .btn-danger { background: var(--danger); color: white; }
     .btn-danger:hover { background: #dc2626; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .form-group { margin-bottom: 20px; }
     .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
@@ -169,8 +170,8 @@
         <div style="display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap;">
           <button class="btn btn-danger" onclick="refundFarm()">🗑️ Удалить ферму</button>
           <div style="display: flex; gap: 12px;">
-            <button class="btn btn-secondary" onclick="simulateDays()">⏳ Промотать время (+1 день)</button>
-            <button class="btn btn-primary" onclick="generateDocumentary()">🎬 Сгенерировать документалку</button>
+            <button class="btn btn-secondary" id="simulateBtn" onclick="simulateDays()">⏳ Промотать время (+1 день)</button>
+            <button class="btn btn-primary" onclick="generateDocumentary()"> Сгенерировать документалку</button>
           </div>
         </div>
       </div>
@@ -180,7 +181,7 @@
     <!-- Оверлей загрузки -->
     <div id="loadingOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 16px;">
       <div style="text-align: center;">
-        <div style="font-size: 32px; margin-bottom: 12px;"></div>
+        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
         <div style="font-weight: 600;" id="loadingText">Загрузка...</div>
       </div>
     </div>
@@ -199,19 +200,20 @@
     window.addEventListener('DOMContentLoaded', () => {
       // Шаг 4: Визуальная метка разработчика
       if (IS_DEV) {
-        document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма <span class="dev-badge">DEV MODE</span>';
+        document.getElementById('pageTitle').innerHTML = ' Муравьиная ферма <span class="dev-badge">DEV MODE</span>';
       }
 
       const urlParams = new URLSearchParams(window.location.search);
       const action = urlParams.get('action');
       const sessionId = urlParams.get('session_id');
+      const autoSimulate = urlParams.get('auto_simulate');
 
       if (action === 'create') {
         addMember(); 
         addMember(); 
       } else if (sessionId) {
         currentSessionId = sessionId;
-        loadFarmDashboard(sessionId);
+        loadFarmDashboard(sessionId, autoSimulate === '1');
       } else {
         window.location.href = 'game.html';
       }
@@ -301,7 +303,8 @@
 
         const data = await res.json();
         if (data.ok) {
-          window.location.href = `ant_farm.html?session_id=${data.session_id}`;
+          // ИЗМЕНЕНИЕ: добавляем auto_simulate=1, чтобы сразу симулировать День 1
+          window.location.href = `ant_farm.html?session_id=${data.session_id}&auto_simulate=1`;
         } else {
           hideLoading();
           alert('Ошибка: ' + (data.reason || 'Не удалось создать ферму'));
@@ -313,8 +316,8 @@
       }
     }
 
-    async function loadFarmDashboard(sessionId) {
-      showLoading('Загружаем состояние фермы...');
+    async function loadFarmDashboard(sessionId, autoSimulate = false) {
+      showLoading(autoSimulate ? 'Запускаем первый день...' : 'Загружаем состояние фермы...');
       try {
         const res = await fetch(`${API_BASE}/api/get-session?id=${sessionId}`);
         const data = await res.json();
@@ -327,37 +330,48 @@
         }
 
         const session = data.session;
-        document.getElementById('pageTitle').textContent = '🐜 Муравьиная ферма: Дашборд';
-        if (IS_DEV) {
-          document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма: Дашборд <span class="dev-badge">DEV MODE</span>';
-        }
+        document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма: Дашборд' + 
+          (IS_DEV ? ' <span class="dev-badge">DEV MODE</span>' : '');
         document.getElementById('constructorView').classList.add('hidden');
         document.getElementById('dashboardView').classList.remove('hidden');
 
-        document.getElementById('dashTeamName').textContent = session.team_config?.team_name || 'Команда';
-        document.getElementById('dashDay').textContent = session.current_day || 1;
-        
-        const m = session.metrics || {};
-        document.getElementById('metricMood').textContent = m.mood ?? 7;
-        document.getElementById('metricTrust').textContent = m.trust ?? 7;
-        document.getElementById('metricProd').textContent = m.productivity ?? 7;
+        renderDashboard(session);
 
-        const logContainer = document.getElementById('eventLogContainer');
-        if (session.event_log && session.event_log.length > 0) {
-          document.getElementById('eventLogPlaceholder').classList.add('hidden');
-          session.event_log.forEach(e => {
-            const div = document.createElement('div');
-            div.style.cssText = 'margin-bottom: 8px; padding: 12px; background: white; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary);';
-            div.innerHTML = `<strong>День ${e.day}:</strong> ${e.text}`;
-            logContainer.appendChild(div);
-          });
+        // ИЗМЕНЕНИЕ: если auto_simulate=1, автоматически запускаем симуляцию Дня 1
+        if (autoSimulate) {
+          // Небольшая задержка, чтобы UI успел отрисоваться
+          setTimeout(() => simulateDays(true), 500);
         }
 
       } catch (e) {
         console.error(e);
         alert('Ошибка загрузки данных фермы');
       } finally {
-        hideLoading();
+        if (!autoSimulate) hideLoading();
+      }
+    }
+
+    function renderDashboard(session) {
+      document.getElementById('dashTeamName').textContent = session.team_config?.team_name || 'Команда';
+      document.getElementById('dashDay').textContent = session.current_day || 1;
+      
+      const m = session.metrics || {};
+      document.getElementById('metricMood').textContent = m.mood ?? 7;
+      document.getElementById('metricTrust').textContent = m.trust ?? 7;
+      document.getElementById('metricProd').textContent = m.productivity ?? 7;
+
+      const logContainer = document.getElementById('eventLogContainer');
+      logContainer.innerHTML = '';
+      
+      if (session.event_log && session.event_log.length > 0) {
+        session.event_log.forEach(e => {
+          const div = document.createElement('div');
+          div.style.cssText = 'margin-bottom: 8px; padding: 12px; background: white; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary);';
+          div.innerHTML = `<strong>День ${e.day}:</strong> ${e.text}`;
+          logContainer.appendChild(div);
+        });
+      } else {
+        logContainer.innerHTML = '<p id="eventLogPlaceholder" style="color: var(--text-muted); font-style: italic;">Пока событий нет...</p>';
       }
     }
 
@@ -377,7 +391,6 @@
         });
         const data = await res.json();
         if (data.ok) {
-          // Формируем сообщение в зависимости от режима
           let msg = 'Ферма удалена.';
           if (data.dev_mode) {
             msg += ' (режим разработчика: сессия возвращена)';
@@ -399,13 +412,18 @@
       }
     }
 
-    async function simulateDays() {
+    async function simulateDays(silent = false) {
       if (!currentSessionId) {
         alert('Сессия не загружена');
         return;
       }
       
-      showLoading('Симулируем пропущенные дни...');
+      if (!silent) showLoading('Симулируем пропущенные дни...');
+      
+      // Блокируем кнопку на время симуляции
+      const simBtn = document.getElementById('simulateBtn');
+      if (simBtn) simBtn.disabled = true;
+      
       try {
         const res = await fetch(`${API_BASE}/api/simulate-days`, {
           method: 'POST',
@@ -415,15 +433,18 @@
         
         const data = await res.json();
         if (data.ok) {
-          await loadFarmDashboard(currentSessionId);
+          // Перезагружаем дашборд с новыми данными
+          await loadFarmDashboard(currentSessionId, false);
         } else {
-          hideLoading();
+          if (!silent) hideLoading();
           alert('Ошибка симуляции: ' + (data.reason || 'Неизвестная ошибка'));
         }
       } catch (e) {
-        hideLoading();
+        if (!silent) hideLoading();
         console.error(e);
         alert('Ошибка сети при симуляции');
+      } finally {
+        if (simBtn) simBtn.disabled = false;
       }
     }
 
