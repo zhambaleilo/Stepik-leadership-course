@@ -130,7 +130,7 @@ ${lastEventsText}
     // 3. Применяем события к метрикам и добавляем в event_log
     const updatedMetrics = { ...metrics };
     const updatedEventLog = [...eventLog];
-    const newDay = session.current_day + days_to_simulate;
+    const newDay = session.current_day; // События для ТЕКУЩЕГО дня
 
     newEvents.forEach(event => {
       event.day = newDay; // Все события относятся к новому дню
@@ -160,10 +160,10 @@ ${lastEventsText}
           'Prefer': 'return=representation'
         },
         body: JSON.stringify({
-          current_day: newDay,
-          metrics: updatedMetrics,
-          event_log: updatedEventLog,
-          last_saved_at: new Date().toISOString()
+        current_day: newDay + 1, // Увеличиваем ПОСЛЕ генерации
+        metrics: updatedMetrics,
+        event_log: updatedEventLog,
+        last_saved_at: new Date().toISOString()
         })
       }
     );
