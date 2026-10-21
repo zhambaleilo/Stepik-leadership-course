@@ -137,11 +137,15 @@ ${lastEventsText}
       updatedEventLog.push(event);
       
       // Применяем дельты метрик
-      if (event.metrics_delta) {
-        updatedMetrics.mood = Math.max(0, Math.min(10, updatedMetrics.mood + (event.metrics_delta.mood || 0)));
-        updatedMetrics.trust = Math.max(0, Math.min(10, updatedMetrics.trust + (event.metrics_delta.trust || 0)));
-        updatedMetrics.productivity = Math.max(0, Math.min(10, updatedMetrics.productivity + (event.metrics_delta.productivity || 0)));
-      }
+    if (event.metrics_delta) {
+    const moodDelta = Math.max(-2, Math.min(2, event.metrics_delta.mood || 0));
+    const trustDelta = Math.max(-2, Math.min(2, event.metrics_delta.trust || 0));
+    const prodDelta = Math.max(-2, Math.min(2, event.metrics_delta.productivity || 0));
+    
+    updatedMetrics.mood = Math.max(0, Math.min(10, updatedMetrics.mood + moodDelta));
+    updatedMetrics.trust = Math.max(0, Math.min(10, updatedMetrics.trust + trustDelta));
+    updatedMetrics.productivity = Math.max(0, Math.min(10, updatedMetrics.productivity + prodDelta));
+    }
     });
 
     // 4. Сохраняем обновлённое состояние
