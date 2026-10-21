@@ -353,7 +353,11 @@
 
     function renderDashboard(session) {
       document.getElementById('dashTeamName').textContent = session.team_config?.team_name || 'Команда';
-      document.getElementById('dashDay').textContent = session.current_day || 1;
+      // Показываем последний завершённый день (current_day - 1 если есть события, иначе current_day)
+      const displayDay = (session.event_log && session.event_log.length > 0) 
+      ? Math.max(1, session.current_day - 1) 
+      : session.current_day;
+      document.getElementById('dashDay').textContent = displayDay;
       
       const m = session.metrics || {};
       document.getElementById('metricMood').textContent = m.mood ?? 7;
