@@ -317,11 +317,14 @@
   <!-- 3. Рабочий стол (Чат + Виджеты) -->
   <div id="desktopEnvironment" class="hidden">
     <div id="chatWindow" class="window">
-      <div class="window-header">
-        <div class="window-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
-        <span id="chatWindowTitle">Чат</span>
+    <div class="window-header">
+      <div class="window-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+      <span id="chatWindowTitle">Чат</span>
+      <div style="display: flex; gap: 8px; align-items: center;">
         <span style="font-size: 12px; color: var(--success);">● В сети</span>
+        <button class="btn" style="padding: 6px 12px; font-size: 13px; background: #e2e8f0; color: var(--text-main);" onclick="exitScenario()">← Выйти</button>
       </div>
+  </div>
       <div id="chatMessages"></div>
       <div class="chat-input-area">
         <input type="text" id="chatInput" placeholder="Напишите ответ и нажмите Enter..." onkeypress="handleKeyPress(event)">
@@ -501,7 +504,23 @@
       localStorage.removeItem('userCode');
       location.reload();
     }
-
+    
+    function exitScenario() {
+      if (!confirm('Выйти из сценария? Диалог не будет сохранён, разбор не будет показан.')) return;
+      
+      // Очищаем состояние
+      chatHistory = [];
+      currentScenarioId = '';
+      
+      // Возвращаемся на экран выбора сценария
+      document.getElementById('desktopEnvironment').classList.add('hidden');
+      document.getElementById('scenarioScreen').classList.remove('hidden');
+      
+      // Обновляем счётчик сессий (он уже был уменьшен при входе через start-game)
+      // Перерисовываем список сценариев и секцию фермы
+      renderScenarios();
+      renderAntFarmSection();
+}
     async function loadScenarios() {
       try {
         const res = await fetch(`${API_BASE}/api/scenarios`);
