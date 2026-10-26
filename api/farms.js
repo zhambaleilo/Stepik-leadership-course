@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(502).json({ ok: false, reason: 'Delete error: ' + e.message }); }
   }
 
-  // === 4. SIMULATE ===
+    // === 4. SIMULATE ===
   if (req.method === 'POST' && action === 'simulate') {
     const { session_id, days_to_simulate = 1 } = req.body;
     if (!session_id) return res.status(400).json({ ok: false, reason: 'session_id required' });
@@ -99,25 +99,66 @@ export default async function handler(req, res) {
       const metrics = typeof session.metrics === 'string' ? JSON.parse(session.metrics) : session.metrics;
       const eventLog = typeof session.event_log === 'string' ? JSON.parse(session.event_log) : session.event_log;
 
-      const systemPrompt = `Ты — движок симуляции. Сгенерируй события за ${days_to_simulate} день.
-Команда: ${JSON.stringify(teamConfig)}
-Метрики: настроение=${metrics.mood}, доверие=${metrics.trust}, продуктивность=${metrics.productivity} (0-10)
-Последние события: ${eventLog.slice(-3).map(e => `День ${e.day}: ${e.text}`).join('\n')}
-Правила: 1) Реалистичные офисные события. 2) Учитывай триггеры. 3) Влияй на метрики (дельта ±1 или ±2). 4) Верни ТОЛЬКО валидный JSON-массив: [{"day": N, "text": "...", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 1}}]. Без markdown.`;
+      const lastEvents = eventLog.slice(-3).map(e => `День ${e.day}: ${e.text}`).join('\n') || 'Событий ещё не было.';
+
+      // УСИЛЕННЫЙ ПРОМПТ: строгий JSON + пример формата
+      const systemPrompt = `Ты — движок симуляции рабочей команды. Твоя задача — генерировать РЕАЛИСТИЧНЫЕ офисные события.
+
+КОМАНДА:
+${JSON.stringify(teamConfig, null, 2)}
+
+ТЕКУЩИЕ МЕТРИКИ: настроение=${metrics.mood}, доверие=${metrics.trust}, продуктивность=${metrics.productivity} (шкала 0-10)
+
+ПОСЛЕДНИЕ СОБЫТИЯ:
+${lastEvents}
+
+ПРАВИЛА:
+1. Сгенерируй от 2 до 4 событий за этот день.
+2. События должны быть КОНКРЕТНЫМИ: имена сотрудников, конкретные действия, диалоги в чате, личные сообщения.
+3. Учитывай скрытые триггеры сотрудников (выгорание, страх ИИ, токсичность, синдром самозванца).
+4. Каждое событие должно влиять на метрики (указывай дельту от -2 до +2).
+5. События должны развиваться логично от предыдущих.
+
+ФОРМАТ ОТВЕТА — СТРОГО JSON-МАССИВ, БЕЗ ПОЯСНЕНИЙ, БЕЗ MARKDOWN:
+[
+  {"day": ${session.current_day}, "text": "Конкретное событие с именами и деталями", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 1}},
+  {"day": ${session.current_day}, "text": "Ещё одно событие", "metrics_delta": {"mood": 0, "trust": -1, "productivity": 0}}
+]
+
+ВАЖНО: Верни ТОЛЬКО JSON-массив. Никаких слов до или после. Никаких \`\`\`json обёрток.`;
 
       const token = await getToken();
       const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, JSON.stringify({
         model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Сгенерируй события.' }],
-        temperature: 0.7, max_tokens: 1500
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Сгенерируй события для этого дня.' }],
+        temperature: 0.8, max_tokens: 2000
       }));
 
-      let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      if (r.status !== 200) {
+        console.error('GigaChat error:', r.status, r.text);
+        throw new Error('GigaChat returned ' + r.status);
+      }
+
+      let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim();
+      
+      // УЛУЧШЕННЫЙ ПАРСИНГ: убираем markdown, ищем JSON в тексте
+      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      
+      // Если в ответе есть текст до/после JSON — извлекаем только массив
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (jsonMatch) content = jsonMatch[0];
+
       let newEvents;
       try {
         newEvents = JSON.parse(content);
-        if (!Array.isArray(newEvents)) throw new Error('Not array');
+        if (!Array.isArray(newEvents) || newEvents.length === 0) throw new Error('Not a valid array');
+        // Валидация структуры
+        newEvents.forEach(e => {
+          if (!e.text) throw new Error('Missing text');
+          if (!e.metrics_delta) e.metrics_delta = { mood: 0, trust: 0, productivity: 0 };
+        });
       } catch (e) {
+        console.error('JSON parse failed, raw content:', content);
         newEvents = [{ day: session.current_day, text: 'Команда работала в штатном режиме.', metrics_delta: { mood: 0, trust: 0, productivity: 0 } }];
       }
 
@@ -138,8 +179,8 @@ export default async function handler(req, res) {
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ current_day: newDay + days_to_simulate, metrics: updatedMetrics, event_log: updatedEventLog, last_saved_at: new Date().toISOString() }) });
 
       return res.status(200).json({ ok: true, new_day: newDay, new_metrics: updatedMetrics, new_events: newEvents });
-    } catch (e) { return res.status(502).json({ ok: false, reason: 'Simulate error: ' + e.message }); }
+    } catch (e) { 
+      console.error('Simulate error:', e);
+      return res.status(502).json({ ok: false, reason: 'Simulate error: ' + e.message }); 
+    }
   }
-
-  return res.status(400).json({ error: 'Invalid action' });
-}
