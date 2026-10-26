@@ -550,7 +550,7 @@
       if (!container) return;
 
       try {
-        const res = await fetch(`${API_BASE}/api/list-farms`, {
+        const res = await fetch(`${API_BASE}/api/farms?action=list`, {
           headers: { 
             'Content-Type': 'application/json',
             'x-access-code': userCode
