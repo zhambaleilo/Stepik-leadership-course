@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(502).json({ ok: false, reason: 'Delete error: ' + e.message }); }
   }
 
-    // === 4. SIMULATE ===
+  // === 4. SIMULATE ===
   if (req.method === 'POST' && action === 'simulate') {
     const { session_id, days_to_simulate = 1 } = req.body;
     if (!session_id) return res.status(400).json({ ok: false, reason: 'session_id required' });
@@ -99,33 +99,25 @@ export default async function handler(req, res) {
       const metrics = typeof session.metrics === 'string' ? JSON.parse(session.metrics) : session.metrics;
       const eventLog = typeof session.event_log === 'string' ? JSON.parse(session.event_log) : session.event_log;
 
-      const lastEvents = eventLog.slice(-3).map(e => `День ${e.day}: ${e.text}`).join('\n') || 'Событий ещё не было.';
+      const lastEvents = eventLog.slice(-3).map(e => 'День ' + e.day + ': ' + e.text).join('\n') || 'Событий ещё не было.';
 
-      // УСИЛЕННЫЙ ПРОМПТ: строгий JSON + пример формата
-      const systemPrompt = `Ты — движок симуляции рабочей команды. Твоя задача — генерировать РЕАЛИСТИЧНЫЕ офисные события.
+      // Пример формата строим через конкатенацию — БЕЗ обратных кавычек
+      const example = '[{"day": ' + session.current_day + ', "text": "Конкретное событие с именами и деталями", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 1}}]';
 
-КОМАНДА:
-${JSON.stringify(teamConfig, null, 2)}
-
-ТЕКУЩИЕ МЕТРИКИ: настроение=${metrics.mood}, доверие=${metrics.trust}, продуктивность=${metrics.productivity} (шкала 0-10)
-
-ПОСЛЕДНИЕ СОБЫТИЯ:
-${lastEvents}
-
-ПРАВИЛА:
-1. Сгенерируй от 2 до 4 событий за этот день.
-2. События должны быть КОНКРЕТНЫМИ: имена сотрудников, конкретные действия, диалоги в чате, личные сообщения.
-3. Учитывай скрытые триггеры сотрудников (выгорание, страх ИИ, токсичность, синдром самозванца).
-4. Каждое событие должно влиять на метрики (указывай дельту от -2 до +2).
-5. События должны развиваться логично от предыдущих.
-
-ФОРМАТ ОТВЕТА — СТРОГО JSON-МАССИВ, БЕЗ ПОЯСНЕНИЙ, БЕЗ MARKDOWN:
-[
-  {"day": ${session.current_day}, "text": "Конкретное событие с именами и деталями", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 1}},
-  {"day": ${session.current_day}, "text": "Ещё одно событие", "metrics_delta": {"mood": 0, "trust": -1, "productivity": 0}}
-]
-
-ВАЖНО: Верни ТОЛЬКО JSON-массив. Никаких слов до или после. Никаких \`\`\`json обёрток.`;
+      // Промпт через обычную конкатенацию строк — шаблонная строка больше не может сломаться
+      const systemPrompt =
+        'Ты — движок симуляции рабочей команды. Твоя задача — генерировать РЕАЛИСТИЧНЫЕ офисные события.\n\n' +
+        'КОМАНДА:\n' + JSON.stringify(teamConfig, null, 2) + '\n\n' +
+        'ТЕКУЩИЕ МЕТРИКИ: настроение=' + metrics.mood + ', доверие=' + metrics.trust + ', продуктивность=' + metrics.productivity + ' (шкала 0-10)\n\n' +
+        'ПОСЛЕДНИЕ СОБЫТИЯ:\n' + lastEvents + '\n\n' +
+        'ПРАВИЛА:\n' +
+        '1. Сгенерируй от 2 до 4 событий за этот день.\n' +
+        '2. События должны быть КОНКРЕТНЫМИ: имена сотрудников, конкретные действия, диалоги в чате, личные сообщения.\n' +
+        '3. Учитывай скрытые триггеры сотрудников (выгорание, страх ИИ, токсичность, синдром самозванца).\n' +
+        '4. Каждое событие должно влиять на метрики (указывай дельту от -2 до +2).\n' +
+        '5. События должны развиваться логично от предыдущих.\n\n' +
+        'ФОРМАТ ОТВЕТА — СТРОГО JSON-МАССИВ, БЕЗ ПОЯСНЕНИЙ И БЕЗ MARKDOWN:\n' + example + '\n\n' +
+        'ВАЖНО: Верни ТОЛЬКО JSON-массив. Никаких слов до или после.';
 
       const token = await getToken();
       const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, JSON.stringify({
@@ -140,23 +132,22 @@ ${lastEvents}
       }
 
       let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim();
-      
-      // УЛУЧШЕННЫЙ ПАРСИНГ: убираем markdown, ищем JSON в тексте
+      // Убираем markdown-обёртки, если ИИ всё-таки их добавил
       content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-      
-      // Если в ответе есть текст до/после JSON — извлекаем только массив
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) content = jsonMatch[0];
 
       let newEvents;
       try {
-        newEvents = JSON.parse(content);
-        if (!Array.isArray(newEvents) || newEvents.length === 0) throw new Error('Not a valid array');
-        // Валидация структуры
-        newEvents.forEach(e => {
-          if (!e.text) throw new Error('Missing text');
-          if (!e.metrics_delta) e.metrics_delta = { mood: 0, trust: 0, productivity: 0 };
-        });
+        const parsed = JSON.parse(content);
+        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Not a valid array');
+        // Мягкая санация: чиним ключи и отбрасываем пустые события
+        newEvents = parsed.map(e => ({
+          day: session.current_day,
+          text: String(e.text || e['text '] || '').trim(),
+          metrics_delta: e.metrics_delta || e['metrics_delta '] || { mood: 0, trust: 0, productivity: 0 }
+        })).filter(e => e.text.length > 0);
+        if (newEvents.length === 0) throw new Error('No valid events after sanitization');
       } catch (e) {
         console.error('JSON parse failed, raw content:', content);
         newEvents = [{ day: session.current_day, text: 'Команда работала в штатном режиме.', metrics_delta: { mood: 0, trust: 0, productivity: 0 } }];
@@ -179,8 +170,11 @@ ${lastEvents}
       await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ current_day: newDay + days_to_simulate, metrics: updatedMetrics, event_log: updatedEventLog, last_saved_at: new Date().toISOString() }) });
 
       return res.status(200).json({ ok: true, new_day: newDay, new_metrics: updatedMetrics, new_events: newEvents });
-    } catch (e) { 
+    } catch (e) {
       console.error('Simulate error:', e);
-      return res.status(502).json({ ok: false, reason: 'Simulate error: ' + e.message }); 
+      return res.status(502).json({ ok: false, reason: 'Simulate error: ' + e.message });
     }
   }
+
+  return res.status(400).json({ error: 'Invalid action' });
+}
