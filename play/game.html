@@ -572,7 +572,7 @@
         if (farms && farms.length > 0) {
           html += '<div class="scenario-grid" style="margin-bottom: 16px;">';
           farms.forEach(farm => {
-            const day = farm.current_day || 1;
+            const day = Math.max(1, (farm.current_day || 1) - 1);
             const metrics = farm.metrics || {};
             const mood = metrics.mood !== undefined ? Math.round(metrics.mood) : '?';
             const teamName = (farm.team_config && farm.team_config.team_name) || 'Команда';
