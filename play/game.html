@@ -475,6 +475,7 @@
           localStorage.setItem('accessCodeId', accessCodeId);
           localStorage.setItem('remainingSessions', remainingSessions);
           localStorage.setItem('userCode', userCode);
+          localStorage.setItem('isDev', data.is_dev ? '1' : '0');
           
           errorEl.style.display = 'none';
           sessionInfoEl.textContent = `✓ Доступ разрешён. Осталось сессий: ${remainingSessions}`;
@@ -502,7 +503,9 @@
       localStorage.removeItem('accessCodeId');
       localStorage.removeItem('remainingSessions');
       localStorage.removeItem('userCode');
+      localStorage.removeItem('isDev');
       location.reload();
+      
     }
     
     function exitScenario() {
