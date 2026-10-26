@@ -39,6 +39,38 @@ async function getToken() {
   return cache.token;
 }
 
+// === САНИТАР JSON: чинит ответы GigaChat в JS-стиле ===
+function sanitizeJson(rawText) {
+  let c = String(rawText).replace(/```/g, '').trim();
+  const start = c.indexOf('[');
+  if (start === -1) throw new Error('No array bracket');
+  // Вырезаем сбалансированный массив (игнорируем скобки внутри строк)
+  let depth = 0, end = -1, inStr = false, esc = false;
+  for (let i = start; i < c.length; i++) {
+    const ch = c[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === '[') depth++;
+    else if (ch === ']') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  if (end === -1) throw new Error('Unbalanced brackets');
+  c = c.slice(start, end + 1);
+  // 1) Ключи с пробелами внутри кавычек: "day " :  ->  "day":
+  c = c.replace(/"\s*(day|text|metrics_delta|mood|trust|productivity)\s*"\s*:/g, '"$1":');
+  // 2) Ключи БЕЗ кавычек (JS-стиль): day:  ->  "day":
+  c = c.replace(/(^|[{,\[]\s*)(day|text|metrics_delta|mood|trust|productivity)\s*:/g, '$1"$2":');
+  // 3) Числа с плюсом: : +1  ->  : 1
+  c = c.replace(/:\s*\+(\d+(\.\d+)?)/g, ': $1');
+  // 4) Висячие запятые: , }  ->  }
+  c = c.replace(/,(\s*[}\]])/g, '$1');
+  return c;
+}
+
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   Object.entries(getCorsHeaders(origin)).forEach(([k, v]) => res.setHeader(k, v));
@@ -98,59 +130,74 @@ export default async function handler(req, res) {
       const teamConfig = typeof session.team_config === 'string' ? JSON.parse(session.team_config) : session.team_config;
       const metrics = typeof session.metrics === 'string' ? JSON.parse(session.metrics) : session.metrics;
       const eventLog = typeof session.event_log === 'string' ? JSON.parse(session.event_log) : session.event_log;
-
       const lastEvents = eventLog.slice(-3).map(e => 'День ' + e.day + ': ' + e.text).join('\n') || 'Событий ещё не было.';
 
-      // Пример формата строим через конкатенацию — БЕЗ обратных кавычек
-      const example = '[{"day": ' + session.current_day + ', "text": "Конкретное событие с именами и деталями", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 1}}]';
+      const example = '[{"day": ' + session.current_day + ', "text": "Марина в общем чате пожаловалась на перегрузку задачами", "metrics_delta": {"mood": -1, "trust": 0, "productivity": 0}}]';
 
-      // Промпт через обычную конкатенацию строк — шаблонная строка больше не может сломаться
-      const systemPrompt =
-        'Ты — движок симуляции рабочей команды. Твоя задача — генерировать РЕАЛИСТИЧНЫЕ офисные события.\n\n' +
-        'КОМАНДА:\n' + JSON.stringify(teamConfig, null, 2) + '\n\n' +
-        'ТЕКУЩИЕ МЕТРИКИ: настроение=' + metrics.mood + ', доверие=' + metrics.trust + ', продуктивность=' + metrics.productivity + ' (шкала 0-10)\n\n' +
+      const basePrompt =
+        'Ты — движок симуляции рабочей команды. Генерируй РЕАЛИСТИЧНЫЕ офисные события.\n\n' +
+        'КОМАНДА:\n' + JSON.stringify(teamConfig) + '\n\n' +
+        'МЕТРИКИ: настроение=' + metrics.mood + ', доверие=' + metrics.trust + ', продуктивность=' + metrics.productivity + ' (шкала 0-10)\n\n' +
         'ПОСЛЕДНИЕ СОБЫТИЯ:\n' + lastEvents + '\n\n' +
         'ПРАВИЛА:\n' +
-        '1. Сгенерируй от 2 до 4 событий за этот день.\n' +
-        '2. События должны быть КОНКРЕТНЫМИ: имена сотрудников, конкретные действия, диалоги в чате, личные сообщения.\n' +
-        '3. Учитывай скрытые триггеры сотрудников (выгорание, страх ИИ, токсичность, синдром самозванца).\n' +
-        '4. Каждое событие должно влиять на метрики (указывай дельту от -2 до +2).\n' +
-        '5. События должны развиваться логично от предыдущих.\n\n' +
-        'ФОРМАТ ОТВЕТА — СТРОГО JSON-МАССИВ, БЕЗ ПОЯСНЕНИЙ И БЕЗ MARKDOWN:\n' + example + '\n\n' +
-        'ВАЖНО: Верни ТОЛЬКО JSON-массив. Никаких слов до или после.';
+        '1. От 2 до 4 событий за день.\n' +
+        '2. Конкретика: имена сотрудников, действия, сообщения в чате, личные письма.\n' +
+        '3. Учитывай скрытые триггеры (выгорание, страх ИИ, токсичность, синдром самозванца).\n' +
+        '4. Дельты метрик — целые числа от -2 до 2, БЕЗ знака плюс перед положительными.\n' +
+        '5. Продолжай логику предыдущих событий.\n\n' +
+        'ФОРМАТ: СТРОГО валидный JSON-массив. Все ключи в двойных кавычках: day, text, metrics_delta.\n' +
+        'Пример: ' + example + '\n' +
+        'Верни ТОЛЬКО массив. Без текста до и после. Без markdown.';
 
       const token = await getToken();
-      const r = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, JSON.stringify({
-        model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
-        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: 'Сгенерируй события для этого дня.' }],
-        temperature: 0.8, max_tokens: 2000
-      }));
 
-      if (r.status !== 200) {
-        console.error('GigaChat error:', r.status, r.text);
-        throw new Error('GigaChat returned ' + r.status);
+      async function askGiga(messages) {
+        const rr = await sreq('POST', 'https://api.giga.chat/v1/chat/completions', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, JSON.stringify({
+          model: process.env.GIGACHAT_MODEL || 'GigaChat-2-Pro',
+          messages: messages,
+          temperature: 0.8,
+          max_tokens: 2000
+        }));
+        if (rr.status !== 200) throw new Error('GigaChat returned ' + rr.status + ': ' + rr.text.slice(0, 200));
+        return (JSON.parse(rr.text).choices?.[0]?.message?.content || '').trim();
       }
 
-      let content = (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim();
-      // Убираем markdown-обёртки, если ИИ всё-таки их добавил
-      content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      if (jsonMatch) content = jsonMatch[0];
+      function extractEvents(rawText) {
+        const clean = sanitizeJson(rawText);
+        const arr = JSON.parse(clean);
+        if (!Array.isArray(arr) || arr.length === 0) throw new Error('Not an array');
+        const norm = arr.map(e => {
+          const text = String(e.text ?? e.event ?? e.description ?? '').trim();
+          const md = e.metrics_delta ?? e.delta ?? e.impact ?? e.metrics ?? {};
+          return {
+            day: session.current_day,
+            text: text,
+            metrics_delta: { mood: Number(md.mood) || 0, trust: Number(md.trust) || 0, productivity: Number(md.productivity) || 0 }
+          };
+        }).filter(e => e.text.length > 0);
+        if (norm.length === 0) throw new Error('No usable events');
+        return norm;
+      }
 
-      let newEvents;
+      let newEvents = null;
+      let raw = '';
       try {
-        const parsed = JSON.parse(content);
-        if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Not a valid array');
-        // Мягкая санация: чиним ключи и отбрасываем пустые события
-        newEvents = parsed.map(e => ({
-          day: session.current_day,
-          text: String(e.text || e['text '] || '').trim(),
-          metrics_delta: e.metrics_delta || e['metrics_delta '] || { mood: 0, trust: 0, productivity: 0 }
-        })).filter(e => e.text.length > 0);
-        if (newEvents.length === 0) throw new Error('No valid events after sanitization');
-      } catch (e) {
-        console.error('JSON parse failed, raw content:', content);
-        newEvents = [{ day: session.current_day, text: 'Команда работала в штатном режиме.', metrics_delta: { mood: 0, trust: 0, productivity: 0 } }];
+        raw = await askGiga([{ role: 'system', content: basePrompt }, { role: 'user', content: 'Сгенерируй события для этого дня.' }]);
+        newEvents = extractEvents(raw);
+      } catch (firstErr) {
+        console.error('First attempt failed:', firstErr.message, 'raw:', (raw || '').slice(0, 500));
+        try {
+          raw = await askGiga([
+            { role: 'system', content: basePrompt },
+            { role: 'user', content: 'Сгенерируй события для этого дня.' },
+            { role: 'assistant', content: raw || '(пустой ответ)' },
+            { role: 'user', content: 'Твой предыдущий ответ невалиден. Верни ИСПРАВЛЕННЫЙ ответ: только валидный JSON-массив, все ключи в двойных кавычках (day, text, metrics_delta), числа без знака плюс. Без пояснений и markdown.' }
+          ]);
+          newEvents = extractEvents(raw);
+        } catch (secondErr) {
+          console.error('Retry failed:', secondErr.message, 'raw:', (raw || '').slice(0, 500));
+          newEvents = [{ day: session.current_day, text: 'Команда работала в штатном режиме.', metrics_delta: { mood: 0, trust: 0, productivity: 0 } }];
+        }
       }
 
       const updatedMetrics = { ...metrics };
