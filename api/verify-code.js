@@ -36,6 +36,7 @@ export default async function handler(req, res) {
       valid: true,
       access_code_id: row.id,
       remaining_sessions: row.max_sessions - row.used_sessions,
+      is_dev: !!row.is_dev,
       code: trimmed
     });
   } catch (e) {
