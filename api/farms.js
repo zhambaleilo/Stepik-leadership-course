@@ -123,7 +123,7 @@ export default async function handler(req, res) {
 
       const updatedMetrics = { ...metrics };
       const updatedEventLog = [...eventLog];
-      const newDay = session.current_day + 1;
+      const newDay = session.current_day;
 
       newEvents.forEach(event => {
         event.day = newDay;
@@ -135,7 +135,7 @@ export default async function handler(req, res) {
         }
       });
 
-      await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ current_day: newDay, metrics: updatedMetrics, event_log: updatedEventLog, last_saved_at: new Date().toISOString() }) });
+      await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ current_day: newDay + days_to_simulate, metrics: updatedMetrics, event_log: updatedEventLog, last_saved_at: new Date().toISOString() }) });
 
       return res.status(200).json({ ok: true, new_day: newDay, new_metrics: updatedMetrics, new_events: newEvents });
     } catch (e) { return res.status(502).json({ ok: false, reason: 'Simulate error: ' + e.message }); }
