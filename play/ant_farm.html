@@ -189,12 +189,10 @@
 
   <script>
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
-    const DEV_CODE = 'DEV-ZHAMBA-2025'; // <-- Замените на ваш код разработчика
-    
     let memberCount = 0;
     let currentSessionId = null;
     let userCode = localStorage.getItem('userCode') || '';
-    const IS_DEV = userCode === DEV_CODE;
+    const IS_DEV = localStorage.getItem('isDev') === '1';
 
     // Инициализация при загрузке
     window.addEventListener('DOMContentLoaded', () => {
