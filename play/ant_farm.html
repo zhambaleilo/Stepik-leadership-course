@@ -385,7 +385,7 @@
       
       showLoading('Удаляем ферму...');
       try {
-        const res = await fetch(`${API_BASE}/api/delete-farm`, {
+        const res = await fetch(`${API_BASE}/api/farms?action=delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -429,7 +429,7 @@
       if (simBtn) simBtn.disabled = true;
       
       try {
-        const res = await fetch(`${API_BASE}/api/simulate-days`, {
+        const res = await fetch(`${API_BASE}/api/farms?action=simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1 })
