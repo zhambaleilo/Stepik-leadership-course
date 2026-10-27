@@ -51,6 +51,16 @@
     
     /* Скрытые элементы */
     .hidden { display: none !important; }
+
+    /* Новые стили для блока "Что дальше" */
+    .next-steps-box {
+      margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+    }
+    .next-steps-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--ink); }
+    .features-list { list-style: none; padding: 0; margin: 0; }
+    .features-list li { font-size: 13px; line-height: 1.5; margin-bottom: 6px; padding-left: 20px; position: relative; }
+    .features-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
+    .summary-text { font-size: 14px; line-height: 1.5; margin-bottom: 16px; color: var(--text-main); }
   </style>
 </head>
 <body>
@@ -113,8 +123,12 @@
         </div>
         
         <div id="finalScreen" class="panel-card final-screen hidden">
-          <h3>📊 Ваш результат</h3>
+          <h3>📊 Разбор вашего диалога</h3>
           
+          <!-- Резюме ситуации -->
+          <p class="summary-text" id="dialogSummary"></p>
+
+          <!-- Оценка по критериям -->
           <div class="result-item pass" id="res-validation">
             <span>Признание состояния</span>
             <span class="success">2/2 ✅</span>
@@ -127,8 +141,18 @@
             <span class="error error-text">0/2 ❌</span>
           </div>
           
-          <p class="final-note">В полной версии ИИ разберёт <strong>ваш собственный</strong> текст по 11 критериям.</p>
-          <a href="game.html" class="cta-btn">🔒 Полная версия по паролю</a>
+          <!-- Блок продажи полной версии -->
+          <div class="next-steps-box">
+            <div class="next-steps-title"> Хотите больше контроля?</div>
+            <ul class="features-list">
+              <li>Пишите <strong>свои ответы</strong>, а не выбирайте из списка</li>
+              <li>Живой ИИ разбирает реплики по <strong>11 профессиональным критериям</strong></li>
+              <li>Реакция сотрудника меняется в реальном времени</li>
+              <li>Статистика прогресса и сложные сценарии конфликта</li>
+            </ul>
+          </div>
+
+          <a href="game.html" class="cta-btn">🔒 Открыть полную версию по паролю</a>
         </div>
       </div>
     </div>
@@ -280,13 +304,16 @@
       // Оцениваем путь
       const resValidation = document.getElementById('res-validation');
       const resSupport = document.getElementById('res-support');
+      const summaryEl = document.getElementById('dialogSummary');
       
       if (currentState.path === 'toxic') {
         resValidation.className = 'result-item fail';
         resSupport.className = 'result-item fail';
+        summaryEl.textContent = "Вы попытались мотивировать давлением, но это привело к закрытию сотрудника и росту стресса.";
       } else {
         resValidation.className = 'result-item pass';
         resSupport.className = 'result-item pass';
+        summaryEl.textContent = "Вы успешно снизили напряжение, признав чувства коллеги и предложив поддержку.";
       }
     }
 
