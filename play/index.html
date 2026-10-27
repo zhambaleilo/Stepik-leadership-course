@@ -6,61 +6,25 @@
   <title>RPG-симулятор руководителя · Демо</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <!-- ВАЖНО: Подключаем внешний CSS, но наши стили будут иметь приоритет -->
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* === RESET FOR PANELS TO OVERRIDE EXTERNAL STYLES === */
-    #placeholder, #dashboardCard, #finalScreen {
-      display: none !important; /* Скрыты по умолчанию */
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    /* Активное состояние панели */
-    .panel-active {
-      display: block !important;
-      animation: slideUp 0.3s ease-out;
-    }
-
-    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* === CHAT FEEDBACK STYLES === */
-    .feedback-hint { 
-      margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; 
-      animation: fadeIn 0.3s ease; 
-    }
+    /* Базовые стили для чата и кнопок (остаются как были) */
+    .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
     .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
     
-    /* === RESULTS STYLES === */
     .result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
     .result-item span:first-child { font-weight: 600; color: #333; }
+    .success-badge { color: #16a34a; font-weight: bold; }
+    .fail-badge { color: #dc2626; font-weight: bold; }
     
-    /* Success/Fail states controlled by parent class */
-    .result-item.pass .success-badge { display: inline-block; color: #16a34a; font-weight: bold; }
-    .result-item.pass .fail-badge { display: none; }
-    
-    .result-item.fail .success-badge { display: none; }
-    .result-item.fail .fail-badge { display: inline-block; color: #dc2626; font-weight: bold; }
-
-    /* === FINAL SCREEN CONTENT === */
     .next-steps-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
     .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; color: #475569; }
     .features-list li::before { content: '✓'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
-    .cta-btn { 
-      display: block; width: 100%; padding: 14px; text-align: center; 
-      background: #2563eb; color: white; text-decoration: none; 
-      border-radius: 8px; font-weight: 600; margin-top: 20px; transition: background 0.2s;
-    }
+    .cta-btn { display: block; width: 100%; padding: 14px; text-align: center; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 20px; transition: background 0.2s; }
     .cta-btn:hover { background: #1d4ed8; }
-
-    /* === DEBUG BUTTON (REMOVE IN PROD) === */
-    .debug-btn {
-      position: fixed; bottom: 10px; right: 10px; z-index: 9999;
-      background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 10px;
-    }
   </style>
 </head>
 <body>
@@ -99,13 +63,13 @@
       <!-- Правая часть: Динамические окна -->
       <div class="side-panel">
         <!-- Плейсхолдер -->
-        <div id="placeholder" class="placeholder panel-active">
+        <div id="placeholder" class="placeholder" style="display:block;">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
           <p>Интерактивные элементы появятся здесь.</p>
         </div>
         
         <!-- Дашборд метрик -->
-        <div id="dashboardCard" class="panel-card">
+        <div id="dashboardCard" class="panel-card" style="display:none;">
           <h4>📊 Состояние команды</h4>
           <div class="metric">
             <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
@@ -118,7 +82,7 @@
         </div>
         
         <!-- Финальный экран разбора -->
-        <div id="finalScreen" class="panel-card final-screen">
+        <div id="finalScreen" class="panel-card final-screen" style="display:none;">
           <h3>📊 Разбор вашего диалога</h3>
           <p id="dialogSummary" style="font-size:14px; margin-bottom:16px; color:#555;"></p>
 
@@ -126,7 +90,7 @@
             <span>Признание состояния</span>
             <div>
               <span class="success-badge">2/2 ✅</span>
-              <span class="fail-badge">0/2 ❌</span>
+              <span class="fail-badge" style="display:none;">0/2 ❌</span>
             </div>
           </div>
           
@@ -134,7 +98,7 @@
             <span>Присоединение и поддержка</span>
             <div>
               <span class="success-badge">2/2 ✅</span>
-              <span class="fail-badge">0/2 ❌</span>
+              <span class="fail-badge" style="display:none;">0/2 ❌</span>
             </div>
           </div>
           
@@ -152,9 +116,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Кнопка для ручной проверки работы скрипта (удалить потом) -->
-  <button class="debug-btn" onclick="forceShowFinal()">DEBUG: Show Final</button>
   
   <script>
     // Данные сценария
@@ -173,19 +134,20 @@
 
     function showExample() { alert("Эталон: «Алексей, я слышу, что сил совсем нет...»"); }
 
-    // Утилита для переключения панелей (гарантированно работает против CSS)
+    // === ЯДЕРНЫЙ МЕТОД ПЕРЕКЛЮЧЕНИЯ ПАНЕЛЕЙ ===
     function switchPanel(panelId) {
       const panels = ['placeholder', 'dashboardCard', 'finalScreen'];
       panels.forEach(id => {
         const el = document.getElementById(id);
-        if (el) {
-          if (id === panelId) {
-            el.classList.add('panel-active');
-            el.style.display = 'block'; // Force override
-          } else {
-            el.classList.remove('panel-active');
-            el.style.display = 'none';
-          }
+        if (!el) return;
+        
+        if (id === panelId) {
+          // Показываем целевую панель, используя setProperty для гарантии !important
+          el.style.setProperty('display', 'block', 'important');
+          console.log(`Switched TO: ${id}`);
+        } else {
+          // Прячем остальные
+          el.style.setProperty('display', 'none', 'important');
         }
       });
     }
@@ -237,7 +199,7 @@
           hints.style.opacity = '1';
         } else {
           // Финал
-          console.log("Triggering Final Screen"); // Дебаг в консоль
+          console.log("Triggering Final Screen"); 
           forceShowFinal();
         }
       }, 1200);
@@ -269,7 +231,7 @@
       // Прячем чат-инпуты
       document.getElementById('hints').style.display = 'none';
       
-      // Переключаемся на финальную панель
+      // Переключаемся на финальную панель (ядерный метод)
       switchPanel('finalScreen');
       
       // Обновляем контент оценки
@@ -277,13 +239,23 @@
       const rs = document.getElementById('res-support');
       const sum = document.getElementById('dialogSummary');
       
+      // Получаем бейджи
+      const rvSuccess = rv.querySelector('.success-badge');
+      const rvFail = rv.querySelector('.fail-badge');
+      const rsSuccess = rs.querySelector('.success-badge');
+      const rsFail = rs.querySelector('.fail-badge');
+      
       if (state.path === 'toxic') {
         rv.className = 'result-item fail';
         rs.className = 'result-item fail';
+        rvSuccess.style.display = 'none'; rvFail.style.display = 'inline-block';
+        rsSuccess.style.display = 'none'; rsFail.style.display = 'inline-block';
         sum.textContent = "Вы попытались мотивировать давлением, но это привело к закрытию сотрудника.";
       } else {
         rv.className = 'result-item pass';
         rs.className = 'result-item pass';
+        rvSuccess.style.display = 'inline-block'; rvFail.style.display = 'none';
+        rsSuccess.style.display = 'inline-block'; rsFail.style.display = 'none';
         sum.textContent = "Вы успешно снизили напряжение, признав чувства коллеги.";
       }
     }
