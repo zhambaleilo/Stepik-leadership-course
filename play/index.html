@@ -4,7 +4,6 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RPG-симулятор руководителя: лаборатория лидеров · Демо — My Pro Skills</title>
-  <meta name="description" content="Иммерсивная игра от первого лица. Проведите беседу с выгоревшим сотрудником, управляйте задачами и наблюдайте, как ваши решения влияют на команду.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
@@ -103,6 +102,7 @@
       
       <!-- Правая часть: Динамические окна -->
       <div class="side-panel">
+        <!-- Плейсхолдер (изначально виден) -->
         <div id="placeholder" class="placeholder">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/>
@@ -110,7 +110,8 @@
           <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
         </div>
         
-        <div id="dashboardCard" class="panel-card hidden">
+        <!-- Дашборд (изначально скрыт style="display:none") -->
+        <div id="dashboardCard" class="panel-card" style="display:none;">
           <h4>📊 Состояние команды</h4>
           <div class="metric">
             <div class="metric-label"><span>Уровень стресса</span><span class="metric-value" id="stressValue">92%</span></div>
@@ -122,7 +123,8 @@
           </div>
         </div>
         
-        <div id="finalScreen" class="panel-card final-screen hidden">
+        <!-- Финальный экран (изначально скрыт style="display:none") -->
+        <div id="finalScreen" class="panel-card final-screen" style="display:none;">
           <h3>📊 Разбор вашего диалога</h3>
           
           <!-- Резюме ситуации -->
@@ -143,7 +145,7 @@
           
           <!-- Блок продажи полной версии -->
           <div class="next-steps-box">
-            <div class="next-steps-title"> Хотите больше контроля?</div>
+            <div class="next-steps-title">✨ Хотите больше контроля?</div>
             <ul class="features-list">
               <li>Пишите <strong>свои ответы</strong>, а не выбирайте из списка</li>
               <li>Живой ИИ разбирает реплики по <strong>11 профессиональным критериям</strong></li>
@@ -294,12 +296,16 @@
     }
 
     function showFinalScreen() {
+      // Прячем кнопки ввода
       document.getElementById('hints').style.display = 'none';
-      document.getElementById('dashboardCard').classList.add('hidden');
-      document.getElementById('placeholder').classList.add('hidden');
       
+      // Прячем дашборд и плейсхолдер
+      document.getElementById('dashboardCard').style.display = 'none';
+      document.getElementById('placeholder').style.display = 'none';
+      
+      // Показываем финальный экран
       const finalScreen = document.getElementById('finalScreen');
-      finalScreen.classList.remove('hidden');
+      finalScreen.style.display = 'block';
       
       // Оцениваем путь
       const resValidation = document.getElementById('res-validation');
@@ -317,10 +323,10 @@
       }
     }
 
-    // Инициализация: показываем дашборд сразу
+    // Инициализация: показываем дашборд сразу после загрузки
     window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('dashboardCard').classList.remove('hidden');
-      document.getElementById('placeholder').classList.add('hidden');
+      document.getElementById('dashboardCard').style.display = 'block';
+      document.getElementById('placeholder').style.display = 'none';
     });
   </script>
 </body>
