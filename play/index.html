@@ -6,26 +6,61 @@
   <title>RPG-симулятор руководителя · Демо</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- ВАЖНО: Подключаем внешний CSS, но наши стили будут иметь приоритет -->
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; }
+    /* === RESET FOR PANELS TO OVERRIDE EXTERNAL STYLES === */
+    #placeholder, #dashboardCard, #finalScreen {
+      display: none !important; /* Скрыты по умолчанию */
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    /* Активное состояние панели */
+    .panel-active {
+      display: block !important;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === CHAT FEEDBACK STYLES === */
+    .feedback-hint { 
+      margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; 
+      animation: fadeIn 0.3s ease; 
+    }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
     .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
     
-    /* Панели управления видимостью через JS */
-    #dashboardCard, #finalScreen, #placeholder { display: none; } 
+    /* === RESULTS STYLES === */
+    .result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .result-item span:first-child { font-weight: 600; color: #333; }
     
-    .result-item.pass span.success { display: inline-block; }
-    .result-item.pass span.error { display: none; }
-    .result-item.fail span.success { display: none; }
-    .result-item.fail span.error { display: inline-block; color: #ef4444; font-weight: 700; }
+    /* Success/Fail states controlled by parent class */
+    .result-item.pass .success-badge { display: inline-block; color: #16a34a; font-weight: bold; }
+    .result-item.pass .fail-badge { display: none; }
     
+    .result-item.fail .success-badge { display: none; }
+    .result-item.fail .fail-badge { display: inline-block; color: #dc2626; font-weight: bold; }
+
+    /* === FINAL SCREEN CONTENT === */
     .next-steps-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
-    .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; }
-    .features-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
-    .cta-btn { display: block; width: 100%; padding: 12px; text-align: center; background: var(--primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 16px; }
+    .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; color: #475569; }
+    .features-list li::before { content: '✓'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
+    .cta-btn { 
+      display: block; width: 100%; padding: 14px; text-align: center; 
+      background: #2563eb; color: white; text-decoration: none; 
+      border-radius: 8px; font-weight: 600; margin-top: 20px; transition: background 0.2s;
+    }
+    .cta-btn:hover { background: #1d4ed8; }
+
+    /* === DEBUG BUTTON (REMOVE IN PROD) === */
+    .debug-btn {
+      position: fixed; bottom: 10px; right: 10px; z-index: 9999;
+      background: red; color: white; border: none; padding: 5px 10px; cursor: pointer; font-size: 10px;
+    }
   </style>
 </head>
 <body>
@@ -37,7 +72,7 @@
     </div>
     
     <div class="workspace">
-      <!-- Чат -->
+      <!-- Левая часть: Чат -->
       <div class="chat-section">
         <div class="chat-header">
           <div class="avatar">А</div>
@@ -61,10 +96,10 @@
         </div>
       </div>
       
-      <!-- Боковая панель -->
+      <!-- Правая часть: Динамические окна -->
       <div class="side-panel">
-        <!-- Плейсхолдер (виден по умолчанию через JS init) -->
-        <div id="placeholder" class="placeholder" style="display:block;">
+        <!-- Плейсхолдер -->
+        <div id="placeholder" class="placeholder panel-active">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
           <p>Интерактивные элементы появятся здесь.</p>
         </div>
@@ -85,18 +120,22 @@
         <!-- Финальный экран разбора -->
         <div id="finalScreen" class="panel-card final-screen">
           <h3>📊 Разбор вашего диалога</h3>
-          <p id="dialogSummary" style="font-size:14px; margin-bottom:16px;"></p>
+          <p id="dialogSummary" style="font-size:14px; margin-bottom:16px; color:#555;"></p>
 
           <div class="result-item pass" id="res-validation">
             <span>Признание состояния</span>
-            <span class="success">2/2 ✅</span>
-            <span class="error">0/2 ❌</span>
+            <div>
+              <span class="success-badge">2/2 ✅</span>
+              <span class="fail-badge">0/2 ❌</span>
+            </div>
           </div>
           
           <div class="result-item pass" id="res-support">
             <span>Присоединение и поддержка</span>
-            <span class="success">2/2 ✅</span>
-            <span class="error">0/2 ❌</span>
+            <div>
+              <span class="success-badge">2/2 ✅</span>
+              <span class="fail-badge">0/2 ❌</span>
+            </div>
           </div>
           
           <div class="next-steps-box">
@@ -113,6 +152,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Кнопка для ручной проверки работы скрипта (удалить потом) -->
+  <button class="debug-btn" onclick="forceShowFinal()">DEBUG: Show Final</button>
   
   <script>
     // Данные сценария
@@ -131,6 +173,23 @@
 
     function showExample() { alert("Эталон: «Алексей, я слышу, что сил совсем нет...»"); }
 
+    // Утилита для переключения панелей (гарантированно работает против CSS)
+    function switchPanel(panelId) {
+      const panels = ['placeholder', 'dashboardCard', 'finalScreen'];
+      panels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === panelId) {
+            el.classList.add('panel-active');
+            el.style.display = 'block'; // Force override
+          } else {
+            el.classList.remove('panel-active');
+            el.style.display = 'none';
+          }
+        }
+      });
+    }
+
     function handleAction(type) {
       if (state.turn > 2) return;
       
@@ -140,19 +199,22 @@
       
       if (state.turn === 1) state.path = type;
       
-      // Сообщение пользователя
+      // 1. Сообщение пользователя
       const msgDiv = document.createElement('div');
       msgDiv.className = 'message user';
       msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
       msgs.appendChild(msgDiv);
       
-      // Фидбек
+      // 2. Фидбек
       const hintDiv = document.createElement('div');
       hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
       hintDiv.innerHTML = data.feedback;
       msgs.insertBefore(hintDiv, msgDiv.nextSibling);
       
       updateMetrics(data.stressChange, data.trustChange);
+      
+      // Показываем дашборд при первом действии
+      if (state.turn === 1) switchPanel('dashboardCard');
       
       // Блокировка кнопок
       hints.style.pointerEvents = 'none';
@@ -175,7 +237,8 @@
           hints.style.opacity = '1';
         } else {
           // Финал
-          showFinalScreen();
+          console.log("Triggering Final Screen"); // Дебаг в консоль
+          forceShowFinal();
         }
       }, 1200);
     }
@@ -202,17 +265,14 @@
       document.getElementById('trustBar').className = 'progress-fill ' + (state.trust < 30 ? 'red' : state.trust < 60 ? 'amber' : 'green');
     }
 
-    function showFinalScreen() {
-      // Прячем всё лишнее
+    function forceShowFinal() {
+      // Прячем чат-инпуты
       document.getElementById('hints').style.display = 'none';
-      document.getElementById('dashboardCard').style.display = 'none';
-      document.getElementById('placeholder').style.display = 'none';
       
-      // Показываем финал
-      const fs = document.getElementById('finalScreen');
-      fs.style.display = 'block';
+      // Переключаемся на финальную панель
+      switchPanel('finalScreen');
       
-      // Оценка
+      // Обновляем контент оценки
       const rv = document.getElementById('res-validation');
       const rs = document.getElementById('res-support');
       const sum = document.getElementById('dialogSummary');
@@ -230,8 +290,7 @@
 
     // Инициализация
     window.onload = () => {
-      document.getElementById('dashboardCard').style.display = 'block';
-      document.getElementById('placeholder').style.display = 'none';
+      switchPanel('placeholder'); // Начинаем с плейсхолдера
     };
   </script>
 </body>
