@@ -3,257 +3,176 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RPG-симулятор руководителя: лаборатория лидеров · Демо — My Pro Skills</title>
+  <title>RPG-симулятор руководителя · Демо</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* Микро-фидбек под сообщением */
-    .feedback-hint {
-      margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45;
-      animation: fadeIn 0.3s ease;
-    }
+    .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-    
     .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
     .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
     
-    /* Результаты с динамическими классами */
+    /* Панели управления видимостью через JS */
+    #dashboardCard, #finalScreen, #placeholder { display: none; } 
+    
     .result-item.pass span.success { display: inline-block; }
     .result-item.pass span.error { display: none; }
     .result-item.fail span.success { display: none; }
-    .result-item.fail span.error { display: inline-block; }
+    .result-item.fail span.error { display: inline-block; color: #ef4444; font-weight: 700; }
     
-    .error-text { color: #ef4444; font-weight: 700; }
-    
-    /* Кнопка примера */
-    .hint-btn.example { 
-      width: 100%; margin-bottom: 8px; font-size: 12px; opacity: 0.8; 
-      background: transparent; border: 1px dashed var(--primary); color: var(--primary);
-    }
-    .hint-btn.example:hover { opacity: 1; background: rgba(59, 130, 246, 0.05); }
-    
-    /* Дашборд с анимацией */
-    .metric-value { transition: all 0.5s ease; }
-    .progress-fill { transition: width 0.8s ease; }
-    
-    /* Финальный экран */
-    .final-screen h3 { margin-bottom: 16px; }
-    .final-note { margin: 16px 0; font-size: 14px; color: var(--text-muted); }
-    .cta-btn { 
-      display: block; width: 100%; padding: 12px; text-align: center;
-      background: var(--primary); color: white; text-decoration: none;
-      border-radius: 8px; font-weight: 600; margin-top: 16px;
-    }
-    .cta-btn:hover { background: var(--primary-hover); }
-    
-    /* Скрытые элементы */
-    .hidden { display: none !important; }
-
-    /* Новые стили для блока "Что дальше" */
-    .next-steps-box {
-      margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-    }
-    .next-steps-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--ink); }
-    .features-list { list-style: none; padding: 0; margin: 0; }
-    .features-list li { font-size: 13px; line-height: 1.5; margin-bottom: 6px; padding-left: 20px; position: relative; }
+    .next-steps-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
+    .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; }
     .features-list li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: bold; }
-    .summary-text { font-size: 14px; line-height: 1.5; margin-bottom: 16px; color: var(--text-main); }
+    .cta-btn { display: block; width: 100%; padding: 12px; text-align: center; background: var(--primary); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 16px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <a href="/" class="back-link">← My Pro Skills</a>
-      <h1>🎮 RPG-симулятор руководителя: лаборатория лидеров</h1>
-      <p class="subtitle">Иммерсивная игра от первого лица. Проведите беседу с выгоревшим сотрудником, управляйте задачами и наблюдайте, как ваши решения влияют на команду.</p>
+      <h1>🎮 RPG-симулятор руководителя</h1>
+      <p class="subtitle">Демо-версия. Проведите беседу с выгоревшим сотрудником.</p>
     </div>
     
     <div class="workspace">
-      <!-- Левая часть: Чат -->
+      <!-- Чат -->
       <div class="chat-section">
         <div class="chat-header">
           <div class="avatar">А</div>
-          <div class="chat-info">
-            <h3>Алексей · Ведущий разработчик</h3>
-            <div class="status">В сети</div>
-          </div>
+          <div class="chat-info"><h3>Алексей · Ведущий разработчик</h3><div class="status">В сети</div></div>
         </div>
         
         <div class="messages" id="messages">
-          <div class="message ai">
-            <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
-          </div>
+          <div class="message ai"><div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div></div>
         </div>
         
         <div class="input-area">
           <div class="hints" id="hints">
-            <button class="hint-btn example" onclick="showExample()">💡 Не знаю, что ответить — покажи пример</button>
+            <button class="hint-btn example" onclick="showExample()">💡 Показать пример ответа</button>
             <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
             <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
           </div>
           <div class="input-wrapper">
-            <input type="text" id="userInput" placeholder="Напишите ответ или выберите подсказку..." disabled>
-            <button class="send-btn" disabled>➤</button>
+            <input type="text" placeholder="Напишите ответ..." disabled>
+            <button disabled>➤</button>
           </div>
         </div>
       </div>
       
-      <!-- Правая часть: Динамические окна -->
+      <!-- Боковая панель -->
       <div class="side-panel">
-        <!-- Плейсхолдер (изначально виден) -->
-        <div id="placeholder" class="placeholder">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/>
-          </svg>
-          <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
+        <!-- Плейсхолдер (виден по умолчанию через JS init) -->
+        <div id="placeholder" class="placeholder" style="display:block;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
+          <p>Интерактивные элементы появятся здесь.</p>
         </div>
         
-        <!-- Дашборд (изначально скрыт style="display:none") -->
-        <div id="dashboardCard" class="panel-card" style="display:none;">
+        <!-- Дашборд метрик -->
+        <div id="dashboardCard" class="panel-card">
           <h4>📊 Состояние команды</h4>
           <div class="metric">
-            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value" id="stressValue">92%</span></div>
-            <div class="progress-bar"><div class="progress-fill red" id="stressBar" style="width:92%"></div></div>
+            <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
+            <div class="progress-bar"><div id="stressBar" class="progress-fill red" style="width:92%"></div></div>
           </div>
           <div class="metric">
-            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value" id="trustValue">45%</span></div>
-            <div class="progress-bar"><div class="progress-fill amber" id="trustBar" style="width:45%"></div></div>
+            <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
+            <div class="progress-bar"><div id="trustBar" class="progress-fill amber" style="width:45%"></div></div>
           </div>
         </div>
         
-        <!-- Финальный экран (изначально скрыт style="display:none") -->
-        <div id="finalScreen" class="panel-card final-screen" style="display:none;">
+        <!-- Финальный экран разбора -->
+        <div id="finalScreen" class="panel-card final-screen">
           <h3>📊 Разбор вашего диалога</h3>
-          
-          <!-- Резюме ситуации -->
-          <p class="summary-text" id="dialogSummary"></p>
+          <p id="dialogSummary" style="font-size:14px; margin-bottom:16px;"></p>
 
-          <!-- Оценка по критериям -->
           <div class="result-item pass" id="res-validation">
             <span>Признание состояния</span>
             <span class="success">2/2 ✅</span>
-            <span class="error error-text">0/2 ❌</span>
+            <span class="error">0/2 ❌</span>
           </div>
           
           <div class="result-item pass" id="res-support">
             <span>Присоединение и поддержка</span>
             <span class="success">2/2 ✅</span>
-            <span class="error error-text">0/2 ❌</span>
+            <span class="error">0/2 ❌</span>
           </div>
           
-          <!-- Блок продажи полной версии -->
           <div class="next-steps-box">
-            <div class="next-steps-title">✨ Хотите больше контроля?</div>
+            <strong>✨ Хотите больше контроля?</strong>
             <ul class="features-list">
-              <li>Пишите <strong>свои ответы</strong>, а не выбирайте из списка</li>
-              <li>Живой ИИ разбирает реплики по <strong>11 профессиональным критериям</strong></li>
+              <li>Пишите свои ответы, а не выбирайте из списка</li>
+              <li>Живой ИИ разбирает реплики по 11 критериям</li>
               <li>Реакция сотрудника меняется в реальном времени</li>
-              <li>Статистика прогресса и сложные сценарии конфликта</li>
             </ul>
           </div>
 
-          <a href="game.html" class="cta-btn">🔒 Открыть полную версию по паролю</a>
+          <a href="game.html" class="cta-btn">🔒 Открыть полную версию</a>
         </div>
       </div>
     </div>
   </div>
   
   <script>
-    // === ДАННЫЕ СЦЕНАРИЯ ===
+    // Данные сценария
     const scenario = {
       turn1: {
-        empathy: {
-          userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.",
-          feedback: "🟢 Вы признали его состояние. Это открывает диалог.",
-          aiResponse: "Спасибо... Я правда не знал, что можно остановиться.",
-          stressChange: -15,
-          trustChange: +20
-        },
-        toxic: {
-          userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.",
-          feedback: "🔴 <b>Обесценивание:</b> игнорирует усталость.<br>💡 <i>Как лучше:</i> «Вижу, что ты вымотался...»",
-          aiResponse: "Понял. Сделаю как скажете.",
-          stressChange: +10,
-          trustChange: -25
-        }
+        empathy: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
+        toxic: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", feedback: "🔴 Обесценивание: игнорирует усталость.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +10, trustChange: -25 }
       },
       turn2: {
-        empathy: {
-          userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?",
-          feedback: "🟢 Конкретное решение вместо давления.",
-          aiResponse: "Это было бы здорово. Спасибо, что услышал.",
-          stressChange: -20,
-          trustChange: +15
-        },
-        toxic: {
-          userText: "Не ной, все устают. Возьми себя в руки.",
-          feedback: "🔴 <b>Давление:</b> сравнение с другими обесценивает проблему.",
-          aiResponse: "...Хорошо.",
-          stressChange: +15,
-          trustChange: -20
-        }
+        empathy: { userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
+        toxic: { userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему.", aiResponse: "...Хорошо.", stressChange: +15, trustChange: -20 }
       }
     };
 
-    let currentState = {
-      turn: 1,
-      path: null, // 'empathy' или 'toxic'
-      stress: 92,
-      trust: 45
-    };
+    let state = { turn: 1, path: null, stress: 92, trust: 45 };
 
-    function showExample() {
-      alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.»");
-    }
+    function showExample() { alert("Эталон: «Алексей, я слышу, что сил совсем нет...»"); }
 
     function handleAction(type) {
-      if (currentState.turn > 2) return;
+      if (state.turn > 2) return;
       
-      const messagesContainer = document.getElementById('messages');
-      const hintsContainer = document.getElementById('hints');
-      const data = scenario[`turn${currentState.turn}`][type];
+      const msgs = document.getElementById('messages');
+      const hints = document.getElementById('hints');
+      const data = scenario[`turn${state.turn}`][type];
       
-      // Запоминаем путь (для финальной оценки)
-      if (currentState.turn === 1) {
-        currentState.path = type;
-      }
+      if (state.turn === 1) state.path = type;
       
-      // 1. Сообщение пользователя
+      // Сообщение пользователя
       const msgDiv = document.createElement('div');
       msgDiv.className = 'message user';
       msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
-      messagesContainer.appendChild(msgDiv);
+      msgs.appendChild(msgDiv);
       
-      // 2. Микро-фидбек
+      // Фидбек
       const hintDiv = document.createElement('div');
       hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
       hintDiv.innerHTML = data.feedback;
-      msgDiv.parentNode.insertBefore(hintDiv, msgDiv.nextSibling);
+      msgs.insertBefore(hintDiv, msgDiv.nextSibling);
       
-      // 3. Обновляем метрики
       updateMetrics(data.stressChange, data.trustChange);
       
-      // 4. Блокируем кнопки на время ответа AI
-      hintsContainer.style.pointerEvents = 'none';
-      hintsContainer.style.opacity = '0.5';
+      // Блокировка кнопок
+      hints.style.pointerEvents = 'none';
+      hints.style.opacity = '0.5';
       
-      // 5. Ответ сотрудника (с задержкой)
+      // Ответ ИИ
       setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'message ai';
         aiMsg.innerHTML = `<div class="bubble">${data.aiResponse}</div>`;
-        messagesContainer.appendChild(aiMsg);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        msgs.appendChild(aiMsg);
+        msgs.scrollTop = msgs.scrollHeight;
         
-        // 6. Переход к следующему ходу или финалу
-        currentState.turn++;
-        if (currentState.turn <= 2) {
-          // Показываем новые варианты для второго хода
-          hintsContainer.innerHTML = getHintsForTurn(currentState.turn, currentState.path);
-          hintsContainer.style.pointerEvents = 'auto';
-          hintsContainer.style.opacity = '1';
+        state.turn++;
+        
+        if (state.turn <= 2) {
+          // Второй ход: меняем кнопки
+          hints.innerHTML = getHintsForTurn(state.turn, state.path);
+          hints.style.pointerEvents = 'auto';
+          hints.style.opacity = '1';
         } else {
           // Финал
           showFinalScreen();
@@ -261,73 +180,59 @@
       }, 1200);
     }
 
-    function getHintsForTurn(turn, previousPath) {
+    function getHintsForTurn(turn, prevPath) {
       if (turn === 2) {
-        if (previousPath === 'empathy') {
-          return `
-            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Предложить конкретное решение</button>
-            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Не ной, все устают»</button>
-          `;
-        } else {
-          return `
-            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Извиниться и предложить помощь</button>
-            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Возьми себя в руки»</button>
-          `;
-        }
+        if (prevPath === 'empathy') return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Предложить решение</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Не ной, все устают»</button>`;
+        else return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Извиниться и помочь</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Возьми себя в руки»</button>`;
       }
       return '';
     }
 
-    function updateMetrics(stressDelta, trustDelta) {
-      currentState.stress = Math.max(0, Math.min(100, currentState.stress + stressDelta));
-      currentState.trust = Math.max(0, Math.min(100, currentState.trust + trustDelta));
+    function updateMetrics(sd, td) {
+      state.stress = Math.max(0, Math.min(100, state.stress + sd));
+      state.trust = Math.max(0, Math.min(100, state.trust + td));
       
-      document.getElementById('stressValue').textContent = currentState.stress + '%';
-      document.getElementById('trustValue').textContent = currentState.trust + '%';
-      document.getElementById('stressBar').style.width = currentState.stress + '%';
-      document.getElementById('trustBar').style.width = currentState.trust + '%';
+      document.getElementById('stressValue').textContent = state.stress + '%';
+      document.getElementById('trustValue').textContent = state.trust + '%';
+      document.getElementById('stressBar').style.width = state.stress + '%';
+      document.getElementById('trustBar').style.width = state.trust + '%';
       
-      // Меняем цвет полосок в зависимости от уровня
-      const stressBar = document.getElementById('stressBar');
-      stressBar.className = 'progress-fill ' + (currentState.stress > 70 ? 'red' : currentState.stress > 40 ? 'amber' : 'green');
-      
-      const trustBar = document.getElementById('trustBar');
-      trustBar.className = 'progress-fill ' + (currentState.trust < 30 ? 'red' : currentState.trust < 60 ? 'amber' : 'green');
+      // Цвет полосок
+      document.getElementById('stressBar').className = 'progress-fill ' + (state.stress > 70 ? 'red' : state.stress > 40 ? 'amber' : 'green');
+      document.getElementById('trustBar').className = 'progress-fill ' + (state.trust < 30 ? 'red' : state.trust < 60 ? 'amber' : 'green');
     }
 
     function showFinalScreen() {
-      // Прячем кнопки ввода
+      // Прячем всё лишнее
       document.getElementById('hints').style.display = 'none';
-      
-      // Прячем дашборд и плейсхолдер
       document.getElementById('dashboardCard').style.display = 'none';
       document.getElementById('placeholder').style.display = 'none';
       
-      // Показываем финальный экран
-      const finalScreen = document.getElementById('finalScreen');
-      finalScreen.style.display = 'block';
+      // Показываем финал
+      const fs = document.getElementById('finalScreen');
+      fs.style.display = 'block';
       
-      // Оцениваем путь
-      const resValidation = document.getElementById('res-validation');
-      const resSupport = document.getElementById('res-support');
-      const summaryEl = document.getElementById('dialogSummary');
+      // Оценка
+      const rv = document.getElementById('res-validation');
+      const rs = document.getElementById('res-support');
+      const sum = document.getElementById('dialogSummary');
       
-      if (currentState.path === 'toxic') {
-        resValidation.className = 'result-item fail';
-        resSupport.className = 'result-item fail';
-        summaryEl.textContent = "Вы попытались мотивировать давлением, но это привело к закрытию сотрудника и росту стресса.";
+      if (state.path === 'toxic') {
+        rv.className = 'result-item fail';
+        rs.className = 'result-item fail';
+        sum.textContent = "Вы попытались мотивировать давлением, но это привело к закрытию сотрудника.";
       } else {
-        resValidation.className = 'result-item pass';
-        resSupport.className = 'result-item pass';
-        summaryEl.textContent = "Вы успешно снизили напряжение, признав чувства коллеги и предложив поддержку.";
+        rv.className = 'result-item pass';
+        rs.className = 'result-item pass';
+        sum.textContent = "Вы успешно снизили напряжение, признав чувства коллеги.";
       }
     }
 
-    // Инициализация: показываем дашборд сразу после загрузки
-    window.addEventListener('DOMContentLoaded', () => {
+    // Инициализация
+    window.onload = () => {
       document.getElementById('dashboardCard').style.display = 'block';
       document.getElementById('placeholder').style.display = 'none';
-    });
+    };
   </script>
 </body>
 </html>
