@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* Базовые стили для чата и кнопок (остаются как были) */
+    /* === БАЗОВЫЕ СТИЛИ ДЛЯ ЧАТА И КНОПОК === */
     .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
@@ -63,26 +63,25 @@
       <!-- Правая часть: Динамические окна -->
       <div class="side-panel">
         <!-- Плейсхолдер -->
-        <div id="placeholder" class="placeholder" style="display:block;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l1.8-3.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
-          <p>Интерактивные элементы появятся здесь.</p>
+        <div id="placeholder" style="display:block; padding: 20px; text-align:center; color:#888;">
+          Интерактивные элементы появятся здесь.
         </div>
         
         <!-- Дашборд метрик -->
-        <div id="dashboardCard" class="panel-card" style="display:none;">
-          <h4>📊 Состояние команды</h4>
-          <div class="metric">
-            <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
-            <div class="progress-bar"><div id="stressBar" class="progress-fill red" style="width:92%"></div></div>
-          </div>
-          <div class="metric">
-            <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
-            <div class="progress-bar"><div id="trustBar" class="progress-fill amber" style="width:45%"></div></div>
-          </div>
+        <div id="dashboardCard" style="display:none; padding: 20px;">
+           <h4>📊 Состояние команды</h4>
+           <div class="metric">
+             <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
+             <div class="progress-bar"><div id="stressBar" class="progress-fill red" style="width:92%"></div></div>
+           </div>
+           <div class="metric">
+             <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
+             <div class="progress-bar"><div id="trustBar" class="progress-fill amber" style="width:45%"></div></div>
+           </div>
         </div>
         
         <!-- Финальный экран разбора -->
-        <div id="finalScreen" class="panel-card final-screen" style="display:none;">
+        <div id="finalScreen" style="display:none; padding: 20px; background:white; border-radius:8px;">
           <h3>📊 Разбор вашего диалога</h3>
           <p id="dialogSummary" style="font-size:14px; margin-bottom:16px; color:#555;"></p>
 
@@ -142,11 +141,9 @@
         if (!el) return;
         
         if (id === panelId) {
-          // Показываем целевую панель, используя setProperty для гарантии !important
           el.style.setProperty('display', 'block', 'important');
           console.log(`Switched TO: ${id}`);
         } else {
-          // Прячем остальные
           el.style.setProperty('display', 'none', 'important');
         }
       });
