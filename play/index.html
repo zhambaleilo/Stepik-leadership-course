@@ -9,8 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <!-- Дополнительные стили для фидбеков и результатов -->
   <style>
+    /* Микро-фидбек под сообщением */
     .feedback-hint {
       margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45;
       animation: fadeIn 0.3s ease;
@@ -20,16 +20,37 @@
     .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
     .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
     
-    .result-item.fail span.success { display: none; }
-    .result-item.fail span.error { display: inline-block !important; }
+    /* Результаты с динамическими классами */
+    .result-item.pass span.success { display: inline-block; }
     .result-item.pass span.error { display: none; }
+    .result-item.fail span.success { display: none; }
+    .result-item.fail span.error { display: inline-block; }
     
     .error-text { color: #ef4444; font-weight: 700; }
+    
+    /* Кнопка примера */
     .hint-btn.example { 
-      width: 100%; margin-top: 8px; font-size: 12px; opacity: 0.8; 
+      width: 100%; margin-bottom: 8px; font-size: 12px; opacity: 0.8; 
       background: transparent; border: 1px dashed var(--primary); color: var(--primary);
     }
     .hint-btn.example:hover { opacity: 1; background: rgba(59, 130, 246, 0.05); }
+    
+    /* Дашборд с анимацией */
+    .metric-value { transition: all 0.5s ease; }
+    .progress-fill { transition: width 0.8s ease; }
+    
+    /* Финальный экран */
+    .final-screen h3 { margin-bottom: 16px; }
+    .final-note { margin: 16px 0; font-size: 14px; color: var(--text-muted); }
+    .cta-btn { 
+      display: block; width: 100%; padding: 12px; text-align: center;
+      background: var(--primary); color: white; text-decoration: none;
+      border-radius: 8px; font-weight: 600; margin-top: 16px;
+    }
+    .cta-btn:hover { background: var(--primary-hover); }
+    
+    /* Скрытые элементы */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -59,10 +80,7 @@
         
         <div class="input-area">
           <div class="hints" id="hints">
-            <!-- Предложение 4: Кнопка-пример (опционально) -->
             <button class="hint-btn example" onclick="showExample()">💡 Не знаю, что ответить — покажи пример</button>
-            
-            <!-- Основные варианты выбора -->
             <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
             <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
           </div>
@@ -82,32 +100,31 @@
           <p>Интерактивные элементы появятся в ответ на ваши действия в чате.</p>
         </div>
         
-        <div id="dashboardCard" class="panel-card">
+        <div id="dashboardCard" class="panel-card hidden">
           <h4>📊 Состояние команды</h4>
           <div class="metric">
-            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value">92%</span></div>
-            <div class="progress-bar"><div class="progress-fill red" style="width:92%"></div></div>
+            <div class="metric-label"><span>Уровень стресса</span><span class="metric-value" id="stressValue">92%</span></div>
+            <div class="progress-bar"><div class="progress-fill red" id="stressBar" style="width:92%"></div></div>
           </div>
           <div class="metric">
-            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value">45%</span></div>
-            <div class="progress-bar"><div class="progress-fill amber" style="width:45%"></div></div>
+            <div class="metric-label"><span>Доверие к руководителю</span><span class="metric-value" id="trustValue">45%</span></div>
+            <div class="progress-bar"><div class="progress-fill amber" id="trustBar" style="width:45%"></div></div>
           </div>
         </div>
         
-        <div id="finalScreen" class="panel-card final-screen" style="display:none">
+        <div id="finalScreen" class="panel-card final-screen hidden">
           <h3>📊 Ваш результат</h3>
           
-          <!-- Предложение 2: Человеческие названия критериев -->
-          <div class="result-item" id="res-validation">
+          <div class="result-item pass" id="res-validation">
             <span>Признание состояния</span>
             <span class="success">2/2 ✅</span>
-            <span class="error error-text" style="display:none">0/2 ❌</span>
+            <span class="error error-text">0/2 ❌</span>
           </div>
           
-          <div class="result-item" id="res-support">
+          <div class="result-item pass" id="res-support">
             <span>Присоединение и поддержка</span>
             <span class="success">2/2 ✅</span>
-            <span class="error error-text" style="display:none">0/2 ❌</span>
+            <span class="error error-text">0/2 ❌</span>
           </div>
           
           <p class="final-note">В полной версии ИИ разберёт <strong>ваш собственный</strong> текст по 11 критериям.</p>
@@ -118,82 +135,166 @@
   </div>
   
   <script>
-    // Данные сценария
+    // === ДАННЫЕ СЦЕНАРИЯ ===
     const scenario = {
-      empathyResponse: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна. Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?",
-      toxicResponse: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.",
-      feedbackToxic: "🔴 <b>Обесценивание:</b> игнорирует усталость.<br>💡 <i>Как лучше:</i> «Вижу, что ты вымотался. Давай возьмём паузу...»",
-      feedbackEmpathy: "🟢 Тон поддерживает контакт. Вы признали проблему и предложили решение."
+      turn1: {
+        empathy: {
+          userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.",
+          feedback: "🟢 Вы признали его состояние. Это открывает диалог.",
+          aiResponse: "Спасибо... Я правда не знал, что можно остановиться.",
+          stressChange: -15,
+          trustChange: +20
+        },
+        toxic: {
+          userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.",
+          feedback: "🔴 <b>Обесценивание:</b> игнорирует усталость.<br>💡 <i>Как лучше:</i> «Вижу, что ты вымотался...»",
+          aiResponse: "Понял. Сделаю как скажете.",
+          stressChange: +10,
+          trustChange: -25
+        }
+      },
+      turn2: {
+        empathy: {
+          userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?",
+          feedback: "🟢 Конкретное решение вместо давления.",
+          aiResponse: "Это было бы здорово. Спасибо, что услышал.",
+          stressChange: -20,
+          trustChange: +15
+        },
+        toxic: {
+          userText: "Не ной, все устают. Возьми себя в руки.",
+          feedback: "🔴 <b>Давление:</b> сравнение с другими обесценивает проблему.",
+          aiResponse: "...Хорошо.",
+          stressChange: +15,
+          trustChange: -20
+        }
+      }
+    };
+
+    let currentState = {
+      turn: 1,
+      path: null, // 'empathy' или 'toxic'
+      stress: 92,
+      trust: 45
     };
 
     function showExample() {
-      alert("Эталонный ответ:\n\n" + scenario.empathyResponse);
+      alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.»");
     }
 
     function handleAction(type) {
+      if (currentState.turn > 2) return;
+      
       const messagesContainer = document.getElementById('messages');
       const hintsContainer = document.getElementById('hints');
+      const data = scenario[`turn${currentState.turn}`][type];
       
-      // Определяем текст сообщения в зависимости от выбора
-      const userText = type === 'empathy' ? scenario.empathyResponse : scenario.toxicResponse;
+      // Запоминаем путь (для финальной оценки)
+      if (currentState.turn === 1) {
+        currentState.path = type;
+      }
       
-      // 1. Добавляем сообщение пользователя в чат
+      // 1. Сообщение пользователя
       const msgDiv = document.createElement('div');
       msgDiv.className = 'message user';
-      msgDiv.innerHTML = `<div class="bubble">${userText}</div>`;
+      msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
       messagesContainer.appendChild(msgDiv);
       
-      // 2. Предложение 3: Микро-фидбек под сообщением
+      // 2. Микро-фидбек
       const hintDiv = document.createElement('div');
       hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
-      hintDiv.innerHTML = type === 'toxic' ? scenario.feedbackToxic : scenario.feedbackEmpathy;
+      hintDiv.innerHTML = data.feedback;
       msgDiv.parentNode.insertBefore(hintDiv, msgDiv.nextSibling);
       
-      // 3. Блокируем кнопки выбора
-      hintsContainer.style.display = 'none';
+      // 3. Обновляем метрики
+      updateMetrics(data.stressChange, data.trustChange);
       
-      // 4. Обновляем правую панель (результат)
-      updateResultPanel(type);
+      // 4. Блокируем кнопки на время ответа AI
+      hintsContainer.style.pointerEvents = 'none';
+      hintsContainer.style.opacity = '0.5';
       
-      // 5. Ответ сотрудника (симулируем задержку)
+      // 5. Ответ сотрудника (с задержкой)
       setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'message ai';
-        if (type === 'empathy') {
-          aiMsg.innerHTML = `<div class="bubble">Спасибо... Я правда не знал, что можно остановиться. Мне станет легче.</div>`;
-        } else {
-          aiMsg.innerHTML = `<div class="bubble">Понял. Сделаю как скажете.</div>`; // Пассивная агрессия / закрытость
-        }
+        aiMsg.innerHTML = `<div class="bubble">${data.aiResponse}</div>`;
         messagesContainer.appendChild(aiMsg);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }, 1000);
+        
+        // 6. Переход к следующему ходу или финалу
+        currentState.turn++;
+        if (currentState.turn <= 2) {
+          // Показываем новые варианты для второго хода
+          hintsContainer.innerHTML = getHintsForTurn(currentState.turn, currentState.path);
+          hintsContainer.style.pointerEvents = 'auto';
+          hintsContainer.style.opacity = '1';
+        } else {
+          // Финал
+          showFinalScreen();
+        }
+      }, 1200);
     }
 
-    function updateResultPanel(choiceType) {
-      const placeholder = document.getElementById('placeholder');
-      const dashboard = document.getElementById('dashboardCard');
+    function getHintsForTurn(turn, previousPath) {
+      if (turn === 2) {
+        if (previousPath === 'empathy') {
+          return `
+            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Предложить конкретное решение</button>
+            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Не ной, все устают»</button>
+          `;
+        } else {
+          return `
+            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Извиниться и предложить помощь</button>
+            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Возьми себя в руки»</button>
+          `;
+        }
+      }
+      return '';
+    }
+
+    function updateMetrics(stressDelta, trustDelta) {
+      currentState.stress = Math.max(0, Math.min(100, currentState.stress + stressDelta));
+      currentState.trust = Math.max(0, Math.min(100, currentState.trust + trustDelta));
+      
+      document.getElementById('stressValue').textContent = currentState.stress + '%';
+      document.getElementById('trustValue').textContent = currentState.trust + '%';
+      document.getElementById('stressBar').style.width = currentState.stress + '%';
+      document.getElementById('trustBar').style.width = currentState.trust + '%';
+      
+      // Меняем цвет полосок в зависимости от уровня
+      const stressBar = document.getElementById('stressBar');
+      stressBar.className = 'progress-fill ' + (currentState.stress > 70 ? 'red' : currentState.stress > 40 ? 'amber' : 'green');
+      
+      const trustBar = document.getElementById('trustBar');
+      trustBar.className = 'progress-fill ' + (currentState.trust < 30 ? 'red' : currentState.trust < 60 ? 'amber' : 'green');
+    }
+
+    function showFinalScreen() {
+      document.getElementById('hints').style.display = 'none';
+      document.getElementById('dashboardCard').classList.add('hidden');
+      document.getElementById('placeholder').classList.add('hidden');
+      
       const finalScreen = document.getElementById('finalScreen');
+      finalScreen.classList.remove('hidden');
       
-      // Прячем заглушку и дашборд
-      if (placeholder) placeholder.style.display = 'none';
-      if (dashboard) dashboard.style.display = 'none';
-      
-      // Показываем результат
-      finalScreen.style.display = 'block';
-      
+      // Оцениваем путь
       const resValidation = document.getElementById('res-validation');
       const resSupport = document.getElementById('res-support');
       
-      if (choiceType === 'toxic') {
-        // Предложение 1: Честная оценка — обнуляем баллы за токсичность
-        resValidation.classList.add('fail');
-        resSupport.classList.add('fail');
+      if (currentState.path === 'toxic') {
+        resValidation.className = 'result-item fail';
+        resSupport.className = 'result-item fail';
       } else {
-        // Успешный путь
-        resValidation.classList.remove('fail');
-        resSupport.classList.remove('fail');
+        resValidation.className = 'result-item pass';
+        resSupport.className = 'result-item pass';
       }
     }
+
+    // Инициализация: показываем дашборд сразу
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('dashboardCard').classList.remove('hidden');
+      document.getElementById('placeholder').classList.add('hidden');
+    });
   </script>
 </body>
 </html>
