@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     const trimmed = code.trim().toUpperCase();
     const findRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/access_codes?code=eq.${encodeURIComponent(trimmed)}&select=id,max_sessions,used_sessions,active`,
+      `${SUPABASE_URL}/rest/v1/access_codes?code=eq.${encodeURIComponent(trimmed)}&&select=id,max_sessions,used_sessions,active,is_dev`,
       { method: 'GET', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' } }
     );
     if (!findRes.ok) throw new Error('Supabase find error: ' + findRes.status);
