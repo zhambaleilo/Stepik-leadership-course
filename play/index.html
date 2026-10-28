@@ -3,264 +3,404 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>RPG-симулятор руководителя · Демо</title>
+  <title>RPG-симулятор руководителя · Демо — My Pro Skills</title>
+  <meta name="description" content="Попробуйте демо-сцену или посмотрите полное видео работы симулятора.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* === БАЗОВЫЕ СТИЛИ ДЛЯ ЧАТА И КНОПОК === */
-    .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; }
+    /* === ОБЩИЕ СТИЛИ СТРАНИЦЫ === */
+    body { background: #f8fafc; color: #0f172a; font-family: 'Inter', sans-serif; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    
+    /* Заголовок страницы */
+    .page-header { text-align: center; margin-bottom: 30px; }
+    .page-header h1 { font-size: 28px; margin: 0 0 8px; }
+    .page-header p { color: #64748b; font-size: 15px; }
+    .back-link { display: inline-block; margin-bottom: 16px; color: #2563eb; text-decoration: none; font-weight: 600; font-size: 14px; }
+
+    /* === БЛОК ДЕМО (Чат + Панель) === */
+    .demo-section {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 40px;
+      border: 1px solid #e2e8f0;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      min-height: 500px;
+    }
+    @media (max-width: 768px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side-panel { border-top: 1px solid #eee; }
+    }
+
+    /* Чат слева */
+    .chat-section {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #f1f5f9;
+    }
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+    }
+    .avatar-circle {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #10b981; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 16px;
+    }
+    .user-info h3 { margin: 0; font-size: 16px; }
+    .status-dot { font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 4px; }
+    .status-dot::before { content: ''; width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; }
+
+    .messages-area {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #fafafa;
+    }
+    .msg-row { display: flex; animation: fadeIn 0.3s ease; }
+    .msg-row.ai { justify-content: flex-start; }
+    .msg-row.user { justify-content: flex-end; }
+    .bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .msg-row.ai .bubble { background: white; border: 1px solid #e2e8f0; color: #334155; border-top-left-radius: 4px; }
+    .msg-row.user .bubble { background: #2563eb; color: white; border-top-right-radius: 4px; }
+    
+    .input-zone {
+      padding: 16px;
+      background: white;
+      border-top: 1px solid #f1f5f9;
+    }
+    .hints-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .hint-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+      transition: all 0.2s;
+      font-family: inherit;
+      color: #334155;
+    }
+    .hint-btn:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-1px); }
+    .hint-btn.primary { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+    .hint-btn.secondary { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+    .hint-btn.example { opacity: 0.8; font-style: italic; border-style: dashed; }
+    
+    .fake-input {
+      display: flex; gap: 8px;
+    }
+    .fake-input input {
+      flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;
+      background: #f8fafc; color: #94a3b8; font-size: 14px;
+    }
+    .fake-input button {
+      padding: 10px 16px; background: #e2e8f0; border: none; border-radius: 8px;
+      color: #94a3b8; cursor: not-allowed;
+    }
+
+    /* Панель справа */
+    .side-panel {
+      background: #f8fafc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .panel-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .panel-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-bottom: 12px; }
+    
+    .metric-item { margin-bottom: 12px; }
+    .metric-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #334155; }
+    .progress-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; transition: width 0.5s ease, background 0.5s ease; }
+    .fill-red { background: #ef4444; }
+    .fill-amber { background: #f59e0b; }
+    .fill-green { background: #10b981; }
+
+    .result-box {
+      margin-top: auto;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 16px;
+    }
+    .result-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; color: #334155; }
+    .badge-success { color: #16a34a; font-weight: 700; }
+    .badge-fail { color: #dc2626; font-weight: 700; display: none; }
+
+    /* === БЛОК ВИДЕО === */
+    .video-section {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .section-divider {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      margin: 30px 0; color: #94a3b8; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; max-width: 100px; }
+    
+    .video-wrapper {
+      position: relative; width: 100%; padding-bottom: 56.25%; height: 0;
+      border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      background: #000; margin-bottom: 16px;
+    }
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .video-caption { font-size: 14px; color: #64748b; line-height: 1.6; max-width: 700px; margin: 0 auto; }
+
+    /* === БЛОК CTA === */
+    .cta-section {
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .cta-section h2 { font-size: 24px; margin: 0 0 12px; color: #0f172a; }
+    .cta-section p { color: #64748b; margin-bottom: 24px; line-height: 1.6; }
+    .btn-contact {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; background: #0f172a; color: white;
+      text-decoration: none; border-radius: 8px; font-weight: 600;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .btn-contact:hover { background: #1e293b; transform: translateY(-2px); }
+
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-    .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
-    .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
-    
-    .result-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-    .result-item span:first-child { font-weight: 600; color: #333; }
-    .success-badge { color: #16a34a; font-weight: bold; }
-    .fail-badge { color: #dc2626; font-weight: bold; }
-    
-    .next-steps-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
-    .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; color: #475569; }
-    .features-list li::before { content: '✓'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
-    .cta-btn { display: block; width: 100%; padding: 14px; text-align: center; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 20px; transition: background 0.2s; }
-    .cta-btn:hover { background: #1d4ed8; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <a href="/" class="back-link">← My Pro Skills</a>
-      <h1>🎮 RPG-симулятор руководителя</h1>
-      <p class="subtitle">Демо-версия. Проведите беседу с выгоревшим сотрудником.</p>
-    </div>
+    <a href="/" class="back-link">← На главную</a>
     
-    <div class="workspace">
-      <!-- Левая часть: Чат -->
-      <div class="chat-section">
-        <div class="chat-header">
-          <div class="avatar">А</div>
-          <div class="chat-info"><h3>Алексей · Ведущий разработчик</h3><div class="status">В сети</div></div>
-        </div>
-        
-        <div class="messages" id="messages">
-          <div class="message ai"><div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div></div>
-        </div>
-        
-        <div class="input-area">
-          <div class="hints" id="hints">
-            <button class="hint-btn example" onclick="showExample()">💡 Показать пример ответа</button>
-            <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
-            <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
-          </div>
-          <div class="input-wrapper">
-            <input type="text" placeholder="Напишите ответ..." disabled>
-            <button disabled>➤</button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Правая часть: Динамические окна -->
-      <div class="side-panel">
-        <!-- Плейсхолдер -->
-        <div id="placeholder" style="display:block; padding: 20px; text-align:center; color:#888;">
-          Интерактивные элементы появятся здесь.
-        </div>
-        
-        <!-- Дашборд метрик -->
-        <div id="dashboardCard" style="display:none; padding: 20px;">
-           <h4>📊 Состояние команды</h4>
-           <div class="metric">
-             <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
-             <div class="progress-bar"><div id="stressBar" class="progress-fill red" style="width:92%"></div></div>
-           </div>
-           <div class="metric">
-             <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
-             <div class="progress-bar"><div id="trustBar" class="progress-fill amber" style="width:45%"></div></div>
-           </div>
-        </div>
-        
-        <!-- Финальный экран разбора -->
-        <div id="finalScreen" style="display:none; padding: 20px; background:white; border-radius:8px;">
-          <h3>📊 Разбор вашего диалога</h3>
-          <p id="dialogSummary" style="font-size:14px; margin-bottom:16px; color:#555;"></p>
+    <div class="page-header">
+      <h1>🎮 RPG-симулятор руководителя</h1>
+      <p>Попробуйте демо-сцену прямо сейчас или посмотрите видео о том, как работает полная версия.</p>
+    </div>
 
-          <div class="result-item pass" id="res-validation">
-            <span>Признание состояния</span>
-            <div>
-              <span class="success-badge">2/2 ✅</span>
-              <span class="fail-badge" style="display:none;">0/2 ❌</span>
+    <!-- БЛОК 1: ИНТЕРАКТИВНОЕ ДЕМО -->
+    <div class="demo-section">
+      <div class="workspace">
+        <!-- Чат -->
+        <div class="chat-section">
+          <div class="chat-header">
+            <div class="avatar-circle">А</div>
+            <div class="user-info">
+              <h3>Алексей · Ведущий разработчик</h3>
+              <div class="status-dot">В сети</div>
             </div>
           </div>
           
-          <div class="result-item pass" id="res-support">
-            <span>Присоединение и поддержка</span>
-            <div>
-              <span class="success-badge">2/2 ✅</span>
-              <span class="fail-badge" style="display:none;">0/2 ❌</span>
+          <div class="messages-area" id="messages">
+            <div class="msg-row ai">
+              <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
             </div>
           </div>
           
-          <div class="next-steps-box">
-            <strong>✨ Хотите больше контроля?</strong>
-            <ul class="features-list">
-              <li>Пишите свои ответы, а не выбирайте из списка</li>
-              <li>Живой ИИ разбирает реплики по 11 критериям</li>
-              <li>Реакция сотрудника меняется в реальном времени</li>
-            </ul>
+          <div class="input-zone">
+            <div class="hints-grid" id="hints">
+              <button class="hint-btn example" onclick="showExample()">💡 Показать эталонный ответ</button>
+              <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
+              <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
+            </div>
+            <div class="fake-input">
+              <input type="text" placeholder="Демо ограничено выбором кнопок..." disabled>
+              <button disabled>➤</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Аналитика -->
+        <div class="side-panel">
+          <div class="panel-card" id="dashboardCard">
+            <div class="panel-title">📊 Состояние команды</div>
+            <div class="metric-item">
+              <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
+              <div class="progress-track"><div id="stressBar" class="progress-fill fill-red" style="width:92%"></div></div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
+              <div class="progress-track"><div id="trustBar" class="progress-fill fill-amber" style="width:45%"></div></div>
+            </div>
           </div>
 
-          <a href="game.html" class="cta-btn">🔒 Открыть полную версию</a>
+          <div class="panel-card result-box" id="finalScreen" style="display:none;">
+            <div class="panel-title">📈 Результат диалога</div>
+            <div class="result-item" id="res-validation">
+              <span>Признание состояния</span>
+              <span class="badge-success">2/2 ✅</span>
+              <span class="badge-fail">0/2 ❌</span>
+            </div>
+            <div class="result-item" id="res-support">
+              <span>Присоединение и поддержка</span>
+              <span class="badge-success">2/2 ✅</span>
+              <span class="badge-fail">0/2 ❌</span>
+            </div>
+            <p style="font-size:13px; color:#64748b; margin-top:12px;">
+              В полной версии вы пишете свои ответы, а ИИ оценивает их по 11 критериям.
+            </p>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- РАЗДЕЛИТЕЛЬ -->
+    <div class="section-divider">Как это работает в полной версии</div>
+
+    <!-- БЛОК 2: ВИДЕО -->
+    <div class="video-section">
+      <div class="video-wrapper">
+        <iframe 
+          src="https://www.youtube.com/embed/-2u13r7JPpY?rel=0&modestbranding=1" 
+          title="RPG Simulator Demo Video" 
+          loading="lazy" 
+          allowfullscreen>
+        </iframe>
+      </div>
+      <p class="video-caption">
+        Это не тест с вариантами ответов. Руководитель пишет реплику своими словами, ИИ-сотрудник реагирует в реальном времени, ИИ-судья разбирает ответ по 11 критериям.
+      </p>
+    </div>
+
+    <!-- БЛОК 3: CTA КОНТАКТ -->
+    <div class="cta-section">
+      <h2>Получить доступ к полной версии</h2>
+      <p>
+        Доступ предоставляется индивидуально после короткого собеседования.<br>
+        Напишите мне в Telegram, чтобы обсудить условия.
+      </p>
+      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">
+        ✉️ Написать Жамбалу
+      </a>
+    </div>
+
   </div>
   
   <script>
     // Данные сценария
     const scenario = {
       turn1: {
-        empathy: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
-        toxic: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", feedback: "🔴 Обесценивание: игнорирует усталость.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +10, trustChange: -25 }
-      },
-      turn2: {
-        empathy: { userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
-        toxic: { userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему.", aiResponse: "...Хорошо.", stressChange: +15, trustChange: -20 }
+        empathy: { 
+          userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", 
+          feedback: "🟢 Вы признали его состояние. Диалог продолжается.",
+          aiResponse: "Спасибо... Я правда не знал, что можно остановиться.",
+          stressChange: -15, trustChange: +20 
+        },
+        toxic: { 
+          userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", 
+          feedback: "🔴 Обесценивание. Сотрудник закрылся.",
+          aiResponse: "Понял. Сделаю как скажете.",
+          stressChange: +10, trustChange: -25 
+        }
       }
     };
 
-    let state = { turn: 1, path: null, stress: 92, trust: 45 };
+    let state = { done: false, path: null };
 
-    function showExample() { alert("Эталон: «Алексей, я слышу, что сил совсем нет...»"); }
-
-    // === ЯДЕРНЫЙ МЕТОД ПЕРЕКЛЮЧЕНИЯ ПАНЕЛЕЙ ===
-    function switchPanel(panelId) {
-      const panels = ['placeholder', 'dashboardCard', 'finalScreen'];
-      panels.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        
-        if (id === panelId) {
-          el.style.setProperty('display', 'block', 'important');
-          console.log(`Switched TO: ${id}`);
-        } else {
-          el.style.setProperty('display', 'none', 'important');
-        }
-      });
+    function showExample() { 
+      alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); 
     }
 
     function handleAction(type) {
-      if (state.turn > 2) return;
+      if (state.done) return;
+      state.done = true;
+      state.path = type;
       
       const msgs = document.getElementById('messages');
       const hints = document.getElementById('hints');
-      const data = scenario[`turn${state.turn}`][type];
+      const data = scenario.turn1[type];
       
-      if (state.turn === 1) state.path = type;
-      
-      // 1. Сообщение пользователя
+      // Добавляем сообщение пользователя
       const msgDiv = document.createElement('div');
-      msgDiv.className = 'message user';
+      msgDiv.className = 'msg-row user';
       msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
       msgs.appendChild(msgDiv);
       
-      // 2. Фидбек
-      const hintDiv = document.createElement('div');
-      hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
-      hintDiv.innerHTML = data.feedback;
-      msgs.insertBefore(hintDiv, msgDiv.nextSibling);
-      
+      // Обновляем метрики мгновенно
       updateMetrics(data.stressChange, data.trustChange);
       
-      // Показываем дашборд при первом действии
-      if (state.turn === 1) switchPanel('dashboardCard');
-      
-      // Блокировка кнопок
-      hints.style.pointerEvents = 'none';
-      hints.style.opacity = '0.5';
-      
-      // Ответ ИИ
+      // Ответ ИИ через секунду
       setTimeout(() => {
         const aiMsg = document.createElement('div');
-        aiMsg.className = 'message ai';
+        aiMsg.className = 'msg-row ai';
         aiMsg.innerHTML = `<div class="bubble">${data.aiResponse}</div>`;
         msgs.appendChild(aiMsg);
         msgs.scrollTop = msgs.scrollHeight;
         
-        state.turn++;
+        // Показываем результат справа
+        showFinalResult();
         
-        if (state.turn <= 2) {
-          // Второй ход: меняем кнопки
-          hints.innerHTML = getHintsForTurn(state.turn, state.path);
-          hints.style.pointerEvents = 'auto';
-          hints.style.opacity = '1';
-        } else {
-          // Финал
-          console.log("Triggering Final Screen"); 
-          forceShowFinal();
-        }
-      }, 1200);
-    }
-
-    function getHintsForTurn(turn, prevPath) {
-      if (turn === 2) {
-        if (prevPath === 'empathy') return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Предложить решение</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Не ной, все устают»</button>`;
-        else return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Извиниться и помочь</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Возьми себя в руки»</button>`;
-      }
-      return '';
+        // Блокируем кнопки
+        hints.style.opacity = '0.5';
+        hints.style.pointerEvents = 'none';
+      }, 1000);
     }
 
     function updateMetrics(sd, td) {
-      state.stress = Math.max(0, Math.min(100, state.stress + sd));
-      state.trust = Math.max(0, Math.min(100, state.trust + td));
+      let curStress = parseInt(document.getElementById('stressValue').textContent);
+      let curTrust = parseInt(document.getElementById('trustValue').textContent);
       
-      document.getElementById('stressValue').textContent = state.stress + '%';
-      document.getElementById('trustValue').textContent = state.trust + '%';
-      document.getElementById('stressBar').style.width = state.stress + '%';
-      document.getElementById('trustBar').style.width = state.trust + '%';
+      curStress = Math.max(0, Math.min(100, curStress + sd));
+      curTrust = Math.max(0, Math.min(100, curTrust + td));
       
-      // Цвет полосок
-      document.getElementById('stressBar').className = 'progress-fill ' + (state.stress > 70 ? 'red' : state.stress > 40 ? 'amber' : 'green');
-      document.getElementById('trustBar').className = 'progress-fill ' + (state.trust < 30 ? 'red' : state.trust < 60 ? 'amber' : 'green');
+      document.getElementById('stressValue').textContent = curStress + '%';
+      document.getElementById('trustValue').textContent = curTrust + '%';
+      
+      document.getElementById('stressBar').style.width = curStress + '%';
+      document.getElementById('trustBar').style.width = curTrust + '%';
+      
+      // Цвета
+      document.getElementById('stressBar').className = 'progress-fill ' + (curStress > 70 ? 'fill-red' : curStress > 40 ? 'fill-amber' : 'fill-green');
+      document.getElementById('trustBar').className = 'progress-fill ' + (curTrust < 30 ? 'fill-red' : curTrust < 60 ? 'fill-amber' : 'fill-green');
     }
 
-    function forceShowFinal() {
-      // Прячем чат-инпуты
-      document.getElementById('hints').style.display = 'none';
+    function showFinalResult() {
+      document.getElementById('dashboardCard').style.display = 'none';
+      const finalScreen = document.getElementById('finalScreen');
+      finalScreen.style.display = 'block';
       
-      // Переключаемся на финальную панель (ядерный метод)
-      switchPanel('finalScreen');
-      
-      // Обновляем контент оценки
       const rv = document.getElementById('res-validation');
       const rs = document.getElementById('res-support');
-      const sum = document.getElementById('dialogSummary');
-      
-      // Получаем бейджи
-      const rvSuccess = rv.querySelector('.success-badge');
-      const rvFail = rv.querySelector('.fail-badge');
-      const rsSuccess = rs.querySelector('.success-badge');
-      const rsFail = rs.querySelector('.fail-badge');
       
       if (state.path === 'toxic') {
-        rv.className = 'result-item fail';
-        rs.className = 'result-item fail';
-        rvSuccess.style.display = 'none'; rvFail.style.display = 'inline-block';
-        rsSuccess.style.display = 'none'; rsFail.style.display = 'inline-block';
-        sum.textContent = "Вы попытались мотивировать давлением, но это привело к закрытию сотрудника.";
+        rv.querySelector('.badge-success').style.display = 'none';
+        rv.querySelector('.badge-fail').style.display = 'inline-block';
+        rs.querySelector('.badge-success').style.display = 'none';
+        rs.querySelector('.badge-fail').style.display = 'inline-block';
       } else {
-        rv.className = 'result-item pass';
-        rs.className = 'result-item pass';
-        rvSuccess.style.display = 'inline-block'; rvFail.style.display = 'none';
-        rsSuccess.style.display = 'inline-block'; rsFail.style.display = 'none';
-        sum.textContent = "Вы успешно снизили напряжение, признав чувства коллеги.";
+        // Already visible by default in CSS
       }
     }
-
-    // Инициализация
-    window.onload = () => {
-      switchPanel('placeholder'); // Начинаем с плейсхолдера
-    };
   </script>
 </body>
 </html>
