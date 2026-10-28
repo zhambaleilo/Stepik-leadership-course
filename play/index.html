@@ -15,7 +15,8 @@
     
     /* Управление видимостью панелей через классы (надежнее чем inline styles) */
     .panel-view { display: none; } /* Скрыто по умолчанию */
-    .panel-view.active { display: block !important; animation: fadeIn 0.3s ease; }
+    /* styles.css задаёт .panel-card{opacity:0} и показывает только с .visible — перебиваем для .active */
+    .panel-view.active { display: block !important; opacity: 1; transform: none; animation: fadeIn 0.3s ease; }
     
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
