@@ -6,218 +6,109 @@
   <title>RPG-симулятор руководителя · Демо — My Pro Skills</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Подключаем общие стили сайта -->
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* === СТИЛИ ДЛЯ НОВЫХ БЛОКОВ (ВИДЕО И CTA) === */
+    /* === FIX: Принудительная видимость контейнеров === */
     body { background: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
     .container { max-width: 900px; margin: 0 auto; padding: 20px; }
     
+    /* Управление видимостью панелей через классы (надежнее чем inline styles) */
+    .panel-view { display: none; } /* Скрыто по умолчанию */
+    .panel-view.active { display: block !important; animation: fadeIn 0.3s ease; }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* === СТИЛИ СТРАНИЦЫ === */
     .page-header { text-align: center; margin-bottom: 30px; }
     .page-header h1 { font-size: 28px; margin: 0 0 8px; color: #0f172a; }
     .page-header p { color: #64748b; font-size: 15px; }
     .back-link { display: inline-block; margin-bottom: 16px; color: #2563eb; text-decoration: none; font-weight: 600; font-size: 14px; }
 
-    /* Разделители между секциями */
     .section-divider {
       display: flex; align-items: center; justify-content: center; gap: 16px;
       margin: 40px 0; color: #94a3b8; font-size: 13px; font-weight: 600; 
       text-transform: uppercase; letter-spacing: 0.05em;
     }
-    .section-divider::before, .section-divider::after { 
-      content: ''; flex: 1; height: 1px; background: #e2e8f0; max-width: 100px; 
-    }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; max-width: 100px; }
 
-    /* Блок Видео */
-    .video-section {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      border: 1px solid #e2e8f0;
-      text-align: center;
-    }
-    .video-wrapper {
+    /* === ВИДЕО (LAZY LOAD) === */
+    .video-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; text-align: center; }
+    .video-lazy-wrapper {
       position: relative; width: 100%; padding-bottom: 56.25%; height: 0;
       border-radius: 12px; overflow: hidden; background: #000; margin-bottom: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      cursor: pointer;
     }
-    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .video-lazy-wrapper img {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.2s;
+    }
+    .video-lazy-wrapper:hover img { opacity: 1; }
+    .play-btn {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 68px; height: 48px; background: red; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .play-btn::after { content: ''; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent white; margin-left: 4px; }
     .video-caption { font-size: 14px; color: #64748b; line-height: 1.6; max-width: 700px; margin: 0 auto; }
 
-    /* Блок CTA */
-    .cta-section {
-      text-align: center;
-      padding: 40px 20px;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      border-radius: 16px;
-      color: white;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
-      margin-top: 40px;
-    }
+    /* === CTA === */
+    .cta-section { text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; color: white; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2); margin-top: 40px; }
     .cta-section h2 { font-size: 24px; margin: 0 0 12px; }
     .cta-section p { color: #cbd5e1; margin-bottom: 24px; line-height: 1.6; font-size: 15px; }
-    .btn-contact {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 28px; background: #3b82f6; color: white;
-      text-decoration: none; border-radius: 8px; font-weight: 600;
-      transition: transform 0.2s, background 0.2s;
-      font-size: 16px;
-    }
+    .btn-contact { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s; font-size: 16px; }
     .btn-contact:hover { background: #2563eb; transform: translateY(-2px); }
 
-    /* === СТАРЫЕ СТИЛИ ДЕМО (КОПИЯ ИЗ РАБОЧЕГО КОДА) === */
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 320px; /* Чат слева, панель справа */
-      min-height: 500px;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-      overflow: hidden;
-      border: 1px solid #e2e8f0;
-    }
-    @media (max-width: 768px) {
-      .workspace { grid-template-columns: 1fr; }
-      .side-panel { border-top: 1px solid #eee; order: 2; }
-    }
+    /* === ДЕМО ИНТЕРФЕЙС === */
+    .workspace { display: grid; grid-template-columns: 1fr 320px; min-height: 500px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+    @media (max-width: 768px) { .workspace { grid-template-columns: 1fr; } .side-panel { border-top: 1px solid #eee; order: 2; } }
 
-    .chat-section {
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #f1f5f9;
-      height: 100%;
-    }
-    .chat-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid #f1f5f9;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #fff;
-    }
-    .avatar-circle {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: #10b981; color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 16px;
-    }
+    .chat-section { display: flex; flex-direction: column; border-right: 1px solid #f1f5f9; height: 100%; }
+    .chat-header { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; background: #fff; }
+    .avatar-circle { width: 40px; height: 40px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
     .user-info h3 { margin: 0; font-size: 16px; }
     .status-dot { font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 4px; }
     .status-dot::before { content: ''; width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; }
 
-    .messages-area {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: #fafafa;
-      max-height: 400px;
-    }
+    .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #fafafa; max-height: 400px; }
     .msg-row { display: flex; animation: fadeIn 0.3s ease; }
     .msg-row.ai { justify-content: flex-start; }
     .msg-row.user { justify-content: flex-end; }
-    .bubble {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.5;
-    }
+    .bubble { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
     .msg-row.ai .bubble { background: white; border: 1px solid #e2e8f0; color: #334155; border-top-left-radius: 4px; }
     .msg-row.user .bubble { background: #2563eb; color: white; border-top-right-radius: 4px; }
     
-    .input-zone {
-      padding: 16px;
-      background: white;
-      border-top: 1px solid #f1f5f9;
-    }
-    .hints-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .hint-btn {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      cursor: pointer;
-      font-size: 13px;
-      text-align: left;
-      transition: all 0.2s;
-      font-family: inherit;
-      color: #334155;
-    }
+    .input-zone { padding: 16px; background: white; border-top: 1px solid #f1f5f9; }
+    .hints-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .hint-btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 13px; text-align: left; transition: all 0.2s; font-family: inherit; color: #334155; }
     .hint-btn:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateY(-1px); }
     .hint-btn.primary { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
     .hint-btn.secondary { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
     .hint-btn.example { opacity: 0.8; font-style: italic; border-style: dashed; }
     
     .fake-input { display: flex; gap: 8px; }
-    .fake-input input {
-      flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;
-      background: #f8fafc; color: #94a3b8; font-size: 14px;
-    }
-    .fake-input button {
-      padding: 10px 16px; background: #e2e8f0; border: none; border-radius: 8px;
-      color: #94a3b8; cursor: not-allowed;
-    }
+    .fake-input input { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; color: #94a3b8; font-size: 14px; }
+    .fake-input button { padding: 10px 16px; background: #e2e8f0; border: none; border-radius: 8px; color: #94a3b8; cursor: not-allowed; }
 
-    /* Панель справа (Аналитика) */
-    .side-panel {
-      background: #f8fafc;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      height: 100%;
-      box-sizing: border-box;
-    }
-    .panel-card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
+    .side-panel { background: #f8fafc; padding: 20px; display: flex; flex-direction: column; gap: 20px; height: 100%; box-sizing: border-box; }
+    .panel-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .panel-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-bottom: 12px; }
     
     .metric-item { margin-bottom: 12px; }
     .metric-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #334155; }
     .progress-track { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; transition: width 0.5s ease, background 0.5s ease; }
-    .fill-red { background: #ef4444; }
-    .fill-amber { background: #f59e0b; }
-    .fill-green { background: #10b981; }
+    .fill-red { background: #ef4444; } .fill-amber { background: #f59e0b; } .fill-green { background: #10b981; }
 
-    .result-box {
-      margin-top: auto;
-      border-top: 1px dashed #cbd5e1;
-      padding-top: 16px;
-    }
+    .result-box { margin-top: auto; border-top: 1px dashed #cbd5e1; padding-top: 16px; }
     .result-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; color: #334155; }
     .badge-success { color: #16a34a; font-weight: 700; }
     .badge-fail { color: #dc2626; font-weight: 700; display: none; }
 
-    .next-steps-box {
-      margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-    }
+    .next-steps-box { margin-top: 20px; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; }
     .features-list li { font-size: 13px; margin-bottom: 6px; padding-left: 20px; position: relative; list-style: none; color: #475569; }
     .features-list li::before { content: '✓'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
-    .cta-btn-demo { 
-      display: block; width: 100%; padding: 14px; text-align: center; 
-      background: #2563eb; color: white; text-decoration: none; 
-      border-radius: 8px; font-weight: 600; margin-top: 16px; transition: background 0.2s; 
-    }
+    .cta-btn-demo { display: block; width: 100%; padding: 14px; text-align: center; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 16px; transition: background 0.2s; }
     .cta-btn-demo:hover { background: #1d4ed8; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -229,10 +120,9 @@
       <p>Попробуйте демо-сцену прямо сейчас или посмотрите видео о том, как работает полная версия.</p>
     </div>
 
-    <!-- БЛОК 1: ИНТЕРАКТИВНОЕ ДЕМО (РАБОЧАЯ ЛОГИКА) -->
+    <!-- БЛОК 1: ДЕМО -->
     <div class="demo-section">
       <div class="workspace">
-        <!-- Чат -->
         <div class="chat-section">
           <div class="chat-header">
             <div class="avatar-circle">А</div>
@@ -243,9 +133,7 @@
           </div>
           
           <div class="messages-area" id="messages">
-            <div class="msg-row ai">
-              <div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div>
-            </div>
+            <div class="msg-row ai"><div class="bubble">Я всё, я не могу это делать, у меня ничего не получается. Просто нет сил.</div></div>
           </div>
           
           <div class="input-zone">
@@ -261,10 +149,14 @@
           </div>
         </div>
         
-        <!-- Аналитика (Правая колонка) -->
         <div class="side-panel">
-          <!-- Дашборд метрик (виден всегда до конца диалога) -->
-          <div class="panel-card" id="dashboardCard" style="display:none;">
+          <!-- Плейсхолдер -->
+          <div id="view-placeholder" class="panel-view panel-card active" style="text-align:center; padding: 40px 20px; color:#94a3b8;">
+            Интерактивные элементы появятся здесь.<br><small>Выберите вариант ответа в чате слева.</small>
+          </div>
+
+          <!-- Дашборд -->
+          <div id="view-dashboard" class="panel-view panel-card">
             <div class="panel-title">📊 Состояние команды</div>
             <div class="metric-item">
               <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
@@ -276,14 +168,8 @@
             </div>
           </div>
 
-          <!-- Плейсхолдер (начальное состояние правой панели) -->
-          <div class="panel-card" id="placeholder" style="display:block; text-align:center; padding: 40px 20px; color:#94a3b8;">
-            Интерактивные элементы появятся здесь.<br>
-            <small>Выберите вариант ответа в чате слева.</small>
-          </div>
-
-          <!-- Результат диалога (скрыт по умолчанию) -->
-          <div class="panel-card result-box" id="finalScreen" style="display:none;">
+          <!-- Финал -->
+          <div id="view-final" class="panel-view panel-card result-box">
             <div class="panel-title">📈 Результат диалога</div>
             <div class="result-item" id="res-validation">
               <span>Признание состояния</span>
@@ -295,7 +181,6 @@
               <span class="badge-success">2/2 ✅</span>
               <span class="badge-fail">0/2 ❌</span>
             </div>
-            
             <div class="next-steps-box">
               <strong style="display:block;margin-bottom:8px;font-size:14px;color:#0f172a;">✨ Хотите полный контроль?</strong>
               <ul class="features-list">
@@ -310,110 +195,67 @@
       </div>
     </div>
 
-    <!-- РАЗДЕЛИТЕЛЬ -->
     <div class="section-divider">Как это работает в полной версии</div>
 
-    <!-- БЛОК 2: ВИДЕО -->
+    <!-- БЛОК 2: ВИДЕО (LAZY LOAD) -->
     <div class="video-section">
-      <div class="video-wrapper">
-        <!-- Чистый embed без лишних параметров -->
-        <iframe 
-          src="https://www.youtube.com/embed/-2u13r7JPpY" 
-          title="RPG Simulator Demo Video" 
-          loading="lazy" 
-          allowfullscreen>
-        </iframe>
+      <div class="video-lazy-wrapper" onclick="loadVideo(this)">
+        <!-- Превьюшка YouTube -->
+        <img src="https://img.youtube.com/vi/-2u13r7JPpY/maxresdefault.jpg" alt="Video Preview">
+        <div class="play-btn"></div>
       </div>
       <p class="video-caption">
         Это не тест с вариантами ответов. Руководитель пишет реплику своими словами, ИИ-сотрудник реагирует в реальном времени, ИИ-судья разбирает ответ по 11 критериям.
       </p>
     </div>
 
-    <!-- БЛОК 3: CTA КОНТАКТ -->
+    <!-- БЛОК 3: CTA -->
     <div class="cta-section">
       <h2>Получить доступ к полной версии</h2>
-      <p>
-        Доступ предоставляется индивидуально после короткого собеседования.<br>
-        Напишите мне в Telegram, чтобы обсудить условия.
-      </p>
-      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">
-        ✉️ Написать Жамбалу
-      </a>
+      <p>Доступ предоставляется индивидуально.<br>Напишите мне в Telegram, чтобы обсудить условия.</p>
+      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">✉️ Написать автору</a>
     </div>
-
   </div>
   
   <script>
-    // Данные сценария
     const scenario = {
       turn1: {
-        empathy: { 
-          userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", 
-          feedback: "🟢 Вы признали его состояние. Диалог продолжается.",
-          aiResponse: "Спасибо... Я правда не знал, что можно остановиться.",
-          stressChange: -15, trustChange: +20 
-        },
-        toxic: { 
-          userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", 
-          feedback: "🔴 Обесценивание. Сотрудник закрылся.",
-          aiResponse: "Понял. Сделаю как скажете.",
-          stressChange: +10, trustChange: -25 
-        }
+        empathy: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние. Диалог продолжается.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
+        toxic: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", feedback: "🔴 Обесценивание. Сотрудник закрылся.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +10, trustChange: -25 }
       },
       turn2: {
-        empathy: { 
-          userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", 
-          feedback: "🟢 Конкретное решение вместо давления.",
-          aiResponse: "Это было бы здорово. Спасибо, что услышал.",
-          stressChange: -20, trustChange: +15 
-        },
-        toxic: { 
-          userText: "Не ной, все устают. Возьми себя в руки.", 
-          feedback: "🔴 Давление: сравнение с другими обесценивает проблему.",
-          aiResponse: "...Хорошо.",
-          stressChange: +15, trustChange: -20 
-        }
+        empathy: { userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
+        toxic: { userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему.", aiResponse: "...Хорошо.", stressChange: +15, trustChange: -20 }
       }
     };
 
     let state = { turn: 1, path: null, stress: 92, trust: 45 };
 
-    function showExample() { 
-      alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); 
-    }
+    function showExample() { alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); }
 
-    // === ЯДЕРНЫЙ МЕТОД ПЕРЕКЛЮЧЕНИЯ ПАНЕЛЕЙ ===
-    function switchPanel(panelId) {
-      const panels = ['placeholder', 'dashboardCard', 'finalScreen'];
-      panels.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        
-        if (id === panelId) {
-          el.style.setProperty('display', 'block', 'important');
-          console.log(`Switched TO: ${id}`);
-        } else {
-          el.style.setProperty('display', 'none', 'important');
-        }
-      });
+    // === НОВАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ (CSS CLASSES) ===
+    function switchView(viewId) {
+      // Скрываем все view
+      document.querySelectorAll('.panel-view').forEach(el => el.classList.remove('active'));
+      // Показываем нужный
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+      console.log(`Switched to: ${viewId}`);
     }
 
     function handleAction(type) {
       if (state.turn > 2) return;
-      
       const msgs = document.getElementById('messages');
       const hints = document.getElementById('hints');
       const data = scenario[`turn${state.turn}`][type];
       
       if (state.turn === 1) state.path = type;
       
-      // 1. Сообщение пользователя
       const msgDiv = document.createElement('div');
       msgDiv.className = 'msg-row user';
       msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
       msgs.appendChild(msgDiv);
       
-      // 2. Фидбек
       const hintDiv = document.createElement('div');
       hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
       hintDiv.innerHTML = data.feedback;
@@ -421,14 +263,11 @@
       
       updateMetrics(data.stressChange, data.trustChange);
       
-      // Показываем дашборд при первом действии
-      if (state.turn === 1) switchPanel('dashboardCard');
+      if (state.turn === 1) switchView('view-dashboard');
       
-      // Блокировка кнопок
       hints.style.pointerEvents = 'none';
       hints.style.opacity = '0.5';
       
-      // Ответ ИИ
       setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg-row ai';
@@ -437,16 +276,13 @@
         msgs.scrollTop = msgs.scrollHeight;
         
         state.turn++;
-        
         if (state.turn <= 2) {
-          // Второй ход: меняем кнопки
           hints.innerHTML = getHintsForTurn(state.turn, state.path);
           hints.style.pointerEvents = 'auto';
           hints.style.opacity = '1';
         } else {
-          // Финал
-          console.log("Triggering Final Screen"); 
-          forceShowFinal();
+          switchView('view-final');
+          renderFinalResult();
         }
       }, 1200);
     }
@@ -462,54 +298,41 @@
     function updateMetrics(sd, td) {
       state.stress = Math.max(0, Math.min(100, state.stress + sd));
       state.trust = Math.max(0, Math.min(100, state.trust + td));
-      
       document.getElementById('stressValue').textContent = state.stress + '%';
       document.getElementById('trustValue').textContent = state.trust + '%';
-      
       document.getElementById('stressBar').style.width = state.stress + '%';
       document.getElementById('trustBar').style.width = state.trust + '%';
-      
-      // Цвета
       document.getElementById('stressBar').className = 'progress-fill ' + (state.stress > 70 ? 'fill-red' : state.stress > 40 ? 'fill-amber' : 'fill-green');
       document.getElementById('trustBar').className = 'progress-fill ' + (state.trust < 30 ? 'fill-red' : state.trust < 60 ? 'fill-amber' : 'fill-green');
     }
 
-    function forceShowFinal() {
-      // Прячем чат-инпуты
-      document.getElementById('hints').style.display = 'none';
-      
-      // Переключаемся на финальную панель (ядерный метод)
-      switchPanel('finalScreen');
-      
-      // Обновляем контент оценки
+    function renderFinalResult() {
       const rv = document.getElementById('res-validation');
       const rs = document.getElementById('res-support');
-      const sum = document.getElementById('dialogSummary'); // Если есть элемент
-      
-      // Получаем бейджи
-      const rvSuccess = rv.querySelector('.badge-success');
-      const rvFail = rv.querySelector('.badge-fail');
-      const rsSuccess = rs.querySelector('.badge-success');
-      const rsFail = rs.querySelector('.badge-fail');
-      
       if (state.path === 'toxic') {
-        rv.className = 'result-item fail';
-        rs.className = 'result-item fail';
-        rvSuccess.style.display = 'none'; rvFail.style.display = 'inline-block';
-        rsSuccess.style.display = 'none'; rsFail.style.display = 'inline-block';
+        rv.querySelector('.badge-success').style.display = 'none'; rv.querySelector('.badge-fail').style.display = 'inline-block';
+        rs.querySelector('.badge-success').style.display = 'none'; rs.querySelector('.badge-fail').style.display = 'inline-block';
       } else {
-        rv.className = 'result-item pass';
-        rs.className = 'result-item pass';
-        rvSuccess.style.display = 'inline-block'; rvFail.style.display = 'none';
-        rsSuccess.style.display = 'inline-block'; rsFail.style.display = 'none';
+        rv.querySelector('.badge-success').style.display = 'inline-block'; rv.querySelector('.badge-fail').style.display = 'none';
+        rs.querySelector('.badge-success').style.display = 'inline-block'; rs.querySelector('.badge-fail').style.display = 'none';
       }
     }
 
-    // Инициализация
-    window.onload = () => {
-      // Начинаем с плейсхолдера (правая панель пустая/подсказка)
-      switchPanel('placeholder'); 
-    };
+    // === LAZY LOAD VIDEO ===
+    function loadVideo(wrapper) {
+      const iframe = document.createElement('iframe');
+      iframe.src = "https://www.youtube.com/embed/-2u13r7JPpY?autoplay=1&rel=0";
+      iframe.frameBorder = "0";
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+      iframe.allowFullscreen = true;
+      iframe.style.position = "absolute";
+      iframe.style.top = "0";
+      iframe.style.left = "0";
+      iframe.style.width = "100%";
+      iframe.style.height = "100%";
+      wrapper.innerHTML = '';
+      wrapper.appendChild(iframe);
+    }
   </script>
 </body>
 </html>
