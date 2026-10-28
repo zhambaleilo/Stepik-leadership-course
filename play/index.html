@@ -6,20 +6,32 @@
   <title>RPG-симулятор руководителя · Демо — My Pro Skills</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Подключаем общие стили сайта -->
   <link rel="stylesheet" href="styles.css">
   
   <style>
-    /* === FIX: Принудительная видимость контейнеров === */
-    body { background: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    /* === FIX: Жесткое управление видимостью через классы === */
+    /* Это перебивает любые внешние стили из styles.css */
+    .panel-view { 
+      display: none !important; 
+      visibility: hidden !important; 
+      opacity: 0 !important; 
+      transition: opacity 0.3s ease;
+    }
+    .panel-view.active { 
+      display: block !important; 
+      visibility: visible !important; 
+      opacity: 1 !important; 
+      animation: fadeIn 0.4s ease forwards;
+    }
     
-    /* Управление видимостью панелей через классы (надежнее чем inline styles) */
-    .panel-view { display: none; } /* Скрыто по умолчанию */
-    .panel-view.active { display: block !important; animation: fadeIn 0.3s ease; }
-    
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     /* === СТИЛИ СТРАНИЦЫ === */
+    body { background: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 0; color: #0f172a; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    
     .page-header { text-align: center; margin-bottom: 30px; }
     .page-header h1 { font-size: 28px; margin: 0 0 8px; color: #0f172a; }
     .page-header p { color: #64748b; font-size: 15px; }
@@ -47,6 +59,7 @@
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       width: 68px; height: 48px; background: red; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .play-btn::after { content: ''; border-style: solid; border-width: 12px 0 12px 20px; border-color: transparent transparent transparent white; margin-left: 4px; }
     .video-caption { font-size: 14px; color: #64748b; line-height: 1.6; max-width: 700px; margin: 0 auto; }
@@ -77,6 +90,10 @@
     .msg-row.ai .bubble { background: white; border: 1px solid #e2e8f0; color: #334155; border-top-left-radius: 4px; }
     .msg-row.user .bubble { background: #2563eb; color: white; border-top-right-radius: 4px; }
     
+    .feedback-hint { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; animation: fadeIn 0.3s ease; max-width: 85%; }
+    .fb-red { background: #fef2f2; color: #b91c1c; border-left: 3px solid #ef4444; }
+    .fb-green { background: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
+
     .input-zone { padding: 16px; background: white; border-top: 1px solid #f1f5f9; }
     .hints-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
     .hint-btn { padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; background: white; cursor: pointer; font-size: 13px; text-align: left; transition: all 0.2s; font-family: inherit; color: #334155; }
@@ -150,7 +167,7 @@
         </div>
         
         <div class="side-panel">
-          <!-- Плейсхолдер -->
+          <!-- Плейсхолдер (активен по умолчанию) -->
           <div id="view-placeholder" class="panel-view panel-card active" style="text-align:center; padding: 40px 20px; color:#94a3b8;">
             Интерактивные элементы появятся здесь.<br><small>Выберите вариант ответа в чате слева.</small>
           </div>
@@ -200,7 +217,6 @@
     <!-- БЛОК 2: ВИДЕО (LAZY LOAD) -->
     <div class="video-section">
       <div class="video-lazy-wrapper" onclick="loadVideo(this)">
-        <!-- Превьюшка YouTube -->
         <img src="https://img.youtube.com/vi/-2u13r7JPpY/maxresdefault.jpg" alt="Video Preview">
         <div class="play-btn"></div>
       </div>
@@ -212,8 +228,8 @@
     <!-- БЛОК 3: CTA -->
     <div class="cta-section">
       <h2>Получить доступ к полной версии</h2>
-      <p>Доступ предоставляется индивидуально.<br>Напишите мне в Telegram, чтобы обсудить условия.</p>
-      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">✉️ Написать автору</a>
+      <p>Доступ предоставляется индивидуально после короткого собеседования.<br>Напишите мне в Telegram, чтобы обсудить условия.</p>
+      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">✉️ Написать Жамбалу</a>
     </div>
   </div>
   
@@ -233,14 +249,15 @@
 
     function showExample() { alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); }
 
-    // === НОВАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ (CSS CLASSES) ===
+    // === ЛОГИКА ПЕРЕКЛЮЧЕНИЯ (CSS CLASSES) ===
     function switchView(viewId) {
-      // Скрываем все view
-      document.querySelectorAll('.panel-view').forEach(el => el.classList.remove('active'));
-      // Показываем нужный
+      const panels = document.querySelectorAll('.panel-view');
+      panels.forEach(el => el.classList.remove('active'));
       const target = document.getElementById(viewId);
-      if (target) target.classList.add('active');
-      console.log(`Switched to: ${viewId}`);
+      if (target) {
+        target.classList.add('active');
+        console.log(`Switched to: ${viewId}`);
+      }
     }
 
     function handleAction(type) {
@@ -259,7 +276,8 @@
       const hintDiv = document.createElement('div');
       hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
       hintDiv.innerHTML = data.feedback;
-      msgs.insertBefore(hintDiv, msgDiv.nextSibling);
+      // Вставляем фидбек сразу после сообщения пользователя
+      msgDiv.parentNode.insertBefore(hintDiv, msgDiv.nextSibling);
       
       updateMetrics(data.stressChange, data.trustChange);
       
