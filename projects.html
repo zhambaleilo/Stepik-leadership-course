@@ -53,53 +53,54 @@
 </section>
 
 <!-- FLAGSHIP PROJECT SECTION -->
-<section class="wrap wrap--narrow" style="margin-bottom: 48px;">
-  <article class="card card--dark flagship">
+<section class="sec sec-dark">
+  <div class="wrap">
+    <article class="card card--dark flagship">
     
-    <!-- Левая колонка: Текст -->
-    <div>
-      <span class="badge badge--mint">Flagship · AI Product</span>
-      <h2>🎮 RPG-симулятор руководителя<br>«Лаборатория лидеров»</h2>
-      
-      <p class="lead">
-        Оценка управленческих диалогов на основе <strong>ГОСТ Р ИСО 45003-2026</strong>. 
-        ИИ-судья разбирает ответ по 11 критериям с защитой от галлюцинаций. 
-        Веб-приложение с двухслойной LLM-архитектурой (Актёр + Судья на базе GigaChat).
-      </p>
+      <!-- Левая колонка: Текст -->
+      <div>
+        <span class="badge badge--mint">Flagship · AI Product</span>
+        <h2>🎮 RPG-симулятор руководителя<br>«Лаборатория лидеров»</h2>
+        
+        <p class="lead">
+          Оценка управленческих диалогов на основе <strong>ГОСТ Р ИСО 45003-2026</strong>. 
+          ИИ-судья разбирает ответ по 11 критериям с защитой от галлюцинаций. 
+          Веб-приложение с двухслойной LLM-архитектурой (Актёр + Судья на базе GigaChat).
+        </p>
 
-      <ul class="checklist">
-        <li>Двухслойная LLM (Actor/Critic)</li>
-        <li>Детерминированные зеркала</li>
-        <li>Data-driven сценарии (CMS)</li>
-        <li>CI Golden Set tests</li>
-        <li>Соответствие ГОСТ ISO 45003</li>
-      </ul>
+        <ul class="checklist">
+          <li>Двухслойная LLM (Actor/Critic)</li>
+          <li>Детерминированные зеркала</li>
+          <li>Data-driven сценарии (CMS)</li>
+          <li>CI Golden Set tests</li>
+          <li>Соответствие ГОСТ ISO 45003</li>
+        </ul>
 
-      <div class="project__tags">
-        <span class="badge badge--gray">GigaChat</span>
-        <span class="badge badge--gray">Vercel</span>
-        <span class="badge badge--gray">Supabase</span>
-        <span class="badge badge--gray">Decap CMS</span>
+        <div class="project__tags">
+          <span class="badge badge--gray">GigaChat</span>
+          <span class="badge badge--gray">Vercel</span>
+          <span class="badge badge--gray">Supabase</span>
+          <span class="badge badge--gray">Decap CMS</span>
+        </div>
+
+        <div class="flagship__actions">
+          <a href="https://youtu.be/-2u13r7JPpY" target="_blank" class="btn btn-outline">▶ Смотреть видео</a>
+          <a href="/play/index.html" class="btn btn-primary">🎮 Попробовать демо</a>
+        </div>
       </div>
 
-      <div class="flagship__actions">
-        <a href="https://youtu.be/-2u13r7JPpY" target="_blank" class="btn btn-outline">▶ Смотреть видео</a>
-        <a href="/play/index.html" class="btn btn-primary">🎮 Попробовать демо</a>
+      <!-- Правая колонка: Визуал -->
+      <div class="flagship__media">
+        <img src="/img/rpg-demo.jpg" alt="RPG Simulator Interface"
+             onerror="this.src='https://img.youtube.com/vi/-2u13r7JPpY/maxresdefault.jpg'">
+        
+        <span class="badge badge--mint" style="background: rgba(11, 127, 106, 0.8); color: white;">
+          LIVE AI INTERACTION
+        </span>
       </div>
-    </div>
 
-    <!-- Правая колонка: Визуал (Видео-превью вместо черного квадрата) -->
-    <div class="flagship__media">
-      <!-- Используем превью YouTube как картинку -->
-      <img src="https://img.youtube.com/vi/-2u13r7JPpY/maxresdefault.jpg" alt="RPG Simulator Interface">
-      
-      <!-- Бейдж поверх -->
-      <span class="badge badge--mint" style="background: rgba(11, 127, 106, 0.8); color: white;">
-        LIVE AI INTERACTION
-      </span>
-    </div>
-
-  </article>
+    </article>
+  </div>   <!-- ← ВОТ ОН, закрывающий </div> для .wrap -->
 </section>
 <!-- END FLAGSHIP -->
   
