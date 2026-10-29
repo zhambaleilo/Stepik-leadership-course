@@ -6,285 +6,867 @@
   <title>Муравьиная ферма · My Pro Skills</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-      --window-bg: rgba(255, 255, 255, 0.95);
-      --window-border: 1px solid rgba(255, 255, 255, 0.3);
-      --shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
+      --bench: #dce4df;
+      --bench-2: #eef2ef;
+      --ink: #16231f;
+      --ink-2: #4a5a54;
+      --line: #b9c8c1;
+      --panel: #17262a;
+      --panel-2: #21343a;
+      --panel-ink: #eaf4f0;
+      --panel-mute: #a4bdb6;
+      --glass: #6fd6c8;
+      --amber: #f4b942;
+      --lime: #a5cf5a;
+      --coral: #e8553d;
+      --coral-ink: #b03a27;
+      --soil-0: #1c110a;
+      --soil-1: #4b2f20;
+      --soil-2: #7a5236;
+      --focus: #0b7d71;
+      --font-display: 'Unbounded', 'Onest', system-ui, sans-serif;
+      --font-body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-gradient);
+      font-family: var(--font-body);
+      background: var(--bench);
+      color: var(--ink);
+      line-height: 1.55;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      color: var(--text-main);
     }
-    .window {
-      background: var(--window-bg);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      border: var(--window-border);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      max-width: 800px;
-      max-height: 90vh;
-      position: relative;
-    }
-    .window-header {
-      background: rgba(241, 245, 249, 0.8);
-      padding: 16px 24px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .window-content { padding: 32px; overflow-y: auto; flex: 1; }
-    .btn {
-      padding: 12px 24px; border: none; border-radius: 10px;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; font-family: inherit;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #e2e8f0; color: var(--text-main); }
-    .btn-secondary:hover { background: #cbd5e1; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-danger:hover { background: #dc2626; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px;
-      font-size: 15px; font-family: inherit;
-    }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
-    
-    .team-member-card {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-      padding: 16px; margin-bottom: 12px; position: relative;
-    }
-    .remove-member {
-      position: absolute; top: 12px; right: 12px;
-      background: none; border: none; color: var(--danger);
-      cursor: pointer; font-size: 20px; font-weight: bold; line-height: 1;
-    }
-    .remove-member:hover { color: #dc2626; }
+    button, input, select { font: inherit; color: inherit; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .on-dark :focus-visible, .scene :focus-visible { outline-color: var(--glass); }
     .hidden { display: none !important; }
-    
-    .metric-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px; background: #f1f5f9; border-radius: 20px;
-      font-size: 14px; font-weight: 600;
-    }
-    .metric-badge span { color: var(--text-main); font-weight: 800; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+    /* ---------- верхняя полоса ---------- */
+    .bar {
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      max-width: 1180px; margin: 0 auto; padding: 18px 20px 6px;
+    }
+    .back {
+      color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: 14px;
+      padding: 8px 12px; border-radius: 8px; margin-left: -12px;
+    }
+    .back:hover { background: rgba(22, 35, 31, .08); color: var(--ink); }
+    .wordmark { font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
     .dev-badge {
-      display: inline-block;
-      background: var(--warning);
-      color: white;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-left: 8px;
-      letter-spacing: 0.05em;
+      background: var(--amber); color: #3a2600; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 700; letter-spacing: .05em; margin-left: 8px;
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 8px 20px 56px; }
+
+    /* ---------- кнопки ---------- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 44px; padding: 10px 20px; border-radius: 10px; border: 1.5px solid transparent;
+      font-weight: 600; font-size: 15px; cursor: pointer;
+      transition: background-color .15s, border-color .15s, transform .15s;
+    }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-primary { background: var(--glass); color: #0b1a17; }
+    .btn-primary:not(:disabled):hover { background: #8ae3d6; }
+    .btn-primary:not(:disabled):active { transform: translateY(1px); }
+    .btn-solid { background: var(--panel); color: var(--panel-ink); }
+    .btn-solid:not(:disabled):hover { background: var(--panel-2); }
+    .btn-ghost { background: transparent; border-color: rgba(234, 244, 240, .28); color: var(--panel-ink); }
+    .btn-ghost:not(:disabled):hover { background: rgba(255, 255, 255, .08); }
+    .btn-line { background: transparent; border-color: var(--line); color: var(--ink); }
+    .btn-line:not(:disabled):hover { background: var(--bench-2); }
+    .btn-quiet { background: none; border: 0; color: #f0a99c; min-height: 44px; padding: 10px 12px; font-weight: 500; cursor: pointer; border-radius: 8px; }
+    .btn-quiet:hover { background: rgba(232, 85, 61, .14); }
+    .soon { font-size: 11px; font-weight: 600; background: rgba(255,255,255,.14); padding: 1px 8px; border-radius: 99px; }
+
+    /* ---------- конструктор ---------- */
+    .builder { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 32px; align-items: start; padding-top: 12px; }
+    .builder h1, .dash-title {
+      font-family: var(--font-display); font-weight: 700; letter-spacing: -.02em; line-height: 1.15;
+    }
+    .builder h1 { font-size: clamp(24px, 3.2vw, 34px); margin-bottom: 10px; }
+    .lead { color: var(--ink-2); max-width: 46ch; margin-bottom: 22px; }
+    .field { display: block; margin-bottom: 14px; }
+    .field > span { display: block; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 5px; }
+    .field input, .field select {
+      width: 100%; min-height: 44px; padding: 9px 12px; background: #fff;
+      border: 1.5px solid var(--line); border-radius: 8px;
+    }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px rgba(11, 125, 113, .2); }
+    .team-member-card {
+      background: var(--bench-2); border: 1.5px solid var(--line); border-radius: 12px;
+      padding: 14px 14px 2px; margin-bottom: 12px; position: relative;
+    }
+    .member-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .chip-ant { width: 46px; height: 30px; border-radius: 8px; background: var(--panel); display: grid; place-items: center; }
+    .chip-ant svg { width: 32px; height: 20px; }
+    .member-head b { font-size: 14px; flex: 1; }
+    .remove-member { width: 36px; height: 36px; border: 0; background: none; border-radius: 8px; cursor: pointer; color: var(--coral-ink); font-size: 22px; line-height: 1; }
+    .remove-member:hover { background: rgba(232, 85, 61, .12); }
+    .builder-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+    .preview { position: sticky; top: 16px; }
+    .preview-note { font-size: 13px; color: var(--ink-2); margin-top: 10px; }
+
+    /* ---------- террариум ---------- */
+    .terrarium {
+      background: var(--panel); color: var(--panel-ink); border-radius: 22px; padding: 14px;
+      box-shadow: 0 34px 60px -34px rgba(8, 28, 24, .6), inset 0 0 0 1px rgba(255, 255, 255, .06);
+    }
+    .panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 6px 6px 16px; }
+    .panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .dash-title { font-size: clamp(18px, 2.6vw, 24px); color: var(--panel-ink); overflow-wrap: anywhere; }
+    .day-chip {
+      font-family: var(--font-display); font-size: 14px; font-weight: 700; color: #0b1a17;
+      background: var(--amber); padding: 6px 14px; border-radius: 99px; white-space: nowrap;
+    }
+    .meters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .meter { position: relative; --mc: var(--glass); }
+    .meter[data-k="mood"] { --mc: var(--amber); }
+    .meter[data-k="prod"] { --mc: var(--lime); }
+    .m-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; font-size: 13px; color: var(--panel-mute); }
+    .m-val { font-family: var(--font-display); font-size: 16px; color: var(--panel-ink); }
+    .m-val small { font-size: 12px; color: var(--panel-mute); font-family: var(--font-body); }
+    .segs { display: flex; gap: 3px; }
+    .segs i { flex: 1; height: 12px; border-radius: 3px; background: rgba(255, 255, 255, .11); transition: background-color .5s, transform .3s; }
+    .segs i.on { background: var(--mc); }
+    .meter.low .segs i.on { background: var(--coral); }
+    .segs i.pop { transform: scaleY(1.5); }
+    .fly {
+      position: absolute; right: 0; top: -4px; font-family: var(--font-display); font-weight: 700; font-size: 15px;
+      pointer-events: none; animation: fly 1.6s ease-out forwards;
+    }
+    .fly.up { color: var(--lime); } .fly.down { color: #ff8b78; }
+    @keyframes fly { from { opacity: 0; transform: translateY(8px); } 15% { opacity: 1; } to { opacity: 0; transform: translateY(-22px); } }
+
+    .scene {
+      position: relative; container-type: inline-size; aspect-ratio: 960 / 600;
+      overflow: hidden; border-radius: 12px; background: #1c110a; isolation: isolate;
+    }
+    .scene > svg.bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .glassfx {
+      position: absolute; inset: 0; pointer-events: none; z-index: 5;
+      background: linear-gradient(112deg, rgba(255,255,255,.13) 0 9%, transparent 9% 13%, rgba(255,255,255,.07) 13% 16%, transparent 16%);
+      box-shadow: inset 0 0 0 1.5px rgba(111, 214, 200, .35), inset 0 0 40px rgba(0, 0, 0, .25);
+      border-radius: 12px;
+    }
+    .scene.busy .slot .ant-flip { animation-duration: 3s !important; }
+    .scene.busy .slot .face { animation-duration: 6s !important; }
+    .scene.busy::after {
+      content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+      background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%);
+      background-size: 250% 100%; animation: sweep 1.6s linear infinite;
+    }
+    @keyframes sweep { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+
+    /* муравьи в камерах */
+    .slot { position: absolute; width: 9cqw; aspect-ratio: 72 / 44; transform: translate(-50%, -50%); z-index: 2; --aura: rgba(244, 185, 66, .22); --dur: 10s; }
+    .slot[data-mood="high"] { --aura: rgba(165, 207, 90, .38); --dur: 6s; }
+    .slot[data-mood="low"] { --aura: rgba(232, 85, 61, .42); --dur: 18s; }
+    .aura { position: absolute; inset: -35% -20%; border-radius: 50%; background: radial-gradient(closest-side, var(--aura), transparent); animation: pulse 2.8s ease-in-out infinite; pointer-events: none; }
+    .ant { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ant); border-radius: 12px; }
+    .ant-flip { display: block; width: 100%; height: 100%; animation: walk var(--dur) ease-in-out infinite alternate; animation-delay: var(--delay, 0s); }
+    .face { display: block; width: 100%; height: 100%; animation: face calc(var(--dur) * 2) step-end infinite; animation-delay: var(--delay, 0s); }
+    .ant svg { width: 100%; height: 100%; overflow: visible; display: block; animation: bob .55s ease-in-out infinite alternate; }
+    .slot[data-mood="high"] .ant svg { animation-duration: .32s; }
+    .slot[data-mood="low"] .ant svg { animation: sag 2.6s ease-in-out infinite alternate; filter: saturate(.4) brightness(.8); }
+    .slot.selected .ant svg { filter: drop-shadow(0 0 5px var(--glass)) drop-shadow(0 0 2px var(--glass)); }
+    @keyframes walk { from { transform: translateX(-1.8cqw); } to { transform: translateX(1.8cqw); } }
+    @keyframes face { 0% { transform: scaleX(1); } 50% { transform: scaleX(-1); } }
+    @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-4%); } }
+    @keyframes sag { from { transform: rotate(0) translateY(0); } to { transform: rotate(5deg) translateY(6%); } }
+    @keyframes pulse { 0%, 100% { opacity: .65; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
+    .tag {
+      position: absolute; transform: translateX(-50%); z-index: 3; font-size: clamp(9px, 1.45cqw, 13px); font-weight: 600;
+      background: rgba(12, 7, 4, .78); color: #f6ecdc; padding: .2em .75em; border-radius: 99px; white-space: nowrap;
+      max-width: 19cqw; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+    }
+    .tag b { color: var(--amber); margin-left: .4em; font-family: var(--font-display); font-weight: 500; }
+    .hubtag { background: rgba(111, 214, 200, .18); color: #cdf5ef; }
+
+    .bubble {
+      position: absolute; z-index: 6; background: #f7f1e3; color: #2a1a11; padding: .6em .85em; border-radius: 14px;
+      font-size: clamp(10.5px, 1.55cqw, 14px); line-height: 1.4; max-width: max(150px, 29cqw);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .4); animation: pop .28s cubic-bezier(.2, 1.3, .4, 1); pointer-events: none;
+    }
+    .bubble::after { content: ''; position: absolute; bottom: -6px; left: calc(var(--tx, 50%) - 6px); width: 12px; height: 12px; background: inherit; transform: rotate(45deg); border-radius: 2px; }
+    .bubble.out { opacity: 0; transition: opacity .3s; }
+    .bubble p { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+    .bubble .deltas { display: flex; gap: 4px; flex-wrap: wrap; margin-top: .45em; }
+    .bubble .d { font-size: .82em; font-weight: 700; padding: .1em .55em; border-radius: 99px; }
+    .d.up { background: #d7ebb6; color: #2f4a0a; } .d.down { background: #f9cfc6; color: #7d1f10; }
+    @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.9); } to { opacity: 1; transform: none; } }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 6px 4px; }
+    .controls .grow { flex: 1; }
+
+    /* ---------- ниже сцены ---------- */
+    .below { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; margin-top: 28px; align-items: start; }
+    .below h2 { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 14px; }
+    .roster { display: grid; gap: 10px; }
+    .who-card { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; background: var(--bench-2); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; transition: border-color .2s, background-color .2s; }
+    .who-card.selected { border-color: var(--focus); background: #fff; }
+    .who-card .chip-ant { width: 52px; height: 36px; }
+    .who-card .chip-ant svg { width: 38px; height: 24px; }
+    .who-name { font-weight: 700; line-height: 1.25; }
+    .who-role { font-size: 13px; color: var(--ink-2); }
+    .who-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 6px; font-size: 12.5px; }
+    .trig { background: var(--panel); color: var(--panel-ink); padding: 1px 9px; border-radius: 99px; font-weight: 600; }
+    .mini { display: inline-flex; gap: 2px; vertical-align: middle; }
+    .mini i { width: 8px; height: 8px; border-radius: 2px; background: #c3d0ca; }
+    .mini i.on { background: var(--amber); }
+    .mini.low i.on { background: var(--coral); }
+    .who-last { margin-top: 6px; font-size: 13px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .journal { display: grid; gap: 20px; }
+    .day-group h3 { font-family: var(--font-display); font-size: 13px; font-weight: 500; color: var(--ink-2); margin-bottom: 8px; }
+    .day-group ol { list-style: none; border-left: 2px dashed #8ea39a; margin-left: 5px; }
+    .day-group li { position: relative; padding: 2px 0 12px 18px; max-width: 68ch; }
+    .day-group li::before { content: ''; position: absolute; left: -7px; top: 9px; width: 12px; height: 12px; border-radius: 50%; background: var(--bench); border: 3px solid var(--focus); }
+    .day-group li .d { display: inline-block; margin: 4px 6px 0 0; font-size: 12px; font-weight: 700; padding: 0 8px; border-radius: 99px; }
+    .pending { display: none; }
+    li.is-new { animation: fresh 2.4s ease-out; }
+    @keyframes fresh { from { background: rgba(111, 214, 200, .45); } to { background: transparent; } }
+    .who { color: var(--c, var(--focus)); font-weight: 700; }
+    .empty {
+      border: 2px dashed var(--line); border-radius: 14px; padding: 24px; color: var(--ink-2);
+    }
+    .empty b { display: block; color: var(--ink); font-size: 16px; margin-bottom: 4px; }
+
+    /* ---------- оверлей, диалог, тосты ---------- */
+    #loadingOverlay { position: fixed; inset: 0; z-index: 60; background: rgba(23, 38, 42, .92); display: grid; place-items: center; color: var(--panel-ink); text-align: center; }
+    .march { width: 190px; height: 34px; margin: 0 auto 14px; position: relative; overflow: hidden; }
+    .march svg { position: absolute; top: 0; width: 56px; height: 34px; color: var(--glass); animation: march 2.4s linear infinite; }
+    .march svg:nth-child(2) { animation-delay: -.8s; } .march svg:nth-child(3) { animation-delay: -1.6s; }
+    @keyframes march { from { left: -60px; } to { left: 200px; } }
+    dialog { border: 0; border-radius: 16px; padding: 24px; max-width: min(420px, 92vw); background: var(--bench-2); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+    dialog::backdrop { background: rgba(10, 20, 18, .6); }
+    dialog h2 { font-family: var(--font-display); font-size: 18px; margin-bottom: 8px; }
+    dialog p { color: var(--ink-2); margin-bottom: 20px; }
+    dialog .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+    .btn-danger { background: var(--coral-ink); color: #fff; }
+    .btn-danger:hover { background: #8f2c1c; }
+    #toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 80; display: grid; gap: 8px; width: min(440px, 92vw); }
+    .toast { background: var(--panel); color: var(--panel-ink); padding: 12px 16px; border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.35); border-left: 4px solid var(--glass); animation: pop .25s; }
+    .toast.error { border-left-color: var(--coral); }
+
+    @media (max-width: 900px) {
+      .builder, .below { grid-template-columns: minmax(0, 1fr); }
+      .preview { position: static; order: -1; }
+    }
+    @media (max-width: 560px) {
+      .bar, main { padding-left: 14px; padding-right: 14px; }
+      .terrarium { padding: 10px; border-radius: 16px; }
+      .meters { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+      .m-head { margin-bottom: 4px; }
+      .controls .btn { flex: 1 1 100%; }
+      .btn-quiet { margin-left: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
+      .aura { opacity: .8; }
     }
   </style>
 </head>
 <body>
 
-  <div class="window">
-    <div class="window-header">
-      <span id="pageTitle">🐜 Муравьиная ферма</span>
-      <button class="btn btn-secondary" onclick="window.location.href='game.html'">← Назад к сценариям</button>
-    </div>
+  <!-- спрайт муравья: смотрит вправо -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="ant" viewBox="0 0 72 44">
+        <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".55">
+          <path d="M30 23 L25 34 L22 41"/><path d="M36 24 L41 36 L40 42"/><path d="M42 23 L52 31 L58 33"/>
+        </g>
+        <g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M28 24 L20 36 L15 40"/><path d="M34 25 L35 38 L33 42"/><path d="M40 24 L49 35 L55 38"/>
+          <path d="M58 14 Q62 5 69 8"/><path d="M60 17 Q66 11 71 15"/>
+        </g>
+        <g fill="currentColor">
+          <ellipse cx="15" cy="22" rx="13" ry="10"/><ellipse cx="35" cy="21" rx="8" ry="6"/><ellipse cx="54" cy="19" rx="8" ry="7"/>
+          <rect x="26" y="20" width="6" height="3" rx="1.5"/><rect x="42" y="19" width="6" height="3" rx="1.5"/>
+        </g>
+        <path d="M60 23 L65 26" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="57" cy="17.5" r="1.9" fill="#1c110a"/>
+        <ellipse cx="11" cy="18" rx="6" ry="3" fill="#fff" opacity=".18"/>
+      </symbol>
+    </defs>
+  </svg>
 
-    <div class="window-content">
-      <!-- ЭКРАН 1: Конструктор команды -->
-      <div id="constructorView">
-        <p style="margin-bottom: 24px; color: var(--text-muted);">
-          Соберите команду из 2–5 сотрудников. ИИ будет симулировать их поведение, конфликты и рост в течение нескольких "рабочих дней".
-        </p>
+  <header class="bar">
+    <a class="back" href="game.html">← К сценариям</a>
+    <span class="wordmark" id="pageTitle">Муравьиная ферма</span>
+  </header>
 
-        <div class="form-group">
-          <label>Название команды / проекта</label>
-          <input type="text" id="teamName" placeholder="Например: Отдел разработки 'Альфа'" value="Моя команда">
-        </div>
+  <main>
+    <!-- ЭКРАН 1: заселение колонии -->
+    <section id="constructorView" class="builder hidden" aria-labelledby="builderTitle">
+      <div>
+        <h1 id="builderTitle">Заселите колонию</h1>
+        <p class="lead">Соберите команду из 2–5 сотрудников. ИИ проживёт с ними рабочие дни: конфликты, срывы, рост.</p>
+
+        <label class="field">
+          <span>Название команды</span>
+          <input type="text" id="teamName" placeholder="Например: Отдел разработки «Альфа»" value="Моя команда" autocomplete="off">
+        </label>
 
         <div id="membersContainer"></div>
 
-        <button class="btn btn-secondary" onclick="addMember()" style="width: 100%; margin-bottom: 24px; border: 2px dashed #cbd5e1;">
-          + Добавить сотрудника
-        </button>
-
-        <div style="display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="btn btn-primary" onclick="startFarm()">🚀 Запустить симуляцию</button>
+        <div class="builder-actions">
+          <button type="button" class="btn btn-line" id="addMemberBtn" onclick="addMember()">Добавить сотрудника</button>
+          <button type="button" class="btn btn-solid" onclick="startFarm()">Запустить первый день</button>
         </div>
       </div>
 
-      <!-- ЭКРАН 2: Дашборд фермы -->
-      <div id="dashboardView" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-          <h2 id="dashTeamName" style="font-size: 24px;"></h2>
-          <div class="metric-badge">День: <span id="dashDay">1</span></div>
+      <div class="preview">
+        <div class="terrarium on-dark">
+          <div class="scene" id="previewScene" role="img" aria-label="Предпросмотр колонии: камеры сотрудников вокруг общего зала"></div>
+        </div>
+        <p class="preview-note">Так колония выглядит до первого дня. Каждая камера — один сотрудник.</p>
+      </div>
+    </section>
+
+    <!-- ЭКРАН 2: колония -->
+    <section id="dashboardView" class="hidden" aria-labelledby="dashTeamName">
+      <div class="terrarium on-dark">
+        <div class="panel">
+          <div class="panel-top">
+            <h1 class="dash-title" id="dashTeamName">Команда</h1>
+            <div class="day-chip">День <span id="dashDay">1</span></div>
+          </div>
+          <div class="meters">
+            <div class="meter" data-k="mood" role="meter" aria-label="Настроение" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7">
+              <div class="m-head"><span>Настроение</span><span class="m-val"><span id="metricMood">7</span><small>/10</small></span></div>
+              <div class="segs" aria-hidden="true"></div>
+            </div>
+            <div class="meter" data-k="trust" role="meter" aria-label="Доверие" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7">
+              <div class="m-head"><span>Доверие</span><span class="m-val"><span id="metricTrust">7</span><small>/10</small></span></div>
+              <div class="segs" aria-hidden="true"></div>
+            </div>
+            <div class="meter" data-k="prod" role="meter" aria-label="Продуктивность" aria-valuemin="0" aria-valuemax="10" aria-valuenow="7">
+              <div class="m-head"><span>Продуктивность</span><span class="m-val"><span id="metricProd">7</span><small>/10</small></span></div>
+              <div class="segs" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
-          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
-            😊 Настроение: <span id="metricMood">7</span>/10
-          </div>
-          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
-            🤝 Доверие: <span id="metricTrust">7</span>/10
-          </div>
-          <div class="metric-badge" style="justify-content: center; padding: 16px; font-size: 16px;">
-            ⚡ Продуктивность: <span id="metricProd">7</span>/10
-          </div>
-        </div>
+        <div class="scene" id="mainScene"></div>
 
-        <div style="background: #f8fafc; border-radius: 10px; padding: 20px; min-height: 200px; margin-bottom: 24px;">
-          <h4 style="margin-bottom: 12px;">📜 Журнал событий</h4>
-          <div id="eventLogContainer">
-            <p id="eventLogPlaceholder" style="color: var(--text-muted); font-style: italic;">Пока событий нет...</p>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap;">
-          <button class="btn btn-danger" onclick="refundFarm()">🗑️ Удалить ферму</button>
-          <div style="display: flex; gap: 12px;">
-            <button class="btn btn-secondary" id="simulateBtn" onclick="simulateDays()">⏳ Промотать время (+1 день)</button>
-            <button class="btn btn-primary" onclick="generateDocumentary()"> Сгенерировать документалку</button>
-          </div>
+        <div class="controls">
+          <button type="button" class="btn btn-primary" id="simulateBtn" onclick="simulateDays()">Следующий день</button>
+          <button type="button" class="btn btn-ghost" onclick="generateDocumentary()">Собрать документалку <span class="soon">скоро</span></button>
+          <span class="grow"></span>
+          <button type="button" class="btn-quiet" onclick="refundFarm()">Удалить ферму</button>
         </div>
       </div>
 
-    </div>
-    
-    <!-- Оверлей загрузки -->
-    <div id="loadingOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 50; border-radius: 16px;">
-      <div style="text-align: center;">
-        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
-        <div style="font-weight: 600;" id="loadingText">Загрузка...</div>
+      <div class="below">
+        <div>
+          <h2>Состав колонии</h2>
+          <div class="roster" id="roster"></div>
+        </div>
+        <div>
+          <h2>Журнал колонии</h2>
+          <div id="eventLogContainer" class="journal" aria-live="polite"></div>
+        </div>
       </div>
+    </section>
+  </main>
+
+  <!-- загрузка -->
+  <div id="loadingOverlay" class="hidden" role="status" aria-live="polite">
+    <div>
+      <div class="march" aria-hidden="true">
+        <svg><use href="#ant"/></svg><svg><use href="#ant"/></svg><svg><use href="#ant"/></svg>
+      </div>
+      <div id="loadingText">Загрузка…</div>
     </div>
   </div>
 
+  <dialog id="confirmDlg" aria-labelledby="cdTitle">
+    <form method="dialog">
+      <h2 id="cdTitle"></h2>
+      <p id="cdText"></p>
+      <div class="row">
+        <button class="btn btn-line" value="cancel">Отмена</button>
+        <button class="btn btn-danger" value="ok" id="cdOk">Удалить</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toasts" aria-live="polite"></div>
+
   <script>
     const API_BASE = 'https://stepik-leadership-course.vercel.app';
-    let memberCount = 0;
     let currentSessionId = null;
     let userCode = localStorage.getItem('userCode') || '';
     const IS_DEV = localStorage.getItem('isDev') === '1';
+    const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Инициализация при загрузке
-    window.addEventListener('DOMContentLoaded', () => {
-      // Шаг 4: Визуальная метка разработчика
-      if (IS_DEV) {
-        document.getElementById('pageTitle').innerHTML = ' Муравьиная ферма <span class="dev-badge">DEV MODE</span>';
+    /* ============ данные ============ */
+    const TRIGGERS = {
+      burnout: 'Выгорание',
+      imposter: 'Синдром самозванца',
+      conflict: 'Конфликт с отделами',
+      ai_fear: 'Страх замены ИИ',
+      toxic: 'Скрытая токсичность'
+    };
+    // На тёмном полу камер нужны светлые муравьи
+    const ANT_COLORS = ['#ef7a50', '#f4c04e', '#d4e07a', '#7fd8cc', '#eba3d6'];
+    const VB_W = 960, VB_H = 600, GROUND = 130, HUB = [480, 250], RX = 76, RY = 46;
+    const LAYOUTS = {
+      0: [], 1: [[480, 420]],
+      2: [[230, 350], [730, 350]],
+      3: [[200, 330], [760, 330], [480, 450]],
+      4: [[190, 320], [770, 320], [330, 462], [630, 462]],
+      5: [[170, 310], [790, 310], [290, 460], [670, 460], [480, 505]]
+    };
+
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+    const fmt = v => (Number.isInteger(v) ? v : Math.round(v * 10) / 10);
+    const sleep = ms => new Promise(r => setTimeout(r, RM ? Math.min(ms, 350) : ms));
+    const $ = id => document.getElementById(id);
+    const lerpHex = (a, b, t) => {
+      const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+      const A = p(a), B = p(b);
+      return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join('');
+    };
+
+    function parseMember(m, i) {
+      const raw = (m.name_role || '').trim() || `Сотрудник ${i + 1}`;
+      const parts = raw.split(/\s*[,—–]\s*/);
+      const name = parts[0].trim();
+      const role = parts.slice(1).join(', ').trim();
+      const first = name.split(/\s+/)[0];
+      const stem = first.length >= 4 ? first.slice(0, -1) : first;
+      return { name, role, stem, trigger: m.trigger, style: m.style || '', color: ANT_COLORS[i % ANT_COLORS.length] };
+    }
+
+    /* ============ сцена ============ */
+    let SC = null; // { root, members, positions, svg, overlay, ... }
+
+    function tunnelPath(cx, cy) {
+      const ey = cy - RY + 8;
+      if (cx === HUB[0]) return `M${HUB[0]},${HUB[1] + 20} L${cx},${ey}`;
+      const c1x = HUB[0] + (cx - HUB[0]) * 0.65, c1y = HUB[1] + 16;
+      return `M${HUB[0]},${HUB[1] + 14} C${c1x},${c1y} ${cx},${ey - (ey - HUB[1]) * 0.45} ${cx},${ey}`;
+    }
+
+    function buildScene(root, members, metrics) {
+      const n = Math.min(members.length, 5);
+      const pos = LAYOUTS[n];
+      let tunnels = '', chambers = '', slots = '', tags = '';
+      pos.forEach(([x, y], i) => {
+        tunnels += `<path id="${root.id}-t${i}" d="${tunnelPath(x, y)}" class="tun" fill="none" stroke="#150c07" stroke-linecap="round"/>`;
+        tunnels += `<path class="sig" data-i="${i}" d="${tunnelPath(x, y)}" fill="none" stroke-linecap="round" stroke-width="3"/>`;
+        chambers += `<ellipse cx="${x}" cy="${y}" rx="${RX}" ry="${RY}" fill="url(#${root.id}-ch)" stroke="rgba(255,205,160,.14)" stroke-width="2"/>`
+          + `<ellipse cx="${x}" cy="${y + RY - 10}" rx="${RX - 14}" ry="9" fill="rgba(255,205,160,.07)"/>`;
+        const m = members[i];
+        slots += `<div class="slot" data-i="${i}" style="left:${x / VB_W * 100}%;top:${(y + 10) / VB_H * 100}%;--ant:${m.color};--delay:${-(i * 2.3)}s">`
+          + `<div class="aura"></div>`
+          + `<button type="button" class="ant" data-i="${i}"><span class="ant-flip"><span class="face"><svg viewBox="0 0 72 44" aria-hidden="true"><use href="#ant"/></svg></span></span></button></div>`;
+        tags += `<div class="tag" data-i="${i}" style="left:${x / VB_W * 100}%;top:${(y + RY + 8) / VB_H * 100}%"></div>`;
+      });
+
+      // травинки
+      let grass = '';
+      for (let gx = 14; gx < VB_W; gx += 34) {
+        const h = 10 + ((gx * 7) % 9);
+        grass += `<path d="M${gx},${GROUND + 2} q-3,-${h} -6,-${h + 2} M${gx},${GROUND + 2} q1,-${h + 4} 3,-${h + 7} M${gx},${GROUND + 2} q4,-${h} 8,-${h - 1}" stroke="${gx % 68 ? '#4f8a35' : '#69a84a'}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
       }
+      // камешки
+      let pebbles = '';
+      [[90, 210, 9, 5], [860, 190, 11, 6], [620, 200, 7, 4], [330, 175, 8, 5], [905, 420, 12, 7], [50, 440, 10, 6], [440, 560, 12, 6], [790, 560, 9, 5], [130, 540, 8, 4], [560, 400, 6, 4]]
+        .forEach(([px, py, rx, ry]) => { pebbles += `<ellipse cx="${px}" cy="${py}" rx="${rx}" ry="${ry}" fill="#6b4a31" opacity=".55"/><ellipse cx="${px - 2}" cy="${py - 2}" rx="${rx * .55}" ry="${ry * .5}" fill="#9a6d49" opacity=".35"/>`; });
+      // зёрна: пирамида 4+3+2+1
+      let seeds = '';
+      [[780, 124], [794, 124], [808, 124], [822, 124], [787, 114], [801, 114], [815, 114], [794, 104], [808, 104], [801, 94]]
+        .forEach(([sx, sy], i) => { seeds += `<ellipse class="seed" data-i="${i}" cx="${sx}" cy="${sy}" rx="7" ry="4.8" />`; });
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const action = urlParams.get('action');
-      const sessionId = urlParams.get('session_id');
-      const autoSimulate = urlParams.get('auto_simulate');
+      root.innerHTML = `
+      <svg class="bg" viewBox="0 0 ${VB_W} ${VB_H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="${root.id}-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop class="sk0" offset="0" stop-color="#6ec1e4" style="transition:stop-color 1.2s"/>
+            <stop class="sk1" offset="1" stop-color="#fbe8a6" style="transition:stop-color 1.2s"/>
+          </linearGradient>
+          <linearGradient id="${root.id}-soil" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#5a3a27"/><stop offset=".5" stop-color="#3f271a"/><stop offset="1" stop-color="#25150d"/>
+          </linearGradient>
+          <radialGradient id="${root.id}-ch" cx=".5" cy=".4" r=".75">
+            <stop offset="0" stop-color="#2d1b11"/><stop offset="1" stop-color="#110905"/>
+          </radialGradient>
+          <filter id="${root.id}-grain" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/>
+            <feColorMatrix values="0 0 0 0 .1  0 0 0 0 .05  0 0 0 0 .02  0 0 0 .55 -.1"/>
+          </filter>
+        </defs>
+        <rect width="${VB_W}" height="${GROUND + 4}" fill="url(#${root.id}-sky)"/>
+        <g class="sun" style="transform-origin:150px 72px;transition:opacity 1.2s">
+          <circle cx="150" cy="72" r="52" fill="#ffd45c" opacity=".22"/>
+          <circle class="rays" cx="150" cy="72" r="46" fill="none" stroke="#ffd45c" stroke-width="5" stroke-dasharray="6 12" stroke-linecap="round"/>
+          <circle cx="150" cy="72" r="32" fill="#ffd45c"/>
+        </g>
+        <g class="clouds" style="transition:opacity 1.2s">
+          <g class="cl a"><ellipse cx="330" cy="62" rx="58" ry="17" fill="#d7d2e2"/><ellipse cx="300" cy="52" rx="30" ry="16" fill="#d7d2e2"/><ellipse cx="354" cy="50" rx="26" ry="14" fill="#d7d2e2"/></g>
+          <g class="cl b"><ellipse cx="640" cy="40" rx="50" ry="14" fill="#c9c3d8"/><ellipse cx="620" cy="32" rx="24" ry="13" fill="#c9c3d8"/><ellipse cx="664" cy="30" rx="20" ry="11" fill="#c9c3d8"/></g>
+        </g>
+        <rect y="${GROUND}" width="${VB_W}" height="${VB_H - GROUND}" fill="url(#${root.id}-soil)"/>
+        <path d="M0,215 Q160,190 320,214 T640,210 T960,222 V262 Q800,244 640,262 T320,258 T0,266 Z" fill="#7a5236" opacity=".16"/>
+        <path d="M0,380 Q200,360 400,384 T800,378 T960,392 V430 Q760,414 560,434 T160,430 T0,438 Z" fill="#8a6040" opacity=".13"/>
+        <path d="M0,520 Q240,500 480,524 T960,512 V600 H0 Z" fill="#000" opacity=".18"/>
+        ${pebbles}
+        <rect y="${GROUND}" width="${VB_W}" height="${VB_H - GROUND}" filter="url(#${root.id}-grain)" opacity=".5"/>
+        <rect y="${GROUND - 4}" width="${VB_W}" height="14" fill="#3d7a2e"/>
+        <rect y="${GROUND - 4}" width="${VB_W}" height="4" fill="#5fa244"/>
+        ${grass}
+        <path d="M404,${GROUND} Q480,72 556,${GROUND} Z" fill="#7a5236"/>
+        <path d="M430,${GROUND} Q480,92 530,${GROUND} Z" fill="#8c6342" opacity=".7"/>
+        <path d="M470,${GROUND - 2} L490,${GROUND - 2} L492,${HUB[1] - 20} L468,${HUB[1] - 20} Z" fill="#150c07"/>
+        <ellipse cx="480" cy="${GROUND - 3}" rx="22" ry="8" fill="#150c07"/>
+        ${tunnels}
+        <ellipse cx="${HUB[0]}" cy="${HUB[1]}" rx="58" ry="30" fill="url(#${root.id}-ch)" stroke="rgba(255,205,160,.14)" stroke-width="2"/>
+        ${chambers}
+        <g class="seeds">${seeds}</g>
+        <g class="walkers"></g>
+      </svg>
+      <div class="overlay" style="position:absolute;inset:0;z-index:2">
+        ${slots}${tags}
+        <div class="tag hubtag" style="left:${HUB[0] / VB_W * 100}%;top:${(HUB[1] + 34) / VB_H * 100}%">Общий зал</div>
+      </div>
+      <div class="glassfx"></div>`;
 
-      if (action === 'create') {
-        addMember(); 
-        addMember(); 
-      } else if (sessionId) {
-        currentSessionId = sessionId;
-        loadFarmDashboard(sessionId, autoSimulate === '1');
-      } else {
-        window.location.href = 'game.html';
+      const sc = {
+        root, members, positions: pos, svg: root.querySelector('svg.bg'), overlay: root.querySelector('.overlay'),
+        moods: members.map(() => 7), bubble: null, bubbleTimer: null, lastTrustBand: null, lastProdBand: null
+      };
+      sc.svg.querySelectorAll('.cl').forEach((c, i) => { c.style.animation = `drift ${40 + i * 25}s ease-in-out ${-i * 12}s infinite alternate`; });
+      sc.svg.querySelector('.rays').style.animation = 'spin 40s linear infinite';
+      sc.svg.querySelector('.rays').style.transformOrigin = '150px 72px';
+      root.querySelectorAll('.ant').forEach(b => b.addEventListener('click', () => selectMember(+b.dataset.i, true)));
+      SC = sc;
+      members.slice(0, 5).forEach((m, i) => paintMember(i, 7));
+      applyMetrics(metrics || { mood: 7, trust: 7, productivity: 7 });
+      return sc;
+    }
+
+    function paintMember(i, mood) {
+      if (!SC) return;
+      const m = SC.members[i]; if (!m) return;
+      SC.moods[i] = mood;
+      const band = mood >= 7 ? 'high' : mood >= 4 ? 'mid' : 'low';
+      const slot = SC.root.querySelector(`.slot[data-i="${i}"]`);
+      if (slot) {
+        slot.dataset.mood = band;
+        const state = band === 'high' ? 'в хорошей форме' : band === 'mid' ? 'держится' : 'на пределе';
+        slot.querySelector('.ant').setAttribute('aria-label', `${m.name}${m.role ? ', ' + m.role : ''}: ${state}, настроение ${fmt(mood)} из 10`);
       }
-    });
+      const tag = SC.root.querySelector(`.tag[data-i="${i}"]`);
+      if (tag) tag.innerHTML = `${esc(m.name)}<b>${fmt(mood)}</b>`;
+    }
 
-    function addMember() {
-      if (memberCount >= 5) {
-        alert('Максимум 5 сотрудников в команде');
+    function applyMetrics(m) {
+      if (!SC) return;
+      const mood = clamp(+m.mood || 0, 0, 10), trust = clamp(+m.trust || 0, 0, 10), prod = clamp(+m.productivity || 0, 0, 10);
+      SC.metrics = { mood, trust, productivity: prod };
+      const t = mood / 10, svg = SC.svg;
+      svg.querySelector('.sk0').setAttribute('stop-color', lerpHex('#4a4668', '#6ec1e4', t));
+      svg.querySelector('.sk1').setAttribute('stop-color', lerpHex('#8e869f', '#fbe8a6', t));
+      svg.querySelector('.sun').style.opacity = (0.15 + 0.85 * t).toFixed(2);
+      svg.querySelector('.clouds').style.opacity = (0.25 + 0.75 * (1 - t)).toFixed(2);
+
+      // доверие: ширина и «пульс» тоннелей
+      const dash = trust >= 7 ? '3 14' : trust >= 4 ? '3 30' : '3 64';
+      svg.querySelectorAll('.tun').forEach(p => p.setAttribute('stroke-width', (8 + trust * 1.9).toFixed(1)));
+      svg.querySelectorAll('.sig').forEach(p => {
+        p.setAttribute('stroke-dasharray', dash);
+        p.setAttribute('stroke', trust <= 3 ? '#e8553d' : '#6fd6c8');
+        p.setAttribute('opacity', trust <= 3 ? '.55' : '.8');
+        p.style.animation = `flow ${trust >= 7 ? 1.1 : trust >= 4 ? 2.2 : 4}s linear infinite`;
+      });
+      const tb = trust >= 7 ? 3 : trust >= 4 ? 2 : 1;
+      if (SC.lastTrustBand !== tb) { SC.lastTrustBand = tb; rebuildWalkers(); }
+
+      // продуктивность: зёрна
+      svg.querySelectorAll('.seed').forEach(s => {
+        const on = +s.dataset.i < Math.round(prod);
+        s.setAttribute('fill', on ? '#d9a441' : 'rgba(255,255,255,.12)');
+        s.setAttribute('stroke', on ? '#8a5f14' : 'rgba(255,255,255,.35)');
+        s.setAttribute('stroke-width', on ? '1.2' : '1');
+        s.setAttribute('stroke-dasharray', on ? '0' : '3 3');
+      });
+      const pb = Math.round(prod / 4);
+      if (SC.lastProdBand !== pb) { SC.lastProdBand = pb; rebuildWalkers(); }
+
+      setMeters(SC.metrics);
+    }
+
+    function rebuildWalkers() {
+      const g = SC.svg.querySelector('.walkers'); if (!g) return;
+      let h = '';
+      const n = SC.lastTrustBand || 1;
+      SC.positions.forEach((_, i) => {
+        for (let k = 0; k < n; k++) {
+          const dur = 5 + ((i * 3 + k * 2) % 5), back = k % 2 === 1;
+          h += `<circle r="3.6" fill="${back ? '#f4b942' : '#6fd6c8'}"><animateMotion dur="${dur}s" begin="-${(k * 1.7 + i).toFixed(1)}s" repeatCount="indefinite" keyPoints="${back ? '1;0' : '0;1'}" keyTimes="0;1" calcMode="linear"><mpath href="#${SC.root.id}-t${i}"/></animateMotion></circle>`;
+        }
+      });
+      const wk = Math.round((SC.metrics?.productivity || 0) / 4);
+      for (let k = 0; k < wk; k++) {
+        h += `<g><circle r="3.4" cx="-6" fill="#f2e6d0"/><circle r="2.8" cx="0" fill="#f2e6d0"/><circle r="2.2" cx="5" fill="#f2e6d0"/><ellipse rx="4" ry="2.8" cx="10" cy="-1" fill="#d9a441"/>`
+          + `<animateMotion dur="${9 + k * 2}s" begin="-${k * 3}s" repeatCount="indefinite" path="M776,${GROUND - 6} L548,${GROUND - 6} L776,${GROUND - 6}" keyTimes="0;.5;1" calcMode="linear" rotate="auto"/></g>`;
+      }
+      g.innerHTML = h;
+      if (RM && SC.svg.pauseAnimations) SC.svg.pauseAnimations();
+    }
+
+    /* ---------- реплики над муравьями ---------- */
+    function showBubble(idx, text, delta, ms) {
+      if (!SC) return;
+      clearBubble(true);
+      const W = SC.root.clientWidth, H = SC.root.clientHeight;
+      const [x, y] = idx >= 0 && SC.positions[idx] ? SC.positions[idx] : [HUB[0], HUB[1] + 6];
+      const topY = (y - RY - 10) / VB_H * H, px = x / VB_W * W;
+      const el = document.createElement('div');
+      el.className = 'bubble';
+      const chips = [['mood', 'Настроение'], ['trust', 'Доверие'], ['productivity', 'Продуктивность']]
+        .filter(([k]) => delta && delta[k])
+        .map(([k, l]) => `<span class="d ${delta[k] > 0 ? 'up' : 'down'}">${l} ${delta[k] > 0 ? '+' : '−'}${Math.abs(delta[k])}</span>`).join('');
+      el.innerHTML = `<p></p>${chips ? `<div class="deltas">${chips}</div>` : ''}`;
+      el.querySelector('p').textContent = text;
+      SC.overlay.appendChild(el);
+      const bw = el.offsetWidth;
+      const left = clamp(px - bw / 2, 6, Math.max(6, W - bw - 6));
+      el.style.left = left + 'px';
+      el.style.bottom = Math.max(6, H - topY) + 'px';
+      el.style.setProperty('--tx', clamp(px - left, 16, bw - 16) + 'px');
+      SC.bubble = el;
+      if (ms) SC.bubbleTimer = setTimeout(() => clearBubble(), ms);
+    }
+    function clearBubble(now) {
+      if (!SC) return;
+      clearTimeout(SC.bubbleTimer);
+      const b = SC.bubble; SC.bubble = null;
+      if (!b) return;
+      if (now) b.remove(); else { b.classList.add('out'); setTimeout(() => b.remove(), 320); }
+    }
+
+    /* ---------- шкалы ---------- */
+    function initMeters() {
+      document.querySelectorAll('.meter .segs').forEach(s => { if (!s.children.length) s.innerHTML = '<i></i>'.repeat(10); });
+    }
+    function setMeters(m) {
+      const map = { mood: m.mood, trust: m.trust, prod: m.productivity };
+      const ids = { mood: 'metricMood', trust: 'metricTrust', prod: 'metricProd' };
+      Object.keys(map).forEach(k => {
+        const box = document.querySelector(`.meter[data-k="${k}"]`); if (!box) return;
+        const v = clamp(map[k], 0, 10);
+        const prev = +box.dataset.v;
+        box.dataset.v = v;
+        $(ids[k]).textContent = fmt(v);
+        box.setAttribute('aria-valuenow', fmt(v));
+        box.classList.toggle('low', v <= 3);
+        box.querySelectorAll('.segs i').forEach((s, i) => {
+          const on = i < Math.round(v);
+          const was = s.classList.contains('on');
+          s.classList.toggle('on', on);
+          if (on !== was && !RM && !isNaN(prev)) { s.classList.add('pop'); setTimeout(() => s.classList.remove('pop'), 300); }
+        });
+      });
+    }
+    function flyDelta(k, d) {
+      if (!d || RM) return;
+      const box = document.querySelector(`.meter[data-k="${k}"]`); if (!box) return;
+      const f = document.createElement('span');
+      f.className = 'fly ' + (d > 0 ? 'up' : 'down');
+      f.textContent = (d > 0 ? '+' : '−') + Math.abs(d);
+      box.appendChild(f);
+      setTimeout(() => f.remove(), 1700);
+    }
+
+    /* ---------- настроение сотрудников ---------- */
+    const TRIGGER_BIAS = { burnout: -1.5, imposter: -1, conflict: -1, ai_fear: -0.5, toxic: 0 };
+    function mentions(m, text) {
+      return !!m.stem && new RegExp(escRe(m.stem), 'i').test(text);
+    }
+    function memberMood(i, members, metrics, log) {
+      const m = members[i];
+      let v = (+metrics.mood || 0) + (TRIGGER_BIAS[m.trigger] || 0) * 0.6;
+      (log || []).forEach(e => { if (mentions(m, e.text || '')) v += ((e.metrics_delta && +e.metrics_delta.mood) || 0) * 1.2; });
+      return clamp(Math.round(v * 10) / 10, 0, 10);
+    }
+    function lastEventFor(m, log) {
+      for (let i = (log || []).length - 1; i >= 0; i--) if (mentions(m, log[i].text || '')) return log[i];
+      return null;
+    }
+    function selectMember(i, showEvent) {
+      document.querySelectorAll('.slot').forEach(s => s.classList.toggle('selected', +s.dataset.i === i));
+      document.querySelectorAll('.who-card').forEach(c => c.classList.toggle('selected', +c.dataset.i === i));
+      const card = document.querySelector(`.who-card[data-i="${i}"]`);
+      if (card && showEvent) card.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+      if (showEvent && S.session) {
+        const ev = lastEventFor(S.members[i], S.session.event_log);
+        const m = S.members[i];
+        showBubble(i, ev ? ev.text : `${m.name}${m.role ? ' · ' + m.role : ''}: пока без происшествий.`, ev && ev.metrics_delta, 6000);
+      }
+    }
+
+    /* ============ экран «колония» ============ */
+    const S = { session: null, members: [], busy: false };
+
+    function highlight(text, members) {
+      let s = esc(text);
+      members.forEach(m => {
+        if (!m.stem) return;
+        s = s.replace(new RegExp('(' + escRe(esc(m.stem)) + '[\\p{L}]*)', 'giu'), `<span class="who" style="--c:${m.color === '#f4c04e' || m.color === '#d4e07a' ? '#8a6a00' : '#a2432a'}">$1</span>`);
+      });
+      return s;
+    }
+    const deltaChips = d => !d ? '' : [['mood', 'настроение'], ['trust', 'доверие'], ['productivity', 'продуктивность']]
+      .filter(([k]) => d[k]).map(([k, l]) => `<span class="d ${d[k] > 0 ? 'up' : 'down'}">${l} ${d[k] > 0 ? '+' : '−'}${Math.abs(d[k])}</span>`).join('');
+
+    function renderJournal(log, hideLast = 0) {
+      const box = $('eventLogContainer');
+      if (!log || !log.length) {
+        box.innerHTML = '<div class="empty" id="eventLogPlaceholder"><b>Журнал пуст</b>Нажмите «Следующий день» — муравьи проживут рабочий день, и здесь появятся записи.</div>';
         return;
       }
-      memberCount++;
-      const container = document.getElementById('membersContainer');
+      const groups = new Map();
+      log.forEach((e, idx) => { const d = e.day ?? 1; if (!groups.has(d)) groups.set(d, []); groups.get(d).push({ e, idx }); });
+      const firstHidden = log.length - hideLast;
+      const days = [...groups.keys()].sort((a, b) => b - a);
+      box.innerHTML = days.map(d => {
+        const items = groups.get(d);
+        const allPending = hideLast > 0 && items.every(x => x.idx >= firstHidden);
+        return `<section class="day-group${allPending ? ' pending' : ''}" data-day="${esc(d)}"><h3>День ${esc(d)}</h3><ol>` +
+          items.map(({ e, idx }) => `<li data-idx="${idx}" class="${hideLast > 0 && idx >= firstHidden ? 'pending' : ''}">${highlight(e.text || '', S.members)}<div>${deltaChips(e.metrics_delta)}</div></li>`).join('') +
+          '</ol></section>';
+      }).join('');
+    }
+    function revealJournal(idx) {
+      const li = document.querySelector(`#eventLogContainer li[data-idx="${idx}"]`); if (!li) return;
+      li.closest('.day-group').classList.remove('pending');
+      li.classList.remove('pending'); li.classList.add('is-new');
+    }
+
+    function renderRoster(members, moods, log) {
+      $('roster').innerHTML = members.map((m, i) => {
+        const mood = moods[i], low = mood <= 3;
+        const last = lastEventFor(m, log);
+        const dots = Array.from({ length: 10 }, (_, k) => `<i class="${k < Math.round(mood) ? 'on' : ''}"></i>`).join('');
+        return `<article class="who-card" data-i="${i}">
+          <div class="chip-ant" style="color:${m.color}"><svg viewBox="0 0 72 44" aria-hidden="true"><use href="#ant"/></svg></div>
+          <div>
+            <div class="who-name">${esc(m.name)}</div>
+            ${m.role ? `<div class="who-role">${esc(m.role)}</div>` : ''}
+            <div class="who-meta"><span class="trig">${esc(TRIGGERS[m.trigger] || m.trigger)}</span>
+              <span>Настроение <span class="mini ${low ? 'low' : ''}" aria-hidden="true">${dots}</span> <b>${fmt(mood)}</b></span></div>
+            ${last ? `<div class="who-last">День ${esc(last.day)}: ${esc(last.text)}</div>` : ''}
+          </div></article>`;
+      }).join('');
+      document.querySelectorAll('.who-card').forEach(c => c.addEventListener('click', () => selectMember(+c.dataset.i, true)));
+    }
+
+    function renderDashboard(session, opts = {}) {
+      S.session = session;
+      const cfg = session.team_config || {};
+      S.members = (cfg.members || []).slice(0, 5).map(parseMember);
+      $('dashTeamName').textContent = cfg.team_name || 'Команда';
+      const log = session.event_log || [];
+      // последний завершённый день (current_day − 1, если уже есть события)
+      const displayDay = log.length > 0 ? Math.max(1, session.current_day - 1) : session.current_day;
+      $('dashDay').textContent = displayDay;
+      const m = session.metrics || {};
+      const metrics = { mood: m.mood ?? 7, trust: m.trust ?? 7, productivity: m.productivity ?? 7 };
+
+      if (!SC || SC.root.id !== 'mainScene' || SC.members.length !== S.members.length || opts.rebuild) {
+        buildScene($('mainScene'), S.members, metrics);
+      } else if (!opts.keepMetrics) applyMetrics(metrics);
+      S.moods = S.members.map((mm, i) => memberMood(i, S.members, metrics, log));
+      S.members.forEach((_, i) => paintMember(i, S.moods[i]));
+      renderRoster(S.members, S.moods, log);
+      renderJournal(log, opts.hideLast || 0);
+    }
+
+    /* ============ конструктор ============ */
+    let nextMemberId = 0;
+    const memberCards = () => [...document.querySelectorAll('.team-member-card')];
+
+    function addMember() {
+      if (memberCards().length >= 5) { toast('Максимум 5 сотрудников в команде'); return; }
+      const id = ++nextMemberId;
+      const idx = memberCards().length;
       const div = document.createElement('div');
       div.className = 'team-member-card';
-      div.id = `member-${memberCount}`;
+      div.id = `member-${id}`;
       div.innerHTML = `
-        <button class="remove-member" onclick="removeMember(${memberCount})">×</button>
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label>Имя и роль</label>
-          <input type="text" class="m-name" placeholder="Например: Олег, Senior Backend">
+        <div class="member-head">
+          <div class="chip-ant" style="color:${ANT_COLORS[idx % 5]}"><svg viewBox="0 0 72 44" aria-hidden="true"><use href="#ant"/></svg></div>
+          <b class="m-title">Сотрудник ${idx + 1}</b>
+          <button type="button" class="remove-member" aria-label="Убрать сотрудника" onclick="removeMember(${id})">×</button>
         </div>
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label>Скрытый триггер / Стрессор</label>
+        <label class="field"><span>Имя и роль</span>
+          <input type="text" class="m-name" placeholder="Например: Олег, Senior Backend" autocomplete="off"></label>
+        <label class="field"><span>Скрытый стрессор</span>
           <select class="m-trigger">
             <option value="burnout">Выгорание и усталость</option>
             <option value="imposter">Синдром самозванца</option>
             <option value="conflict">Конфликт с другими отделами</option>
             <option value="ai_fear">Страх замены ИИ / автоматизацией</option>
             <option value="toxic">Скрытая токсичность и высокомерие</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Стиль общения</label>
-          <input type="text" class="m-style" placeholder="Например: Саркастичный, отвечает односложно">
-        </div>
-      `;
-      container.appendChild(div);
+          </select></label>
+        <label class="field"><span>Стиль общения</span>
+          <input type="text" class="m-style" placeholder="Например: саркастичный, отвечает односложно" autocomplete="off"></label>`;
+      $('membersContainer').appendChild(div);
+      div.addEventListener('input', refreshPreview);
+      syncBuilder();
     }
 
     function removeMember(id) {
-      const el = document.getElementById(`member-${id}`);
-      if (el) {
-        el.remove();
-        memberCount--;
-      }
+      const el = $(`member-${id}`);
+      if (el) { el.remove(); syncBuilder(); }
     }
 
-    function showLoading(text) {
-      document.getElementById('loadingText').textContent = text;
-      document.getElementById('loadingOverlay').classList.remove('hidden');
+    function syncBuilder() {
+      memberCards().forEach((c, i) => {
+        c.querySelector('.m-title').textContent = `Сотрудник ${i + 1}`;
+        c.querySelector('.chip-ant').style.color = ANT_COLORS[i % 5];
+      });
+      const full = memberCards().length >= 5;
+      const btn = $('addMemberBtn');
+      btn.disabled = full;
+      btn.textContent = full ? 'Максимум 5 сотрудников' : 'Добавить сотрудника';
+      refreshPreview();
     }
-    function hideLoading() {
-      document.getElementById('loadingOverlay').classList.add('hidden');
+
+    function readMembers() {
+      return memberCards().map(card => ({
+        name_role: card.querySelector('.m-name').value.trim(),
+        trigger: card.querySelector('.m-trigger').value,
+        style: card.querySelector('.m-style').value.trim()
+      }));
+    }
+
+    function refreshPreview() {
+      const root = $('previewScene'); if (!root) return;
+      const members = readMembers().map(parseMember);
+      const same = SC && SC.root === root && SC.members.length === members.length;
+      if (same) {
+        SC.members = members;
+        members.forEach((_, i) => paintMember(i, 7));
+      } else buildScene(root, members, { mood: 7, trust: 7, productivity: 7 });
     }
 
     async function startFarm() {
-      const teamName = document.getElementById('teamName').value.trim() || 'Безымянная команда';
-      const members = [];
-      document.querySelectorAll('.team-member-card').forEach(card => {
-        members.push({
-          name_role: card.querySelector('.m-name').value.trim(),
-          trigger: card.querySelector('.m-trigger').value,
-          style: card.querySelector('.m-style').value.trim()
-        });
-      });
+      const teamName = $('teamName').value.trim() || 'Безымянная команда';
+      const members = readMembers().map((m, i) => ({ ...m, name_role: m.name_role || `Сотрудник ${i + 1}` }));
 
-      if (members.length < 2) {
-        alert('Добавьте минимум 2 сотрудников');
-        return;
-      }
+      if (members.length < 2) { toast('Добавьте минимум 2 сотрудников', 'error'); return; }
 
-      showLoading('Создаем команду и списываем сессию...');
-
+      showLoading('Заселяем колонию и списываем сессию…');
       try {
         const res = await fetch(`${API_BASE}/api/start-game`, {
           method: 'POST',
@@ -298,161 +880,195 @@
             }
           })
         });
-
         const data = await res.json();
         if (data.ok) {
-          // ИЗМЕНЕНИЕ: добавляем auto_simulate=1, чтобы сразу симулировать День 1
+          // auto_simulate=1 — сразу проживаем День 1
           window.location.href = `ant_farm.html?session_id=${data.session_id}&auto_simulate=1`;
         } else {
           hideLoading();
-          alert('Ошибка: ' + (data.reason || 'Не удалось создать ферму'));
+          toast('Не удалось создать ферму: ' + (data.reason || 'ошибка сервера'), 'error');
         }
       } catch (e) {
         hideLoading();
         console.error(e);
-        alert('Ошибка сети при создании фермы');
+        toast('Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.', 'error');
       }
     }
 
+    /* ============ загрузка и симуляция ============ */
     async function loadFarmDashboard(sessionId, autoSimulate = false) {
-      showLoading(autoSimulate ? 'Запускаем первый день...' : 'Загружаем состояние фермы...');
+      showLoading(autoSimulate ? 'Готовим первый день…' : 'Загружаем колонию…');
       try {
-        const res = await fetch(`${API_BASE}/api/get-session?id=${sessionId}`);
+        const res = await fetch(`${API_BASE}/api/get-session?id=${encodeURIComponent(sessionId)}`);
         const data = await res.json();
-        
         if (!data.session) {
           hideLoading();
-          alert('Сессия не найдена');
-          window.location.href = 'game.html';
+          toast('Сессия не найдена. Возвращаем к сценариям.', 'error');
+          setTimeout(() => { window.location.href = 'game.html'; }, 1600);
           return;
         }
-
-        const session = data.session;
-        document.getElementById('pageTitle').innerHTML = '🐜 Муравьиная ферма: Дашборд' + 
-          (IS_DEV ? ' <span class="dev-badge">DEV MODE</span>' : '');
-        document.getElementById('constructorView').classList.add('hidden');
-        document.getElementById('dashboardView').classList.remove('hidden');
-
-        renderDashboard(session);
-
-        // ИЗМЕНЕНИЕ: если auto_simulate=1, автоматически запускаем симуляцию Дня 1
-        if (autoSimulate) {
-          // Небольшая задержка, чтобы UI успел отрисоваться
-          setTimeout(() => simulateDays(true), 500);
-        }
-
-      } catch (e) {
-        console.error(e);
-        alert('Ошибка загрузки данных фермы');
-      } finally {
-        if (!autoSimulate) hideLoading();
-      }
-    }
-
-    function renderDashboard(session) {
-      document.getElementById('dashTeamName').textContent = session.team_config?.team_name || 'Команда';
-      // Показываем последний завершённый день (current_day - 1 если есть события, иначе current_day)
-      const displayDay = (session.event_log && session.event_log.length > 0) 
-      ? Math.max(1, session.current_day - 1) 
-      : session.current_day;
-      document.getElementById('dashDay').textContent = displayDay;
-      
-      const m = session.metrics || {};
-      document.getElementById('metricMood').textContent = m.mood ?? 7;
-      document.getElementById('metricTrust').textContent = m.trust ?? 7;
-      document.getElementById('metricProd').textContent = m.productivity ?? 7;
-
-      const logContainer = document.getElementById('eventLogContainer');
-      logContainer.innerHTML = '';
-      
-      if (session.event_log && session.event_log.length > 0) {
-        session.event_log.forEach(e => {
-          const div = document.createElement('div');
-          div.style.cssText = 'margin-bottom: 8px; padding: 12px; background: white; border-radius: 8px; font-size: 14px; border-left: 3px solid var(--primary);';
-          div.innerHTML = `<strong>День ${e.day}:</strong> ${e.text}`;
-          logContainer.appendChild(div);
-        });
-      } else {
-        logContainer.innerHTML = '<p id="eventLogPlaceholder" style="color: var(--text-muted); font-style: italic;">Пока событий нет...</p>';
-      }
-    }
-
-    // Шаг 3: Обновлённая функция удаления через api/delete-farm
-    async function refundFarm() {
-      if (!confirm('Удалить эту ферму? Сессия будет возвращена только если это 1-й день без событий.')) return;
-      
-      showLoading('Удаляем ферму...');
-      try {
-        const res = await fetch(`${API_BASE}/api/farms?action=delete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            session_id: currentSessionId, 
-            user_code: userCode
-          })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          let msg = 'Ферма удалена.';
-          if (data.dev_mode) {
-            msg += ' (режим разработчика: сессия возвращена)';
-          } else if (data.refunded) {
-            msg += ' Сессия возвращена.';
-          } else {
-            msg += ' Сессия не возвращена (ферма уже развивалась).';
-          }
-          alert(msg);
-          window.location.href = 'game.html';
-        } else {
-          hideLoading();
-          alert('Не удалось удалить: ' + (data.reason || 'Неизвестная ошибка'));
-        }
-      } catch (e) {
+        $('constructorView').classList.add('hidden');
+        $('dashboardView').classList.remove('hidden');
+        renderDashboard(data.session, { rebuild: true });
         hideLoading();
+        if (autoSimulate) setTimeout(() => simulateDays(true), 700);
+      } catch (e) {
         console.error(e);
-        alert('Ошибка сети');
+        hideLoading();
+        toast('Не удалось загрузить данные фермы. Обновите страницу.', 'error');
       }
     }
 
     async function simulateDays(silent = false) {
-      if (!currentSessionId) {
-        alert('Сессия не загружена');
-        return;
-      }
-      
-      if (!silent) showLoading('Симулируем пропущенные дни...');
-      
-      // Блокируем кнопку на время симуляции
-      const simBtn = document.getElementById('simulateBtn');
-      if (simBtn) simBtn.disabled = true;
-      
+      if (!currentSessionId) { toast('Сессия не загружена', 'error'); return; }
+      if (S.busy) return;
+      S.busy = true;
+      const btn = $('simulateBtn');
+      btn.disabled = true; btn.textContent = 'Идёт рабочий день…';
+      $('mainScene').classList.add('busy');
+      $('mainScene').scrollIntoView({ block: 'center', behavior: RM ? 'auto' : 'smooth' });
       try {
         const res = await fetch(`${API_BASE}/api/farms?action=simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1 })
         });
-        
+        const data = await res.json();
+        if (!data.ok) { toast('Симуляция не удалась: ' + (data.reason || 'ошибка сервера'), 'error'); return; }
+
+        const newEvents = Array.isArray(data.new_events) ? data.new_events : [];
+        let fresh = null;
+        try {
+          const r2 = await fetch(`${API_BASE}/api/get-session?id=${encodeURIComponent(currentSessionId)}`);
+          fresh = (await r2.json()).session || null;
+        } catch (_) { /* упадём на локальную сборку */ }
+        if (!fresh) {
+          fresh = { ...S.session, current_day: data.new_day ?? (S.session.current_day + 1), metrics: data.new_metrics || S.session.metrics,
+            event_log: [...(S.session.event_log || []), ...newEvents] };
+        }
+        $('mainScene').classList.remove('busy');
+        await playDay(fresh, newEvents);
+      } catch (e) {
+        console.error(e);
+        toast('Нет связи с сервером во время симуляции.', 'error');
+      } finally {
+        S.busy = false;
+        $('mainScene').classList.remove('busy');
+        btn.disabled = false; btn.textContent = 'Следующий день';
+      }
+    }
+
+    // Проигрываем новые события по одному: реплика над муравьём, сдвиг шкал, запись в журнал
+    async function playDay(fresh, newEvents) {
+      const k = Math.min(newEvents.length, (fresh.event_log || []).length);
+      const prevMetrics = { ...(SC.metrics || { mood: 7, trust: 7, productivity: 7 }) };
+      // журнал и состав — по свежим данным, но последние k записей скрыты до показа
+      S.session = fresh;
+      $('dashDay').textContent = Math.max(1, (fresh.current_day || 1) - 1);
+      renderJournal(fresh.event_log || [], k);
+      const base = (fresh.event_log || []).length - k;
+      let cur = { ...prevMetrics };
+      for (let n = 0; n < k; n++) {
+        const ev = newEvents[n] || {};
+        const d = ev.metrics_delta || {};
+        const mi = S.members.findIndex(m => mentions(m, ev.text || ''));
+        showBubble(mi, ev.text || '', d, 4200);
+        if (mi >= 0) selectMember(mi, false);
+        cur = {
+          mood: clamp(cur.mood + (d.mood || 0), 0, 10),
+          trust: clamp(cur.trust + (d.trust || 0), 0, 10),
+          productivity: clamp(cur.productivity + (d.productivity || 0), 0, 10)
+        };
+        applyMetrics(cur);
+        flyDelta('mood', d.mood); flyDelta('trust', d.trust); flyDelta('prod', d.productivity);
+        revealJournal(base + n);
+        await sleep(2600);
+      }
+      clearBubble();
+      document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
+      renderDashboard(fresh); // финальное, серверное состояние
+    }
+
+    /* ============ удаление ============ */
+    async function refundFarm() {
+      const ok = await askConfirm('Удалить эту ферму?', 'Сессия вернётся, только если это первый день и событий ещё нет.', 'Удалить ферму');
+      if (!ok) return;
+      showLoading('Удаляем ферму…');
+      try {
+        const res = await fetch(`${API_BASE}/api/farms?action=delete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: currentSessionId, user_code: userCode })
+        });
         const data = await res.json();
         if (data.ok) {
-          // Перезагружаем дашборд с новыми данными
-          await loadFarmDashboard(currentSessionId, false);
+          let msg = 'Ферма удалена.';
+          if (data.dev_mode) msg += ' Режим разработчика: сессия возвращена.';
+          else if (data.refunded) msg += ' Сессия возвращена.';
+          else msg += ' Сессия не возвращена: ферма уже развивалась.';
+          toast(msg);
+          setTimeout(() => { window.location.href = 'game.html'; }, 1500);
         } else {
-          if (!silent) hideLoading();
-          alert('Ошибка симуляции: ' + (data.reason || 'Неизвестная ошибка'));
+          hideLoading();
+          toast('Не удалось удалить: ' + (data.reason || 'неизвестная ошибка'), 'error');
         }
       } catch (e) {
-        if (!silent) hideLoading();
+        hideLoading();
         console.error(e);
-        alert('Ошибка сети при симуляции');
-      } finally {
-        if (simBtn) simBtn.disabled = false;
+        toast('Нет связи с сервером. Ферма не удалена.', 'error');
       }
     }
 
     async function generateDocumentary() {
-      alert('Функция генерации документалки будет подключена на следующем шаге!');
+      toast('Документалка появится в одном из ближайших обновлений.');
     }
+
+    /* ============ интерфейс: загрузка, диалог, тосты ============ */
+    function showLoading(text) { $('loadingText').textContent = text; $('loadingOverlay').classList.remove('hidden'); }
+    function hideLoading() { $('loadingOverlay').classList.add('hidden'); }
+
+    function askConfirm(title, text, okLabel) {
+      return new Promise(resolve => {
+        const dlg = $('confirmDlg');
+        $('cdTitle').textContent = title; $('cdText').textContent = text; $('cdOk').textContent = okLabel;
+        dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true });
+        dlg.showModal();
+      });
+    }
+    function toast(msg, kind) {
+      const t = document.createElement('div');
+      t.className = 'toast' + (kind === 'error' ? ' error' : '');
+      t.textContent = msg;
+      $('toasts').appendChild(t);
+      setTimeout(() => t.remove(), 5200);
+    }
+
+    /* ============ старт ============ */
+    window.addEventListener('DOMContentLoaded', () => {
+      const st = document.createElement('style');
+      st.textContent = '@keyframes flow{to{stroke-dashoffset:-34}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(40px)}}';
+      document.head.appendChild(st);
+      initMeters();
+      if (IS_DEV) $('pageTitle').insertAdjacentHTML('beforeend', ' <span class="dev-badge">DEV MODE</span>');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const action = urlParams.get('action');
+      const sessionId = urlParams.get('session_id');
+      const autoSimulate = urlParams.get('auto_simulate');
+
+      if (action === 'create') {
+        $('constructorView').classList.remove('hidden');
+        addMember();
+        addMember();
+      } else if (sessionId) {
+        currentSessionId = sessionId;
+        loadFarmDashboard(sessionId, autoSimulate === '1');
+      } else {
+        window.location.href = 'game.html';
+      }
+    });
+    let lastW = innerWidth;
+    window.addEventListener('resize', () => { if (innerWidth !== lastW) { lastW = innerWidth; if (SC && SC.bubble) clearBubble(true); } });
   </script>
 </body>
 </html>
