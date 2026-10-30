@@ -30,18 +30,31 @@ function sreq(method, urlStr, headers, body) {
   });
 }
 
+let tokenInflight = null;
+
+// Один запрос токена на всех: параллельные вызовы ждут общий промис, а не бьют по oauth сами
 async function getToken() {
   if (cache.token && Date.now() < cache.exp - 60000) return cache.token;
+  if (!tokenInflight) tokenInflight = fetchToken().finally(() => { tokenInflight = null; });
+  return tokenInflight;
+}
+
+async function fetchToken() {
   const auth = process.env.GIGACHAT_AUTH_KEY || 
     Buffer.from((process.env.GIGACHAT_CLIENT_ID || '') + ':' + (process.env.GIGACHAT_CLIENT_SECRET || '')).toString('base64');
   const scope = process.env.GIGACHAT_SCOPE || 'GIGACHAT_API_PERS';
-  
-  const r = await sreq('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
-    Authorization: 'Basic ' + auth,
-    RqUID: crypto.randomUUID(),
-    'Content-Type': 'application/x-www-form-urlencoded',
-  }, 'scope=' + scope);
-  
+
+  let r;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    r = await sreq('POST', 'https://ngw.devices.sberbank.ru:9443/api/v2/oauth', {
+      Authorization: 'Basic ' + auth,
+      RqUID: crypto.randomUUID(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }, 'scope=' + scope);
+    if (r.status !== 429) break;
+    if (attempt === 1) await new Promise(res => setTimeout(res, 1500)); // один повтор после паузы
+  }
+
   if (r.status !== 200) throw new Error('oauth ' + r.status + ': ' + r.text.slice(0, 120));
   const j = JSON.parse(r.text);
   cache = { token: j.access_token, exp: Date.now() + (j.expires_in || 1800) * 1000 };
@@ -233,6 +246,9 @@ ${playerIsToxic ? '\nВАЖНО: Последняя реплика игрока 
     });
   } catch (e) {
     console.error('Scenario chat error:', e);
-    return res.status(502).json({ error: String(e.code || e.message || e) });
+    const msg = String(e.code || e.message || e);
+    const rateLimited = /\b429\b/.test(msg);
+    // Не отдаём клиенту сырой HTML от upstream: либо понятный код, либо короткая строка
+    return res.status(rateLimited ? 429 : 502).json({ error: rateLimited ? 'rate_limited' : msg.slice(0, 160) });
   }
 }
