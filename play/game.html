@@ -300,9 +300,14 @@
     .task input { width: 18px; height: 18px; margin-top: 2px; accent-color: #0b6f64; flex: none; }
     .task b { display: block; } .task span { color: var(--mute); }
     .task input:checked ~ div { opacity: .55; text-decoration: line-through; }
-    .dash-legend { display: flex; gap: 14px; font-size: 12.5px; margin: 6px 0 10px; color: var(--mute); }
+    .dash-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; margin: 14px 0 22px; color: var(--mute); }
     .dash-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-    .spark { width: 100%; height: 110px; background: #fff; border: 1px solid #d6e1db; border-radius: 10px; display: block; }
+    .spark { width: 100%; height: auto; aspect-ratio: 3 / 1; background: #fff; border: 1px solid #d6e1db; border-radius: 10px; display: block; touch-action: none; cursor: crosshair; }
+    .spark-wrap { position: relative; }
+    .tip { position: absolute; bottom: calc(100% + 6px); width: 220px; max-width: 100%; padding: 8px 10px; border-radius: 8px; background: #17262a; color: #eaf4f0; font-size: 12.5px; line-height: 1.4; box-shadow: 0 8px 20px rgba(0,0,0,.35); pointer-events: none; z-index: 5; }
+    .tip b { display: block; margin-bottom: 2px; } .tip span { display: block; margin-top: 4px; color: #a4bdb6; }
+    .dash-legend .hint { margin-left: auto; font-size: 11.5px; }
+    .s-note { margin-bottom: 14px; line-height: 1.5; }
 
     /* уведомления */
     .notes { position: absolute; right: 14px; bottom: 14px; display: grid; gap: 8px; width: min(320px, calc(100% - 28px)); z-index: 9000; pointer-events: none; }
@@ -714,7 +719,8 @@
           body: JSON.stringify({
             scenario_id: currentScenarioId,
             user_message: message,
-            history: chatHistory
+            history: chatHistory,
+            state: teamState
           })
         });
 
@@ -725,7 +731,7 @@
         if (data.ai_response) {
           chatHistory.push({ role: 'assistant', content: data.ai_response });
           addMessageToChat('assistant', data.ai_response);
-          updateTeamState(message, data.ai_response);
+          updateTeamState(message, data.ai_response, data.state_delta);
 
           applyElements(data.updated_elements);
         } else if (data.error) {
@@ -767,7 +773,15 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function updateTeamState(userMessage, assistantResponse) {
+    function updateTeamState(userMessage, assistantResponse, delta) {
+      // Основной путь: сдвиг посчитал ИИ на сервере. Запасной: ключевые слова ниже.
+      if (delta && Number.isFinite(+delta.stress) && Number.isFinite(+delta.trust)) {
+        teamState.stress = clampN(teamState.stress + Math.round(+delta.stress), 0, 100);
+        teamState.trust = clampN(teamState.trust + Math.round(+delta.trust), 0, 100);
+        teamHistory.push({ ...teamState, msg: userMessage, note: delta.note || '' });
+        renderTeamState();
+        return;
+      }
       const lowerMsg = userMessage.toLowerCase();
       if (lowerMsg.includes('понимаю') || lowerMsg.includes('слышу') || lowerMsg.includes('чувствую')) {
         teamState.trust = Math.min(100, teamState.trust + 5);
@@ -780,7 +794,7 @@
         teamState.trust = Math.max(0, teamState.trust - 10);
         teamState.stress = Math.min(100, teamState.stress + 5);
       }
-      teamHistory.push({ ...teamState });
+      teamHistory.push({ ...teamState, msg: userMessage });
       renderTeamState();
     }
 
@@ -931,8 +945,7 @@
       context:   { title: 'Контекст дня',       short: 'Контекст', color: '#52707a', always: true },
       mail:      { title: 'Почта',              color: '#d99a1f', el: 'email',     note: 'Новое письмо от HR' },
       calendar:  { title: 'Календарь',          color: '#4b78d6', el: 'calendar',  note: 'Встреча перенесена на следующую неделю' },
-      tasks:     { title: 'Задачи',             color: '#6a9f2f', el: 'tasks',     note: 'Добавлена задача «Пересмотр роли»' },
-      dashboard: { title: 'Дашборд',            color: '#7a5bc7', el: 'dashboard', note: 'Открыт доступ к метрикам' }
+      tasks:     { title: 'Задачи',             color: '#6a9f2f', el: 'tasks',     note: 'Добавлена задача «Пересмотр роли»' }
     };
     const svgIcon = id => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[id]}</svg>`;
     const WM = { z: 10, wins: {}, unlocked: new Set(), active: null, built: false, maxCount: 0 };
@@ -953,21 +966,20 @@
         </div>`,
       state: () => `
         <div class="pad">
+          <p class="s-note" id="stateNote"></p>
           <div class="stat-row"><div class="stat-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
             <div class="stat-bar"><div class="stat-fill stress" id="stressBar" style="width:92%"></div></div></div>
           <div class="stat-row"><div class="stat-label"><span>Доверие к вам</span><span id="trustValue">45%</span></div>
             <div class="stat-bar"><div class="stat-fill trust" id="trustBar" style="width:45%"></div></div></div>
-          <p class="s-note" id="stateNote"></p>
+          <div class="dash-legend"><span><i style="background:#e8553d"></i>Стресс</span><span><i style="background:#1f9d8f"></i>Доверие</span><span class="hint">Наведите на график: что вы сказали и что изменилось</span></div>
+          <div class="spark-wrap"><svg class="spark" id="sparkSvg" viewBox="0 0 300 100" role="img" aria-label="Динамика стресса и доверия по ходу диалога"></svg><div class="tip hidden" id="sparkTip" role="status"></div></div>
         </div>`,
       context: () => `<div class="pad ctx" id="ctxBody"></div>`,
       mail: () => `<div class="mail"><aside><div class="on">Входящие · 1</div><div>Отправленные</div><div>Черновики</div></aside>
         <div><div class="mail-row"><i aria-label="Не прочитано"></i><div><b>HR</b><span>Новое письмо от HR</span></div></div></div></div>`,
       calendar: () => `<div class="pad"><div class="week" aria-hidden="true"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div class="today">Пт</div><div>Сб</div><div>Вс</div></div>
         <div class="cal-evt"><s>Эта неделя</s><b>Встреча перенесена на следующую неделю</b></div></div>`,
-      tasks: () => `<div class="pad"><label class="task"><input type="checkbox"><div><b>Пересмотр роли</b><span>Обсудить зоны ответственности</span></div></label></div>`,
-      dashboard: () => `<div class="pad"><p class="s-note">Стресс и доверие по ходу разговора. Каждая точка — один ваш ответ.</p>
-        <div class="dash-legend"><span><i style="background:#e8553d"></i>Стресс</span><span><i style="background:#1f9d8f"></i>Доверие</span></div>
-        <svg class="spark" id="sparkSvg" viewBox="0 0 200 80" preserveAspectRatio="none" role="img" aria-label="График стресса и доверия"></svg></div>`
+      tasks: () => `<div class="pad"><label class="task"><input type="checkbox"><div><b>Пересмотр роли</b><span>Обсудить зоны ответственности</span></div></label></div>`
     };
 
     function buildDesktop() {
@@ -1056,10 +1068,10 @@
       const chat = { l: left0, t: 18, w: cw, h: Math.min(H - 36, 660) };
       const rx = chat.l + chat.w + 22, rw = clampN(W - rx - 18, 280, 360);
       if (id === 'chat') return chat;
-      if (id === 'state') return { l: rx, t: 18, w: rw, h: 200 };
-      if (id === 'context') return { l: rx, t: 236, w: rw, h: Math.max(190, Math.min(260, H - 236 - 18)) };
+      if (id === 'state') return { l: rx, t: 18, w: rw, h: 392 };
+      if (id === 'context') return { l: rx, t: 428, w: rw, h: Math.max(150, Math.min(240, H - 428 - 18)) };
       const k = WM.maxCount++ % 4;
-      return { l: clampN(rx + 24 + k * 30, left0, W - 380), t: 70 + k * 34, w: 360, h: 290 };
+      return { l: clampN(rx + 16 + k * 30, left0, W - 380), t: Math.max(18, Math.min(440 + k * 26, H - 270)), w: 360, h: 250 };
     }
     function placeWin(id, r) {
       const d = deskEl(), el = WM.wins[id].el;
@@ -1230,7 +1242,7 @@
         w.el.style.zIndex = '';
       });
       document.querySelectorAll('.dicon').forEach(b => { b.hidden = !APPS[b.dataset.app].always; b.classList.remove('sel'); b.querySelector('.badge')?.remove(); });
-      teamHistory = [{ ...teamState }];
+      teamHistory = [{ ...teamState, msg: '' }];
       setFinishState(false);
       // контекст дня
       const ctx = document.getElementById('ctxBody');
@@ -1256,20 +1268,48 @@
       const svg = document.getElementById('sparkSvg'); if (!svg) return;
       const n = teamHistory.length;
       if (!n) return;
+      const X = i => (n === 1 ? 150 : 12 + (i / (n - 1)) * 276), Y = v => 90 - (v / 100) * 80;
       const line = (key, color) => {
-        const pts = teamHistory.map((s, i) => [n === 1 ? 100 : 6 + (i / (n - 1)) * 188, 74 - (s[key] / 100) * 68]);
-        const last = pts[pts.length - 1];
-        return (n > 1 ? `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>` : '') +
-          `<circle cx="${last[0]}" cy="${last[1]}" r="3.4" fill="${color}" vector-effect="non-scaling-stroke"/>`;
+        const pts = teamHistory.map((s, i) => [X(i), Y(s[key])]);
+        const last = pts[n - 1];
+        return (n > 1 ? `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` : '') +
+          pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i === n - 1 ? 4 : 2.6}" fill="${color}"/>`).join('');
       };
-      svg.innerHTML = '<line x1="0" y1="40" x2="200" y2="40" stroke="#e1eae5" stroke-width="1" vector-effect="non-scaling-stroke"/>' + line('stress', '#e8553d') + line('trust', '#1f9d8f');
+      svg.innerHTML = [25, 50, 75].map(v => `<line x1="0" y1="${Y(v)}" x2="300" y2="${Y(v)}" stroke="#e1eae5" stroke-width="1"/>`).join('') +
+        `<line id="sparkMark" x1="0" y1="4" x2="0" y2="96" stroke="#8aa097" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>` +
+        line('stress', '#e8553d') + line('trust', '#1f9d8f');
+      if (!svg.dataset.wired) {
+        svg.dataset.wired = '1';
+        const show = e => {
+          const r = svg.getBoundingClientRect(), m = teamHistory.length;
+          const vx = (e.clientX - r.left) / r.width * 300;
+          const i = m === 1 ? 0 : clampN(Math.round((vx - 12) / 276 * (m - 1)), 0, m - 1);
+          const cx = m === 1 ? 150 : 12 + (i / (m - 1)) * 276, p = teamHistory[i], q = teamHistory[i - 1];
+          const mark = document.getElementById('sparkMark'); mark.setAttribute('x1', cx); mark.setAttribute('x2', cx); mark.style.display = '';
+          const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v);
+          const tip = document.getElementById('sparkTip');
+          tip.innerHTML = i === 0
+            ? `<b>Начало диалога</b>Стресс ${p.stress}%, доверие ${p.trust}%`
+            : `<b>Ваш ответ ${i}</b>«${escHtml((p.msg || '').slice(0, 90))}${(p.msg || '').length > 90 ? '…' : ''}»<span>Стресс ${sg(p.stress - q.stress)} → ${p.stress}%, доверие ${sg(p.trust - q.trust)} → ${p.trust}%</span>${p.note ? `<span>${escHtml(p.note)}</span>` : ''}`;
+          tip.classList.remove('hidden');
+          tip.style.left = clampN(cx / 300 * r.width - tip.offsetWidth / 2, 0, Math.max(0, r.width - tip.offsetWidth)) + 'px';
+        };
+        const hide = () => { document.getElementById('sparkTip').classList.add('hidden'); const mk = document.getElementById('sparkMark'); if (mk) mk.style.display = 'none'; };
+        svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show);
+        svg.addEventListener('pointerleave', hide);
+      }
     }
 
+    // Невербалика: то, что руководитель «видит» в жизни по позе, взгляду и голосу
     function stateNoteText() {
       const s = teamState.stress, t = teamState.trust;
-      const a = s >= 75 ? 'на пределе' : s >= 40 ? 'напряжён' : 'спокоен';
-      const b = t >= 70 ? 'доверяет вам' : t >= 40 ? 'присматривается' : 'закрыт';
-      return `Сейчас сотрудник <b>${a}</b> и <b>${b}</b>.`;
+      let cue;
+      if (s >= 75 && t < 40) cue = 'Избегает взгляда, отвечает коротко, плечи опущены.';
+      else if (s >= 75) cue = 'Напряжён и говорит быстро, но смотрит на вас: ждёт реакции.';
+      else if (s >= 40 && t < 40) cue = 'Сидит закрыто, скрестив руки, и взвешивает каждое слово.';
+      else if (s >= 40) cue = 'Дышит ровнее, чаще кивает, отвечает развёрнуто.';
+      else cue = 'Расслабил плечи, голос спокойный, поза открытая.';
+      return `<b>Что вы видите:</b> ${cue}`;
     }
 
     window.addEventListener('DOMContentLoaded', buildDesktop);
