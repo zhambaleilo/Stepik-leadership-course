@@ -168,6 +168,12 @@
     .c-score { font-size: 18px; font-weight: 800; }
     .c-quote { font-size: 13px; font-style: italic; color: var(--text-muted); background: white; padding: 8px; border-radius: 6px; margin-bottom: 8px; }
     .c-comment { font-size: 13px; line-height: 1.5; color: var(--text-main); }
+    .outcome { margin: 24px auto 0; max-width: 520px; text-align: left; border: 2px solid #e2e8f0; border-radius: 14px; padding: 16px 18px; background: #f8fafc; }
+    .outcome h3 { font-size: 15px; margin-bottom: 10px; }
+    .outcome .o-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 15px; }
+    .outcome .o-row b { font-variant-numeric: tabular-nums; }
+    .outcome .up { color: #15803d; } .outcome .down { color: #b91c1c; }
+    .outcome .verdict { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; font-weight: 600; line-height: 1.5; }
     .hidden { display: none !important; }
     @media (max-width: 768px) {
       body { padding: 10px; overflow: auto; }
@@ -300,13 +306,6 @@
     .task input { width: 18px; height: 18px; margin-top: 2px; accent-color: #0b6f64; flex: none; }
     .task b { display: block; } .task span { color: var(--mute); }
     .task input:checked ~ div { opacity: .55; text-decoration: line-through; }
-    .dash-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; margin: 14px 0 22px; color: var(--mute); }
-    .dash-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-    .spark { width: 100%; height: auto; aspect-ratio: 3 / 1; background: #fff; border: 1px solid #d6e1db; border-radius: 10px; display: block; touch-action: none; cursor: crosshair; }
-    .spark-wrap { position: relative; }
-    .tip { position: absolute; bottom: calc(100% + 6px); width: 220px; max-width: 100%; padding: 8px 10px; border-radius: 8px; background: #17262a; color: #eaf4f0; font-size: 12.5px; line-height: 1.4; box-shadow: 0 8px 20px rgba(0,0,0,.35); pointer-events: none; z-index: 5; }
-    .tip b { display: block; margin-bottom: 2px; } .tip span { display: block; margin-top: 4px; color: #a4bdb6; }
-    .dash-legend .hint { margin-left: auto; font-size: 11.5px; }
     .s-note { margin-bottom: 14px; line-height: 1.5; }
 
     /* уведомления */
@@ -428,6 +427,7 @@
         </div>
         <div class="goe-line" id="goeLine">Исполнение (GOE): +0 из +0</div>
         <p id="summaryText" style="margin-top: 16px; color: var(--text-muted); line-height: 1.6;"></p>
+        <div class="outcome" id="outcomeBox"></div>
       </div>
 
       <div class="block-title">🛡️ База: минимум безопасного разговора</div>
@@ -735,7 +735,11 @@
 
           applyElements(data.updated_elements);
         } else if (data.error) {
-          addMessageToChat('assistant', 'Ошибка: ' + data.error);
+          console.error('scenario-chat error:', data.error);
+          rollbackLastMessage(message);
+          addMessageToChat('assistant', data.error === 'rate_limited'
+            ? 'Сервис ИИ сейчас перегружен. Подождите минуту и отправьте сообщение ещё раз.'
+            : 'Не удалось получить ответ. Отправьте сообщение ещё раз.');
         } else {
           addMessageToChat('assistant', 'Неожиданный ответ сервера.');
         }
@@ -749,6 +753,15 @@
       sendBtn.disabled = false;
       input.disabled = false;
       input.focus();
+    }
+
+    // Ответ не пришёл: убираем неотвеченную реплику из истории и чата, возвращаем текст в поле
+    function rollbackLastMessage(text) {
+      if (chatHistory.length && chatHistory[chatHistory.length - 1].role === 'user') chatHistory.pop();
+      const mine = document.querySelectorAll('#chatMessages .message.user');
+      if (mine.length) mine[mine.length - 1].remove();
+      const input = document.getElementById('chatInput');
+      if (input && !input.value) input.value = text;
     }
 
     function handleKeyPress(event) {
@@ -778,7 +791,6 @@
       if (delta && Number.isFinite(+delta.stress) && Number.isFinite(+delta.trust)) {
         teamState.stress = clampN(teamState.stress + Math.round(+delta.stress), 0, 100);
         teamState.trust = clampN(teamState.trust + Math.round(+delta.trust), 0, 100);
-        teamHistory.push({ ...teamState, msg: userMessage, note: delta.note || '' });
         renderTeamState();
         return;
       }
@@ -794,7 +806,6 @@
         teamState.trust = Math.max(0, teamState.trust - 10);
         teamState.stress = Math.min(100, teamState.stress + 5);
       }
-      teamHistory.push({ ...teamState, msg: userMessage });
       renderTeamState();
     }
 
@@ -805,7 +816,6 @@
       document.getElementById('trustValue').textContent = teamState.trust + '%';
       const note = document.getElementById('stateNote');
       if (note) note.innerHTML = stateNoteText();
-      renderDash();
     }
 
     async function finishDialogue() {
@@ -890,6 +900,7 @@
       document.getElementById('scoreValue').textContent = basePct + '%';
       document.getElementById('goeLine').textContent = `Исполнение (GOE): +${evaluation.goe_score} из +${evaluation.goe_max}`;
       document.getElementById('summaryText').textContent = evaluation.summary || 'Разбор недоступен';
+      renderOutcome();
 
       try {
         const baseCriteria = evaluation.criteria.filter(c => c.group === 'base');
@@ -902,6 +913,26 @@
         document.getElementById('baseCriteria').innerHTML = '<p style="color: var(--danger);">Ошибка отображения критериев</p>';
         document.getElementById('goeCriteria').innerHTML = '<p style="color: var(--danger);">Ошибка отображения критериев</p>';
       }
+    }
+
+    // Как изменилось состояние сотрудника за разговор
+    function renderOutcome() {
+      const box = document.getElementById('outcomeBox'); if (!box) return;
+      const dS = teamState.stress - teamStart.stress, dT = teamState.trust - teamStart.trust;
+      const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v);
+      // для стресса снижение — хорошо, для доверия — рост
+      const cls = (v, goodUp) => v === 0 ? '' : ((v > 0) === goodUp ? 'up' : 'down');
+      let verdict;
+      if (dS < 0 && dT > 0) verdict = 'Сотрудник стал спокойнее и больше доверяет вам: разговор помог.';
+      else if (dS > 0 && dT < 0) verdict = 'Сотруднику стало тяжелее, и доверие упало: разговор ухудшил ситуацию.';
+      else if (dS === 0 && dT === 0) verdict = 'Состояние сотрудника не изменилось.';
+      else if (dS <= 0 && dT <= 0) verdict = 'Сотрудник немного успокоился, но доверие к вам не выросло.';
+      else if (dS >= 0 && dT >= 0) verdict = 'Сотрудник стал доверять вам больше, но напряжение не спало.';
+      else verdict = 'Результат смешанный: часть изменений к лучшему, часть к худшему.';
+      box.innerHTML = `<h3>Состояние сотрудника после разговора</h3>
+        <div class="o-row"><span>Уровень стресса</span><b class="${cls(dS, false)}">${teamStart.stress}% → ${teamState.stress}% (${sg(dS)})</b></div>
+        <div class="o-row"><span>Доверие к вам</span><b class="${cls(dT, true)}">${teamStart.trust}% → ${teamState.trust}% (${sg(dT)})</b></div>
+        <div class="verdict">${verdict}</div>`;
     }
 
     function renderBlock(list) {
@@ -949,7 +980,7 @@
     };
     const svgIcon = id => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[id]}</svg>`;
     const WM = { z: 10, wins: {}, unlocked: new Set(), active: null, built: false, maxCount: 0 };
-    let teamHistory = [];
+    let teamStart = { stress: 92, trust: 45 };
     const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
     const deskEl = () => document.getElementById('desk');
     const hhmm = () => new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -971,8 +1002,6 @@
             <div class="stat-bar"><div class="stat-fill stress" id="stressBar" style="width:92%"></div></div></div>
           <div class="stat-row"><div class="stat-label"><span>Доверие к вам</span><span id="trustValue">45%</span></div>
             <div class="stat-bar"><div class="stat-fill trust" id="trustBar" style="width:45%"></div></div></div>
-          <div class="dash-legend"><span><i style="background:#e8553d"></i>Стресс</span><span><i style="background:#1f9d8f"></i>Доверие</span><span class="hint">Наведите на график: что вы сказали и что изменилось</span></div>
-          <div class="spark-wrap"><svg class="spark" id="sparkSvg" viewBox="0 0 300 100" role="img" aria-label="Динамика стресса и доверия по ходу диалога"></svg><div class="tip hidden" id="sparkTip" role="status"></div></div>
         </div>`,
       context: () => `<div class="pad ctx" id="ctxBody"></div>`,
       mail: () => `<div class="mail"><aside><div class="on">Входящие · 1</div><div>Отправленные</div><div>Черновики</div></aside>
@@ -1068,10 +1097,10 @@
       const chat = { l: left0, t: 18, w: cw, h: Math.min(H - 36, 660) };
       const rx = chat.l + chat.w + 22, rw = clampN(W - rx - 18, 280, 360);
       if (id === 'chat') return chat;
-      if (id === 'state') return { l: rx, t: 18, w: rw, h: 392 };
-      if (id === 'context') return { l: rx, t: 428, w: rw, h: Math.max(150, Math.min(240, H - 428 - 18)) };
+      if (id === 'state') return { l: rx, t: 18, w: rw, h: 236 };
+      if (id === 'context') return { l: rx, t: 272, w: rw, h: Math.max(150, Math.min(260, H - 272 - 18)) };
       const k = WM.maxCount++ % 4;
-      return { l: clampN(rx + 16 + k * 30, left0, W - 380), t: Math.max(18, Math.min(440 + k * 26, H - 270)), w: 360, h: 250 };
+      return { l: clampN(rx + 16 + k * 30, left0, W - 380), t: Math.max(18, Math.min(300 + k * 26, H - 270)), w: 360, h: 250 };
     }
     function placeWin(id, r) {
       const d = deskEl(), el = WM.wins[id].el;
@@ -1228,7 +1257,6 @@
         
         if (fresh.length === 1) notify(fresh[0]); else notifyMany(fresh);
       }
-      renderDash();
     }
 
     function resetDesktop(scenario) {
@@ -1242,7 +1270,7 @@
         w.el.style.zIndex = '';
       });
       document.querySelectorAll('.dicon').forEach(b => { b.hidden = !APPS[b.dataset.app].always; b.classList.remove('sel'); b.querySelector('.badge')?.remove(); });
-      teamHistory = [{ ...teamState, msg: '' }];
+      teamStart = { ...teamState };
       setFinishState(false);
       // контекст дня
       const ctx = document.getElementById('ctxBody');
@@ -1262,42 +1290,6 @@
       const b = document.querySelector('.btn-finish'); if (!b) return;
       b.disabled = busy;
       b.querySelector('.fin-t').textContent = busy ? 'Анализируем диалог…' : 'Завершить диалог';
-    }
-
-    function renderDash() {
-      const svg = document.getElementById('sparkSvg'); if (!svg) return;
-      const n = teamHistory.length;
-      if (!n) return;
-      const X = i => (n === 1 ? 150 : 12 + (i / (n - 1)) * 276), Y = v => 90 - (v / 100) * 80;
-      const line = (key, color) => {
-        const pts = teamHistory.map((s, i) => [X(i), Y(s[key])]);
-        const last = pts[n - 1];
-        return (n > 1 ? `<polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` : '') +
-          pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i === n - 1 ? 4 : 2.6}" fill="${color}"/>`).join('');
-      };
-      svg.innerHTML = [25, 50, 75].map(v => `<line x1="0" y1="${Y(v)}" x2="300" y2="${Y(v)}" stroke="#e1eae5" stroke-width="1"/>`).join('') +
-        `<line id="sparkMark" x1="0" y1="4" x2="0" y2="96" stroke="#8aa097" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>` +
-        line('stress', '#e8553d') + line('trust', '#1f9d8f');
-      if (!svg.dataset.wired) {
-        svg.dataset.wired = '1';
-        const show = e => {
-          const r = svg.getBoundingClientRect(), m = teamHistory.length;
-          const vx = (e.clientX - r.left) / r.width * 300;
-          const i = m === 1 ? 0 : clampN(Math.round((vx - 12) / 276 * (m - 1)), 0, m - 1);
-          const cx = m === 1 ? 150 : 12 + (i / (m - 1)) * 276, p = teamHistory[i], q = teamHistory[i - 1];
-          const mark = document.getElementById('sparkMark'); mark.setAttribute('x1', cx); mark.setAttribute('x2', cx); mark.style.display = '';
-          const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v);
-          const tip = document.getElementById('sparkTip');
-          tip.innerHTML = i === 0
-            ? `<b>Начало диалога</b>Стресс ${p.stress}%, доверие ${p.trust}%`
-            : `<b>Ваш ответ ${i}</b>«${escHtml((p.msg || '').slice(0, 90))}${(p.msg || '').length > 90 ? '…' : ''}»<span>Стресс ${sg(p.stress - q.stress)} → ${p.stress}%, доверие ${sg(p.trust - q.trust)} → ${p.trust}%</span>${p.note ? `<span>${escHtml(p.note)}</span>` : ''}`;
-          tip.classList.remove('hidden');
-          tip.style.left = clampN(cx / 300 * r.width - tip.offsetWidth / 2, 0, Math.max(0, r.width - tip.offsetWidth)) + 'px';
-        };
-        const hide = () => { document.getElementById('sparkTip').classList.add('hidden'); const mk = document.getElementById('sparkMark'); if (mk) mk.style.display = 'none'; };
-        svg.addEventListener('pointermove', show); svg.addEventListener('pointerdown', show);
-        svg.addEventListener('pointerleave', hide);
-      }
     }
 
     // Невербалика: то, что руководитель «видит» в жизни по позе, взгляду и голосу
