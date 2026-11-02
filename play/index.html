@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>RPG-симулятор руководителя · Демо — My Pro Skills</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@700;800&family=Onest:wght@400;500;600;700&family=Unbounded:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
   <style>
@@ -110,21 +110,165 @@
     .features-list li::before { content: '✓'; position: absolute; left: 0; color: #16a34a; font-weight: bold; }
     .cta-btn-demo { display: block; width: 100%; padding: 14px; text-align: center; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 16px; transition: background 0.2s; }
     .cta-btn-demo:hover { background: #1d4ed8; }
+    .have-pass { display: block; text-align: center; margin-top: 10px; font-size: 13px; color: #475569; }
+    .page-header .lead { font-size: 17px; color: #334155; max-width: 640px; margin: 0 auto 10px; line-height: 1.5; }
+    .page-header .byline { font-size: 14px; color: #64748b; margin: 0 0 10px; }
+    .page-header .byline a { color: #2563eb; }
+    .final-summary { margin-top: 14px; padding: 12px 14px; background: #f1f5f9; border-radius: 10px; font-size: 13.5px; line-height: 1.55; color: #334155; }
+    .final-summary .alt { display: block; margin-top: 6px; color: #64748b; }
+    .btn-retry { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 1.5px solid #2563eb; background: #fff; color: #1d4ed8; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer; }
+    .btn-retry:hover { background: #eff6ff; }
+    .btn-retry:focus-visible, .cta-btn-demo:focus-visible, .have-pass:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+    .inside { margin-top: 40px; }
+    .inside h2 { font-size: 22px; margin: 0 0 6px; color: #0f172a; text-align: center; }
+    .inside-lead { text-align: center; color: #64748b; font-size: 14px; margin: 0 0 20px; }
+    .shot { margin: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .shot img { display: block; width: 100%; height: auto; }
+    .shot figcaption { padding: 12px 16px 14px; font-size: 13.5px; line-height: 1.55; color: #475569; }
+    .shot figcaption b { color: #0f172a; }
+    .shot-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    @media (max-width: 700px) { .shot-row { grid-template-columns: 1fr; } }
+
+    /* === СТРУКТУРА: полосы-разделы === */
+    html { scroll-behavior: smooth; scroll-padding-top: 12px; }
+    body { background: #fff; color: #0f172a; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 0 20px; }
+    .band { padding: 56px 0; }
+    .band-hero { background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%); padding: 20px 0 52px; border-bottom: 1px solid #bfdbfe; }
+    .band-demo { background: #f8fafc; }
+    .band-video { background: #fff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+    .band-inside { background: #eef2f7; }
+    .band-access { background: #0f172a; color: #fff; }
+
+    .hero { text-align: left; max-width: 760px; }
+    .hero .back-link { margin-bottom: 36px; }
+    .hero-kicker { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: #1d4ed8; }
+    .hero h1 { font-family: 'Manrope','Inter',sans-serif; font-size: clamp(32px, 6vw, 48px); line-height: 1.08; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; margin: 0 0 18px; }
+    .hero h1 span { display: block; font-weight: 500; color: #334155; font-size: .62em; letter-spacing: -0.01em; margin-top: 6px; }
+    .hero .lead { font-size: clamp(17px, 2.4vw, 20px); line-height: 1.55; color: #0f172a; max-width: 640px; margin: 0 0 18px; text-align: left; }
+    .hero .byline { font-size: 14.5px; color: #475569; margin: 0 0 28px; text-align: left; }
+    .hero .byline a { color: #1d4ed8; font-weight: 600; }
+    .path { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: s; }
+    .path a { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px 10px 10px; background: #fff; border: 1px solid #93c5fd; border-radius: 999px; color: #0f172a; text-decoration: none; font-weight: 600; font-size: 14.5px; transition: background .15s, border-color .15s; }
+    .path a:hover { background: #eff6ff; border-color: #2563eb; }
+    .path a:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+    .path li { counter-increment: s; }
+    .path a::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; background: #2563eb; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+
+    .band-head { display: flex; align-items: flex-start; gap: 16px; margin: 0 0 24px; }
+    .step-num { flex: none; width: 44px; height: 44px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font: 800 20px 'Manrope','Inter',sans-serif; }
+    .band-head h2, .band-title { margin: 0; font-family: 'Manrope','Inter',sans-serif; font-size: clamp(22px, 3.4vw, 28px); line-height: 1.2; font-weight: 800; letter-spacing: -0.01em; color: #0f172a; }
+    .band-head p, .band-sub { margin: 4px 0 0; font-size: 15.5px; line-height: 1.5; color: #475569; }
+    .band-access .band-head h2 { color: #fff; }
+    .band-access .band-head p { color: #cbd5e1; }
+    .band-access .step-num { background: #3b82f6; }
+
+    .band-demo .demo-section { }
+    .band-video .video-section { background: transparent; box-shadow: none; border: 0; padding: 0; }
+    .band-inside .inside { margin: 0; }
+    .band-inside .band-title, .band-inside .band-sub { text-align: left; }
+    .band-inside .band-sub { margin: 4px 0 24px; }
+    .access-card { max-width: 640px; }
+    .access-card p { color: #cbd5e1; font-size: 16px; line-height: 1.6; margin: 0 0 22px; }
+    .band-access .cta-section { all: unset; }
+    @media (max-width: 600px) { .band { padding: 40px 0; } .band-hero { padding-bottom: 40px; } .band-head { gap: 12px; } .step-num { width: 38px; height: 38px; font-size: 17px; } }
+
+    /* === ДЕМО В СТИЛЕ РАБОЧЕГО СТОЛА (как game.html) === */
+    .band-demo .demo-section { position: relative; padding: 28px; border-radius: 16px; overflow: hidden; font-family: 'Onest','Inter',sans-serif; color: #16231f;
+      background:
+        radial-gradient(900px 520px at 85% 0%, rgba(111,214,200,.26), transparent 60%),
+        radial-gradient(700px 460px at 5% 100%, rgba(244,185,66,.13), transparent 60%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 56px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.028) 0 1px, transparent 1px 56px),
+        linear-gradient(160deg, #16313a 0%, #10222a 55%, #0b191e 100%);
+      box-shadow: 0 18px 40px rgba(11,25,30,.28); }
+    .band-demo .desk-mark { position: absolute; right: 22px; bottom: 12px; font-family: 'Unbounded','Onest',sans-serif; font-weight: 700; font-size: clamp(16px,2.6vw,30px); letter-spacing: -.02em; color: rgba(255,255,255,.07); pointer-events: none; user-select: none; }
+    .band-demo .workspace { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0,1.7fr) minmax(0,1fr); gap: 20px; align-items: start; min-height: 0; background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
+    .band-demo .chat-section, .band-demo .side-panel { background: #f8fbf9; border: 0; border-radius: 10px; overflow: hidden; padding: 0; gap: 0; height: auto; box-shadow: 0 8px 22px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.1); }
+    .band-demo .chat-section { box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 0 1.5px rgba(111,214,200,.7); }
+    .wtitle { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 4px 0 10px; background: #e6eeea; border-bottom: 1px solid #cfdcd6; user-select: none; }
+    .band-demo .side-panel .wtitle { background: #eef3f0; }
+    .band-demo .side-panel .wname { color: #5f6f69; }
+    .wicon { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; color: #fff; flex: none; }
+    .wicon svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .wname { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wbtns { display: flex; gap: 2px; }
+    .wb { width: 38px; height: 30px; display: grid; place-items: center; color: #16231f; }
+    .wb svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+    .band-demo .chat-header { background: #fff; border-bottom: 1px solid #dbe5e0; padding: 10px 14px; gap: 10px; }
+    .band-demo .avatar-circle { width: 34px; height: 34px; background: #d6604a; font-size: 14px; }
+    .band-demo .user-info h3 { font-size: 14px; line-height: 1.2; }
+    .band-demo .status-dot { color: #2d7a3f; font-weight: 600; }
+    .band-demo .status-dot::before { background: #2d7a3f; }
+    .band-demo .messages-area { background: #eaf1ee; padding: 16px 14px; gap: 10px; max-height: 300px; min-height: 150px; }
+    .band-demo .bubble { padding: 9px 13px; font-size: 14.5px; border-radius: 14px; }
+    .band-demo .msg-row.ai .bubble { background: #fff; border: 1px solid #d6e1db; color: #16231f; border-bottom-left-radius: 4px; border-top-left-radius: 14px; }
+    .band-demo .msg-row.user .bubble { background: #0b6f64; color: #fff; border-bottom-right-radius: 4px; border-top-right-radius: 14px; }
+    .band-demo .input-zone { background: #fff; border-top: 1px solid #dbe5e0; padding: 12px; }
+    .band-demo .hint-btn { border: 1.5px solid #b9c8c1; border-radius: 12px; background: #fff; color: #16231f; font-family: inherit; }
+    .band-demo .hint-btn:hover { background: #eef3f0; border-color: #0b7d71; }
+    .band-demo .hint-btn.primary { background: #e3f4f1; border-color: #0b7d71; color: #0b4f47; }
+    .band-demo .hint-btn.secondary { background: #fdeeea; border-color: #e8a496; color: #9c2f1b; }
+    .band-demo .hint-btn.example { background: #fff; color: #4a5a54; }
+    .band-demo .fake-input input { min-height: 42px; border: 1.5px solid #cfdcd6; border-radius: 21px; padding: 8px 14px; background: #f4f8f6; font-family: inherit; }
+    .band-demo .fake-input button { width: 42px; height: 42px; border-radius: 50%; background: #0b6f64; color: #fff; opacity: .5; padding: 0; }
+    .band-demo :focus-visible { outline: 3px solid #0b7d71; outline-offset: 2px; }
+
+    .band-demo .side-body { padding: 14px 16px; }
+    .band-demo .side-panel .panel-card { background: none; border: 0; border-radius: 0; box-shadow: none; padding: 0; }
+    .band-demo #view-placeholder { padding: 24px 8px !important; color: #4a5a54 !important; font-size: 14px; }
+    .band-demo #view-placeholder small { color: #6a7a74; }
+    .band-demo .metric-item { margin-bottom: 14px; }
+    .band-demo .metric-label { font-size: 13.5px; color: #16231f; margin-bottom: 6px; }
+    .band-demo .progress-track { height: 10px; background: #dbe5e0; border-radius: 5px; }
+    .band-demo .progress-fill { border-radius: 5px; }
+    .band-demo #stressBar { background: #e8553d; } .band-demo #trustBar { background: #1f9d8f; }
+    .band-demo .panel-title { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 700; color: #16231f; margin-bottom: 8px; }
+    .band-demo .result-box { border-top: 0; padding-top: 0; margin-top: 0; }
+    .band-demo .result-item { color: #16231f; border-bottom: 1px solid #e1eae5; }
+    .band-demo .final-summary { background: #eaf1ee; border: 1px solid #d6e1db; color: #16231f; }
+    .band-demo .final-summary .alt { color: #4a5a54; }
+    .band-demo .btn-retry { border-color: #0b6f64; color: #0b4f47; border-radius: 10px; font-family: inherit; }
+    .band-demo .btn-retry:hover { background: #e3f4f1; }
+    .band-demo .next-steps-box { background: #eef3f0; border-color: #d6e1db; }
+    .band-demo .features-list { padding-left: 0; margin: 0; }
+    .band-demo .cta-btn-demo { background: #0b6f64; border-radius: 10px; }
+    .band-demo .cta-btn-demo:hover { background: #0a5d54; }
+    .band-demo .have-pass { color: #4a5a54; }
+    .band-demo .feedback-hint { align-self: center; font-size: 12.5px; line-height: 1.4; padding: 5px 12px; border-radius: 999px; background: #fff; border: 1px solid #d6e1db; color: #4a5a54; text-align: center; animation: fadeIn .3s ease; }
+    .band-demo .feedback-hint.fb-green { background: #e3f4f1; border-color: #9fd6cd; color: #0b4f47; }
+    .band-demo .feedback-hint.fb-red { background: #fdeeea; border-color: #e8a496; color: #9c2f1b; }
+    .band-demo .desk-mark { display: none; }
+    @media (min-width: 1100px) { .band-demo .desk-mark { display: block; } }
+    @media (max-width: 800px) { .band-demo .demo-section { padding: 14px; } .band-demo .workspace { grid-template-columns: 1fr; gap: 14px; } .band-demo .side-panel { order: 2; border-top: 0; } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="back-link">← На главную</a>
-    
-    <div class="page-header">
-      <h1>🎮 RPG-симулятор руководителя</h1>
-      <p>Попробуйте демо-сцену прямо сейчас или посмотрите видео о том, как работает полная версия.</p>
+  <header class="band-hero">
+    <div class="wrap hero">
+      <a href="/" class="back-link">← На главную</a>
+      <p class="hero-kicker">Лаборатория лидеров</p>
+      <h1>RPG-симулятор руководителя</h1>
+      <p class="lead">Тренажёр сложных разговоров. Вы пишете реплику, ИИ-сотрудник отвечает, ИИ-судья разбирает ваш ответ по 11 критериям.</p>
+      <p class="byline">Автор: Жамбал Хумаев, L&amp;D и внедрение ИИ · <a href="https://my-pro-skills.ru">my-pro-skills.ru</a></p>
+      <ol class="path" aria-label="Как пройти страницу">
+        <li><a href="#demo">Попробуйте демо</a></li>
+        <li><a href="#video">Посмотрите видео</a></li>
+        <li><a href="#access">Получите доступ</a></li>
+      </ol>
     </div>
+  </header>
 
+  <main>
     <!-- БЛОК 1: ДЕМО -->
+    <section class="band band-demo" id="demo" aria-labelledby="demoTitle">
+     <div class="wrap">
+      <div class="band-head"><span class="step-num" aria-hidden="true">1</span><div><h2 id="demoTitle">Попробуйте демо</h2><p>Короткая сцена: выберите реплику и посмотрите, как отреагирует сотрудник.</p></div></div>
     <div class="demo-section">
       <div class="workspace">
         <div class="chat-section">
+          <div class="wtitle" aria-hidden="true"><span class="wicon" style="background:#1f9d8f"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span class="wname">Чат: Тяжёлый день</span><span class="wbtns"><span class="wb"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></span><span class="wb"><svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg></span><span class="wb"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg></span></span></div>
           <div class="chat-header">
             <div class="avatar-circle">А</div>
             <div class="user-info">
@@ -140,8 +284,8 @@
           <div class="input-zone">
             <div class="hints-grid" id="hints">
               <button class="hint-btn example" onclick="showExample()">💡 Показать эталонный ответ</button>
-              <button class="hint-btn primary" onclick="handleAction('empathy')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
-              <button class="hint-btn secondary" onclick="handleAction('toxic')">«Соберись, у всех бывает»</button>
+              <button class="hint-btn primary" onclick="handleAction('E')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
+              <button class="hint-btn secondary" onclick="handleAction('T')">«Соберись, у всех бывает»</button>
             </div>
             <div class="fake-input">
               <input type="text" placeholder="Демо ограничено выбором кнопок..." disabled>
@@ -151,27 +295,28 @@
         </div>
         
         <div class="side-panel">
+          <div class="wtitle" aria-hidden="true"><span class="wicon" style="background:#e8553d"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg></span><span class="wname">Состояние сотрудника</span><span class="wbtns"><span class="wb"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></span><span class="wb"><svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg></span><span class="wb"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg></span></span></div>
+          <div class="side-body">
           <!-- Плейсхолдер -->
           <div id="view-placeholder" class="panel-view panel-card active" style="text-align:center; padding: 40px 20px; color:#94a3b8;">
-            Интерактивные элементы появятся здесь.<br><small>Выберите вариант ответа в чате слева.</small>
+            Состояние сотрудника появится здесь.<br><small>Выберите реплику руководителя в чате.</small>
           </div>
 
           <!-- Дашборд -->
           <div id="view-dashboard" class="panel-view panel-card">
-            <div class="panel-title">📊 Состояние команды</div>
-            <div class="metric-item">
+                        <div class="metric-item">
               <div class="metric-label"><span>Уровень стресса</span><span id="stressValue">92%</span></div>
               <div class="progress-track"><div id="stressBar" class="progress-fill fill-red" style="width:92%"></div></div>
             </div>
             <div class="metric-item">
-              <div class="metric-label"><span>Доверие к руководителю</span><span id="trustValue">45%</span></div>
+              <div class="metric-label"><span>Доверие к вам</span><span id="trustValue">45%</span></div>
               <div class="progress-track"><div id="trustBar" class="progress-fill fill-amber" style="width:45%"></div></div>
             </div>
           </div>
 
           <!-- Финал -->
           <div id="view-final" class="panel-view panel-card result-box">
-            <div class="panel-title">📈 Результат диалога</div>
+            <div class="panel-title">Результат диалога</div>
             <div class="result-item" id="res-validation">
               <span>Признание состояния</span>
               <span class="badge-success">2/2 ✅</span>
@@ -182,23 +327,32 @@
               <span class="badge-success">2/2 ✅</span>
               <span class="badge-fail">0/2 ❌</span>
             </div>
+            <div class="final-summary" id="finalSummary" aria-live="polite"></div>
+            <button type="button" class="btn-retry" onclick="resetDemo()">Пройти заново другим ответом</button>
             <div class="next-steps-box">
-              <strong style="display:block;margin-bottom:8px;font-size:14px;color:#0f172a;">✨ Хотите полный контроль?</strong>
+              <strong style="display:block;margin-bottom:8px;font-size:14px;color:#0f172a;">Хотите полный контроль?</strong>
               <ul class="features-list">
                 <li>Пишите свои ответы свободно</li>
                 <li>ИИ-судья оценивает по 11 критериям</li>
                 <li>Живая реакция сотрудника</li>
               </ul>
             </div>
-            <a href="game.html" class="cta-btn-demo">🔒 Открыть полную версию</a>
+            <a href="https://t.me/Zhambaleilo?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%9F%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D0%BB%20%D0%B4%D0%B5%D0%BC%D0%BE%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D0%B0%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB%20%D0%B8%20%D1%85%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D0%B4%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20%D0%BF%D0%BE%D0%BB%D0%BD%D0%BE%D0%B9%20%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B8." target="_blank" rel="noopener" class="cta-btn-demo">Попросить доступ к полной версии</a>
+            <a href="game.html" class="have-pass">Уже есть пароль? Войти</a>
+          </div>
           </div>
         </div>
       </div>
+      <span class="desk-mark" aria-hidden="true">Лаборатория лидеров</span>
     </div>
 
-    <div class="section-divider">Как это работает в полной версии</div>
+     </div>
+    </section>
 
     <!-- БЛОК 2: ВИДЕО (LAZY LOAD) -->
+    <section class="band band-video" id="video" aria-labelledby="videoTitle">
+     <div class="wrap">
+      <div class="band-head"><span class="step-num" aria-hidden="true">2</span><div><h2 id="videoTitle">Посмотрите, как это работает в полной версии</h2><p>Видео о полной версии: рабочий стол, диалог, разбор.</p></div></div>
     <div class="video-section">
       <div class="video-lazy-wrapper" onclick="loadVideo(this)">
         <!-- Превьюшка YouTube -->
@@ -212,28 +366,80 @@
         Это не тест с вариантами ответов. Руководитель пишет реплику своими словами, ИИ-сотрудник реагирует в реальном времени, ИИ-судья разбирает ответ по 11 критериям.
       </p>
     </div>
+     </div>
+    </section>
+
+    <!-- БЛОК 2.5: ЧТО ВНУТРИ -->
+    <section class="band band-inside" aria-labelledby="insideTitle">
+     <div class="wrap">
+    <div class="inside">
+      <h2 class="band-title" id="insideTitle">Что внутри полной версии</h2>
+      <p class="band-sub">Примеры экранов. Реплики, баллы и данные команды на них условные.</p>
+      <figure class="shot">
+        <a href="../img/demo-desktop.jpg" target="_blank" rel="noopener"><img src="../img/demo-desktop.jpg" width="1280" height="780" loading="lazy" alt="Рабочий стол руководителя: чат с сотрудником, окна «Состояние сотрудника», «Контекст дня» и «Почта», панель задач"></a>
+        <figcaption><b>Рабочий стол руководителя.</b> Чат с сотрудником, его состояние, контекст дня и почта открываются отдельными окнами. Их можно двигать, сворачивать и закрывать, как в обычной системе.</figcaption>
+      </figure>
+      <div class="shot-row">
+        <figure class="shot">
+          <a href="../img/demo-results.jpg" target="_blank" rel="noopener"><img src="../img/demo-results.jpg" width="900" height="730" loading="lazy" alt="Экран разбора: общий балл, итог по состоянию сотрудника и критерии с цитатами из диалога"></a>
+          <figcaption><b>Разбор диалога.</b> ИИ-судья цитирует вашу реплику, ставит балл по критерию и объясняет оценку. В конце видно, как изменилось состояние сотрудника.</figcaption>
+        </figure>
+        <figure class="shot">
+          <a href="../img/demo-farm.jpg" target="_blank" rel="noopener"><img src="../img/demo-farm.jpg" width="1140" height="820" loading="lazy" alt="Муравьиная ферма: подземные камеры сотрудников, шкалы настроения, доверия и продуктивности"></a>
+          <figcaption><b>Муравьиная ферма.</b> Соберите команду со скрытыми стрессорами, и ИИ проживёт с ней рабочие дни: настроение, доверие и продуктивность меняются на глазах.</figcaption>
+        </figure>
+      </div>
+    </div>
+     </div>
+    </section>
 
     <!-- БЛОК 3: CTA -->
-    <div class="cta-section">
-      <h2>Получить доступ к полной версии</h2>
-      <p>Доступ предоставляется индивидуально.<br>Напишите мне в Telegram, чтобы обсудить условия.</p>
-      <a href="https://t.me/Zhambaleilo" target="_blank" class="btn-contact">✉️ Написать автору</a>
-    </div>
-  </div>
+    <section class="band band-access" id="access" aria-labelledby="accessTitle">
+     <div class="wrap">
+      <div class="band-head"><span class="step-num" aria-hidden="true">3</span><div><h2 id="accessTitle">Получите доступ к полной версии</h2><p>Доступ выдаю индивидуально.</p></div></div>
+      <div class="access-card">
+      <p>Напишите мне в Telegram или на почту: договоримся о показе или тестовом доступе.</p>
+      <a href="https://t.me/Zhambaleilo?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%9F%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D0%BB%20%D0%B4%D0%B5%D0%BC%D0%BE%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D0%B0%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB%20%D0%B8%20%D1%85%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D0%B4%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20%D0%BF%D0%BE%D0%BB%D0%BD%D0%BE%D0%B9%20%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B8." target="_blank" rel="noopener" class="btn-contact">Написать в Telegram</a>
+      <p style="margin:16px 0 0;font-size:14px"><a href="mailto:zhambalkhumaev@yandex.ru?subject=%D0%94%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D1%83%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB" style="color:#93c5fd">или на почту zhambalkhumaev@yandex.ru</a></p>
+      </div>
+     </div>
+    </section>
+  </main>
   
   <script>
+    // Ход 1 не зависит от предыстории; ход 2 зависит от того, что руководитель ответил в ходе 1.
+    // E = признал состояние, T = обесценил. Ключи хода 2: [ответ в ходе 1][ответ в ходе 2].
     const scenario = {
       turn1: {
-        empathy: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние. Диалог продолжается.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
-        toxic: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждет.", feedback: "🔴 Обесценивание. Сотрудник закрылся.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +10, trustChange: -25 }
+        E: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние. Диалог продолжается.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
+        T: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждёт.", feedback: "🔴 Обесценивание. Сотрудник закрылся.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +8, trustChange: -25 }
       },
       turn2: {
-        empathy: { userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
-        toxic: { userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему.", aiResponse: "...Хорошо.", stressChange: +15, trustChange: -20 }
+        E: {
+          E: { label: "💡 Предложить решение", userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
+          T: { label: "«Не ной, все устают»", userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему и перечёркивает начало разговора.", aiResponse: "...Хорошо.", stressChange: +20, trustChange: -25 }
+        },
+        T: {
+          E: { label: "💡 Извиниться и помочь", userText: "Алексей, я ответил резко и был неправ. Давай я заберу эту задачу, а ты возьмёшь паузу. Что тебе сейчас нужно?", feedback: "🟢 Извинение и конкретная помощь. Доверие начинает возвращаться.", aiResponse: "Не ожидал... Спасибо. Мне правда нужен перерыв.", stressChange: -12, trustChange: +12 },
+          T: { label: "«Возьми себя в руки»", userText: "Возьми себя в руки. Работа сама себя не сделает.", feedback: "🔴 Давление усиливается. Сотрудник уходит в формальные ответы.", aiResponse: "...Хорошо.", stressChange: +10, trustChange: -15 }
+        }
       }
     };
+    const SUMMARY = {
+      EE: 'Сотрудник успокоился и стал больше доверять вам.',
+      ET: 'Вы начали хорошо, но вторая реплика перечеркнула начало: итог хуже, чем в начале разговора.',
+      TE: 'Вы исправили ошибку, но не до конца: стресс снизился, а доверие всё ещё ниже, чем было в начале.',
+      TT: 'Сотрудник закрылся: стресс на максимуме, доверие почти потеряно.'
+    };
+    const PATH_LABEL = { EE: '«признать состояние» оба раза', TT: '«Соберись…» оба раза' };
 
-    let state = { turn: 1, path: null, stress: 92, trust: 45 };
+    const START = { stress: 92, trust: 45 };
+    let state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [] };
+    let INITIAL_HINTS = '', INITIAL_MESSAGES = '';
+    window.addEventListener('DOMContentLoaded', () => {
+      INITIAL_HINTS = document.getElementById('hints').innerHTML;
+      INITIAL_MESSAGES = document.getElementById('messages').innerHTML;
+    });
 
     function showExample() { alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); }
 
@@ -251,9 +457,10 @@
       if (state.turn > 2) return;
       const msgs = document.getElementById('messages');
       const hints = document.getElementById('hints');
-      const data = scenario[`turn${state.turn}`][type];
+      const data = state.turn === 1 ? scenario.turn1[type] : scenario.turn2[state.path][type];
       
       if (state.turn === 1) state.path = type;
+      state.choices.push(type);
       
       const msgDiv = document.createElement('div');
       msgDiv.className = 'msg-row user';
@@ -261,7 +468,7 @@
       msgs.appendChild(msgDiv);
       
       const hintDiv = document.createElement('div');
-      hintDiv.className = 'feedback-hint ' + (type === 'toxic' ? 'fb-red' : 'fb-green');
+      hintDiv.className = 'feedback-hint ' + (type === 'T' ? 'fb-red' : 'fb-green');
       hintDiv.innerHTML = data.feedback;
       msgs.insertBefore(hintDiv, msgDiv.nextSibling);
       
@@ -292,11 +499,9 @@
     }
 
     function getHintsForTurn(turn, prevPath) {
-      if (turn === 2) {
-        if (prevPath === 'empathy') return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Предложить решение</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Не ной, все устают»</button>`;
-        else return `<button class="hint-btn primary" onclick="handleAction('empathy')">💡 Извиниться и помочь</button><button class="hint-btn secondary" onclick="handleAction('toxic')">«Возьми себя в руки»</button>`;
-      }
-      return '';
+      if (turn !== 2) return '';
+      const d = scenario.turn2[prevPath];
+      return `<button class="hint-btn primary" onclick="handleAction('E')">${d.E.label}</button><button class="hint-btn secondary" onclick="handleAction('T')">${d.T.label}</button>`;
     }
 
     function updateMetrics(sd, td) {
@@ -310,16 +515,46 @@
       document.getElementById('trustBar').className = 'progress-fill ' + (state.trust < 30 ? 'fill-red' : state.trust < 60 ? 'fill-amber' : 'fill-green');
     }
 
+    // Итог для любой комбинации ответов, например 'ET'
+    function simulate(combo) {
+      const first = combo[0], second = combo[1];
+      let stress = START.stress, trust = START.trust;
+      [scenario.turn1[first], scenario.turn2[first][second]].forEach(d => {
+        stress = Math.max(0, Math.min(100, stress + d.stressChange));
+        trust = Math.max(0, Math.min(100, trust + d.trustChange));
+      });
+      return { stress, trust };
+    }
+
+    function renderSummary() {
+      const el = document.getElementById('finalSummary');
+      const combo = state.choices.join('');
+      const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '±') + Math.abs(v);
+      const altKey = combo === 'EE' ? 'TT' : 'EE';
+      const alt = simulate(altKey);
+      el.innerHTML = `<b>Что произошло.</b> Стресс ${START.stress}% → ${state.stress}% (${sg(state.stress - START.stress)}), доверие ${START.trust}% → ${state.trust}% (${sg(state.trust - START.trust)}). ` +
+        SUMMARY[combo] +
+        `<br><span class="alt">Для сравнения: если бы вы ответили ${PATH_LABEL[altKey]}, было бы стресс ${alt.stress}%, доверие ${alt.trust}%.</span>`;
+    }
+
+    function resetDemo() {
+      state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [] };
+      const msgs = document.getElementById('messages'), hints = document.getElementById('hints');
+      msgs.innerHTML = INITIAL_MESSAGES; msgs.scrollTop = 0;
+      hints.innerHTML = INITIAL_HINTS; hints.style.pointerEvents = 'auto'; hints.style.opacity = '1';
+      updateMetrics(0, 0);
+      switchView('view-placeholder');
+      document.getElementById('hints').querySelector('button')?.focus();
+    }
+
     function renderFinalResult() {
-      const rv = document.getElementById('res-validation');
-      const rs = document.getElementById('res-support');
-      if (state.path === 'toxic') {
-        rv.querySelector('.badge-success').style.display = 'none'; rv.querySelector('.badge-fail').style.display = 'inline-block';
-        rs.querySelector('.badge-success').style.display = 'none'; rs.querySelector('.badge-fail').style.display = 'inline-block';
-      } else {
-        rv.querySelector('.badge-success').style.display = 'inline-block'; rv.querySelector('.badge-fail').style.display = 'none';
-        rs.querySelector('.badge-success').style.display = 'inline-block'; rs.querySelector('.badge-fail').style.display = 'none';
-      }
+      renderSummary();
+      // «Признание состояния» оценивает 1-ю реплику, «Присоединение и поддержка» — 2-ю
+      [['res-validation', state.choices[0]], ['res-support', state.choices[1]]].forEach(([id, c]) => {
+        const row = document.getElementById(id), ok = c === 'E';
+        row.querySelector('.badge-success').style.display = ok ? 'inline-block' : 'none';
+        row.querySelector('.badge-fail').style.display = ok ? 'none' : 'inline-block';
+      });
     }
 
     // === LAZY LOAD VIDEO ===
