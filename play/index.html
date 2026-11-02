@@ -242,21 +242,53 @@
     .band-demo .desk-mark { display: none; }
     @media (min-width: 1100px) { .band-demo .desk-mark { display: block; } }
     @media (max-width: 800px) { .band-demo .demo-section { padding: 14px; } .band-demo .workspace { grid-template-columns: 1fr; gap: 14px; } .band-demo .side-panel { order: 2; border-top: 0; } }
+
+    /* === ВЫРАВНИВАНИЕ: единая левая граница + двухколоночные блоки === */
+    .band-hero .back-link { margin-bottom: 28px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); gap: 40px; align-items: center; }
+    .hero-text { min-width: 0; }
+    .band-hero .hero-kicker { margin-bottom: 12px; }
+    .band-hero h1 { font-size: clamp(30px, 4.6vw, 44px); }
+    .band-hero .lead { font-size: clamp(16.5px, 2vw, 19px); }
+    .hero-shot { display: block; border-radius: 14px; overflow: hidden; box-shadow: 0 24px 50px rgba(15,23,42,.28), 0 0 0 1px rgba(15,23,42,.12); transform: rotate(1.2deg); transition: transform .2s; }
+    .hero-shot:hover { transform: rotate(0); }
+    .hero-shot:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; }
+    .hero-shot img { display: block; width: 100%; height: auto; }
+    .band-access .access-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 40px; align-items: center; }
+    .band-access .band-head { margin-bottom: 16px; }
+    .access-text { margin: 0; max-width: 460px; color: #cbd5e1; font-size: 16px; line-height: 1.6; }
+    .access-card { display: grid; gap: 12px; padding: 24px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 16px; }
+    .access-card .btn-contact { justify-content: center; text-align: center; margin: 0; }
+    .btn-mail { display: flex; justify-content: center; padding: 13px 24px; border: 1.5px solid rgba(255,255,255,.35); border-radius: 8px; color: #fff; text-decoration: none; font-weight: 600; font-size: 16px; }
+    .btn-mail:hover { background: rgba(255,255,255,.08); border-color: #fff; }
+    .btn-mail:focus-visible, .access-card .btn-contact:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .access-mail { margin: 4px 0 0; text-align: center; font-size: 14px; color: #94a3b8; user-select: all; }
+    @media (max-width: 800px) {
+      .hero-grid, .band-access .access-grid { grid-template-columns: 1fr; gap: 28px; }
+      .hero-shot { transform: none; }
+    }
   </style>
 </head>
 <body>
   <header class="band-hero">
-    <div class="wrap hero">
+    <div class="wrap">
       <a href="/" class="back-link">← На главную</a>
-      <p class="hero-kicker">Лаборатория лидеров</p>
-      <h1>RPG-симулятор руководителя</h1>
-      <p class="lead">Тренажёр сложных разговоров. Вы пишете реплику, ИИ-сотрудник отвечает, ИИ-судья разбирает ваш ответ по 11 критериям.</p>
-      <p class="byline">Автор: Жамбал Хумаев, L&amp;D и внедрение ИИ · <a href="https://my-pro-skills.ru">my-pro-skills.ru</a></p>
-      <ol class="path" aria-label="Как пройти страницу">
-        <li><a href="#demo">Попробуйте демо</a></li>
-        <li><a href="#video">Посмотрите видео</a></li>
-        <li><a href="#access">Получите доступ</a></li>
-      </ol>
+      <div class="hero-grid">
+        <div class="hero-text hero">
+          <p class="hero-kicker">Лаборатория лидеров</p>
+          <h1>RPG-симулятор руководителя</h1>
+          <p class="lead">Тренажёр сложных разговоров. Вы пишете реплику, ИИ-сотрудник отвечает, ИИ-судья разбирает ваш ответ по 11 критериям.</p>
+          <p class="byline">Автор: Жамбал Хумаев, L&amp;D и внедрение ИИ · <a href="https://my-pro-skills.ru">my-pro-skills.ru</a></p>
+          <ol class="path" aria-label="Как пройти страницу">
+            <li><a href="#demo">Демо</a></li>
+            <li><a href="#video">Видео</a></li>
+            <li><a href="#access">Доступ</a></li>
+          </ol>
+        </div>
+        <a class="hero-shot" href="#demo" aria-label="Перейти к демо">
+          <img src="../img/demo-desktop.jpg" width="1280" height="780" alt="Рабочий стол руководителя: чат с сотрудником и окно «Состояние сотрудника»">
+        </a>
+      </div>
     </div>
   </header>
 
@@ -395,12 +427,15 @@
 
     <!-- БЛОК 3: CTA -->
     <section class="band band-access" id="access" aria-labelledby="accessTitle">
-     <div class="wrap">
-      <div class="band-head"><span class="step-num" aria-hidden="true">3</span><div><h2 id="accessTitle">Получите доступ к полной версии</h2><p>Доступ выдаю индивидуально.</p></div></div>
+     <div class="wrap access-grid">
+      <div>
+        <div class="band-head"><span class="step-num" aria-hidden="true">3</span><div><h2 id="accessTitle">Получите доступ к полной версии</h2></div></div>
+        <p class="access-text">Доступ выдаю индивидуально. Напишите мне в Telegram или на почту: договоримся о показе или тестовом доступе.</p>
+      </div>
       <div class="access-card">
-      <p>Напишите мне в Telegram или на почту: договоримся о показе или тестовом доступе.</p>
-      <a href="https://t.me/Zhambaleilo?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%9F%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D0%BB%20%D0%B4%D0%B5%D0%BC%D0%BE%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D0%B0%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB%20%D0%B8%20%D1%85%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D0%B4%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20%D0%BF%D0%BE%D0%BB%D0%BD%D0%BE%D0%B9%20%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B8." target="_blank" rel="noopener" class="btn-contact">Написать в Telegram</a>
-      <p style="margin:16px 0 0;font-size:14px"><a href="mailto:zhambalkhumaev@yandex.ru?subject=%D0%94%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D1%83%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB" style="color:#93c5fd">или на почту zhambalkhumaev@yandex.ru</a></p>
+        <a href="https://t.me/Zhambaleilo?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5%21%20%D0%9F%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80%D0%B5%D0%BB%20%D0%B4%D0%B5%D0%BC%D0%BE%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D0%B0%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB%20%D0%B8%20%D1%85%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D0%B4%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20%D0%BF%D0%BE%D0%BB%D0%BD%D0%BE%D0%B9%20%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D0%B8." target="_blank" rel="noopener" class="btn-contact">Написать в Telegram</a>
+        <a href="mailto:zhambalkhumaev@yandex.ru?subject=%D0%94%D0%BE%D1%81%D1%82%D1%83%D0%BF%20%D0%BA%20RPG-%D1%81%D0%B8%D0%BC%D1%83%D0%BB%D1%8F%D1%82%D0%BE%D1%80%D1%83%20%C2%AB%D0%9B%D0%B0%D0%B1%D0%BE%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B8%D1%8F%20%D0%BB%D0%B8%D0%B4%D0%B5%D1%80%D0%BE%D0%B2%C2%BB" class="btn-mail">Написать на почту</a>
+        <p class="access-mail">zhambalkhumaev@yandex.ru</p>
       </div>
      </div>
     </section>
