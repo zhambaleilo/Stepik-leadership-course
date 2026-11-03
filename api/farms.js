@@ -68,15 +68,28 @@ async function gigaChat(token, messages, opts = {}) {
 
 // === ДЕЙСТВИЯ РУКОВОДИТЕЛЯ ===
 const ACTION_TYPES = { chat: 'Общий чат', '1on1': '1-on-1', task: 'Поручение' };
+const clean = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n);
 function sanitizeActions(arr) {
   if (!Array.isArray(arr)) return [];
   return arr.slice(0, 12).map(a => {
     const type = ACTION_TYPES[a && a.type] ? a.type : null;
-    const text = String((a && a.text) || '').replace(/\s+/g, ' ').trim().slice(0, 400);
-    if (!type || !text) return null;
+    if (!type) return null;
+    const thread = Array.isArray(a.thread)
+      ? a.thread.slice(0, 10).map(t => ({ from: t && t.from === 'employee' ? 'employee' : 'manager', text: clean(t && t.text, 400) })).filter(t => t.text)
+      : [];
+    const text = clean(a.text, 400) || (thread.find(t => t.from === 'manager') || {}).text || '';
+    if (!text) return null;
     const out = { type, text };
-    if (a.target) out.target = String(a.target).slice(0, 80);
-    if (type === '1on1' && a.reply) out.reply = String(a.reply).replace(/\s+/g, ' ').trim().slice(0, 400);
+    if (a.target) out.target = clean(a.target, 80);
+    if (type === '1on1') {
+      if (thread.length) out.thread = thread;
+      const lastEmp = thread.filter(t => t.from === 'employee').pop();
+      const reply = lastEmp ? lastEmp.text : clean(a.reply, 400);
+      if (reply) out.reply = reply;
+    } else if (Array.isArray(a.reactions)) {
+      const reactions = a.reactions.slice(0, 3).map(r => ({ name: clean(r && r.name, 60), reply: clean(r && r.reply, 400) })).filter(r => r.name && r.reply);
+      if (reactions.length) out.reactions = reactions;
+    }
     return out;
   }).filter(Boolean);
 }
@@ -92,10 +105,16 @@ const TRIGGER_DESC = {
   toxic: 'скрытая токсичность: сарказм, недомолвки, обесценивание коллег'
 };
 function describeAction(a) {
-  const t = a.text;
-  if (a.type === 'chat') return '[Общий чат] «' + t + '»';
-  if (a.type === '1on1') return '[1-on-1 с ' + (a.target || 'сотрудником') + '] Руководитель: «' + t + '»' + (a.reply ? ' Сотрудник ответил: «' + a.reply + '»' : '');
-  return '[Поручение' + (a.target ? ' для ' + a.target : ' всей команде') + '] «' + t + '»';
+  const who = a.target || 'сотрудник';
+  if (a.type === '1on1') {
+    const thread = a.thread && a.thread.length ? a.thread : [{ from: 'manager', text: a.text }].concat(a.reply ? [{ from: 'employee', text: a.reply }] : []);
+    const last = thread[thread.length - 1];
+    const open = last && last.from === 'employee' && /\?\s*$/.test(last.text);
+    return '[1-on-1 с ' + who + ']\n' + thread.map(t => '  ' + (t.from === 'manager' ? 'Руководитель' : who) + ': «' + t.text + '»').join('\n') + (open ? '\n  (последний вопрос сотрудника остался без ответа руководителя)' : '');
+  }
+  const react = a.reactions && a.reactions.length ? '\n  Реакции: ' + a.reactions.map(r => r.name + ': «' + r.reply + '»').join('; ') : '';
+  if (a.type === 'chat') return '[Общий чат] «' + a.text + '»' + react;
+  return '[Поручение' + (a.target ? ' для ' + a.target : ' всей команде') + '] «' + a.text + '»' + react;
 }
 
 // === САНИТАР JSON: чинит ответы GigaChat в JS-стиле ===
@@ -219,7 +238,8 @@ export default async function handler(req, res) {
         '6. События ДОЛЖНЫ логично вытекать из действий руководителя за день. Забота, конкретная помощь и честность повышают настроение и доверие; давление, обесценивание и пустые слова их снижают. Общий чат влияет слабее, чем 1-on-1 с конкретным человеком.\n' +
         '7. Если с сотрудником, у которого есть скрытый триггер, не говорили один на один, его проблема нарастает: сделай минимум одно событие о нём.\n' +
         '8. Если руководитель ничего не делал, усиль скрытые триггеры и снизь доверие.\n' +
-        '9. Поручение «фокус на задачах» повышает продуктивность, но может снижать настроение; «фокус на людях» работает наоборот.\n\n' +
+        '9. Поручение «фокус на задачах» повышает продуктивность, но может снижать настроение; «фокус на людях» работает наоборот.\n' +
+        '10. НЕ придумывай реплики, обещания, решения и поступки руководителя. Описывай только то, что есть в списке его действий. Если сотрудник задал вопрос и руководитель не ответил, покажи это как неотвеченный вопрос (сотрудник ждёт, сомневается), а не как будто руководитель что-то пообещал.\n\n' +
         'ФОРМАТ: СТРОГО валидный JSON-массив. Все ключи в двойных кавычках: day, text, metrics_delta.\n' +
         'Пример: ' + example + '\n' +
         'Верни ТОЛЬКО массив. Без текста до и после. Без markdown.';
@@ -269,7 +289,7 @@ export default async function handler(req, res) {
       const updatedMetrics = { ...metrics };
       const updatedEventLog = [...eventLog];
       const newDay = session.current_day;
-      actions.forEach(a => updatedEventLog.push({ day: newDay, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
+      actions.forEach(a => updatedEventLog.push({ day: newDay, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, thread: a.thread || null, reactions: a.reactions || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
 
       newEvents.forEach(event => {
         event.day = newDay;
@@ -295,6 +315,7 @@ export default async function handler(req, res) {
     const { session_id } = req.body;
     const idx = Number(req.body.member_index);
     const text = String(req.body.text || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+    const history = Array.isArray(req.body.history) ? req.body.history.slice(-8).map(h => ({ role: h && h.from === 'employee' ? 'assistant' : 'user', content: clean(h && h.text, 500) })).filter(h => h.content) : [];
     if (!session_id || !Number.isInteger(idx) || !text) return res.status(400).json({ ok: false, reason: 'session_id, member_index and text required' });
     try {
       const fetchRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${encodeURIComponent(session_id)}&select=team_config,metrics,event_log,current_day`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
@@ -318,14 +339,67 @@ export default async function handler(req, res) {
         'Недавно с тобой: ' + mine + '.\n\n' +
         'ПРАВИЛА: отвечай 1-3 предложениями, по-русски, от первого лица, как живой человек в рабочем чате. Без кавычек, без ремарок и пояснений, не выходи из роли. ' +
         'Если руководитель обесценивает, давит или говорит общими словами, отвечай сдержанно, коротко, закрыто. ' +
+        'Отвечай только за себя: не описывай и не выдумывай действия, слова или обещания руководителя. Если нужно что-то уточнить, задай вопрос и жди ответа. ' +
         'Если он искренне интересуется и предлагает конкретную помощь, постепенно открывайся и намекни на свою проблему, но не называй диагноз прямо.';
       const token = await getToken();
-      let reply = await gigaChat(token, [{ role: 'system', content: sys }, { role: 'user', content: text }], { temperature: 0.85, max_tokens: 300 });
+      let reply = await gigaChat(token, [{ role: 'system', content: sys }, ...history, { role: 'user', content: text }], { temperature: 0.85, max_tokens: 300 });
       reply = reply.replace(/^["«»\s]+|["«»\s]+$/g, '').slice(0, 600);
       if (!reply) return res.status(502).json({ ok: false, reason: 'upstream_error' });
       return res.status(200).json({ ok: true, reply });
     } catch (e) {
       console.error('Farm chat error:', e);
+      const rate = /\b429\b/.test(String(e.message));
+      return res.status(rate ? 429 : 502).json({ ok: false, reason: rate ? 'rate_limited' : 'upstream_error' });
+    }
+  }
+
+  // === 6. REACT (общий чат / поручение -> реакция 1-2 сотрудников) ===
+  if (req.method === 'POST' && action === 'react') {
+    const { session_id } = req.body;
+    const kind = req.body.kind === 'task' ? 'task' : 'chat';
+    const text = clean(req.body.text, 400);
+    const only = req.body.member_index == null ? null : Number(req.body.member_index);
+    if (!session_id || !text) return res.status(400).json({ ok: false, reason: 'session_id and text required' });
+    try {
+      const fetchRes = await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${encodeURIComponent(session_id)}&select=team_config,metrics`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+      const rows = await fetchRes.json();
+      if (!Array.isArray(rows) || !rows.length) return res.status(404).json({ ok: false, reason: 'Not found' });
+      const teamConfig = typeof rows[0].team_config === 'string' ? JSON.parse(rows[0].team_config) : rows[0].team_config;
+      const metrics = (typeof rows[0].metrics === 'string' ? JSON.parse(rows[0].metrics) : rows[0].metrics) || {};
+      const members = ((teamConfig && teamConfig.members) || []).map((m, i) => ({ i, name: memberName(m, i), m }));
+      const pool = Number.isInteger(only) && members[only] ? [members[only]] : members;
+      if (!pool.length) return res.status(404).json({ ok: false, reason: 'Member not found' });
+      const sys =
+        'Ты играешь сотрудников команды в тренажёре для руководителей.\n' +
+        'Команда:\n' + pool.map(x => '- ' + String(x.m.name_role || x.name) + '. Стиль: ' + (x.m.style || 'обычный деловой') + '. Скрытая проблема: ' + (TRIGGER_DESC[x.m.trigger] || 'нет') + '.').join('\n') + '\n' +
+        'Настроение в команде: ' + (metrics.mood ?? 7) + '/10, доверие к руководителю: ' + (metrics.trust ?? 7) + '/10.\n\n' +
+        (kind === 'task' ? 'Руководитель дал поручение' + (pool.length === 1 ? ' сотруднику ' + pool[0].name : ' всей команде') + '. ' : 'Руководитель написал в общий чат. ') +
+        'Ответь ' + (pool.length === 1 ? 'от лица ' + pool[0].name : 'от лица одного или двух сотрудников, кому это ближе всего с учётом их скрытых проблем') + '. ' +
+        'Реплика: 1-2 предложения, как в рабочем чате, от первого лица. Не описывай и не выдумывай действия руководителя. Если сообщение обесценивает или давит, отвечай сдержанно; если проявляет заботу или даёт конкретику, реагируй живее.\n' +
+        'Верни ТОЛЬКО JSON-массив вида [{"name": "Имя", "reply": "текст"}]. Без пояснений и markdown.';
+      const token = await getToken();
+      const raw = await gigaChat(token, [{ role: 'system', content: sys }, { role: 'user', content: text }], { temperature: 0.85, max_tokens: 400 });
+      let items = [];
+      try {
+        const a0 = raw.indexOf('['), b0 = raw.lastIndexOf(']');
+        items = JSON.parse(raw.slice(a0, b0 + 1).replace(/,(\s*[}\]])/g, '$1'));
+      } catch (_) {
+        const re = /"name"\s*:\s*"([^"]+)"[^{}]*?"reply"\s*:\s*"([^"]+)"/g; let mm;
+        while ((mm = re.exec(raw))) items.push({ name: mm[1], reply: mm[2] });
+      }
+      const reactions = (Array.isArray(items) ? items : []).slice(0, 2).map(it => {
+        const nm = clean(it && it.name, 60).toLowerCase();
+        const hit = pool.find(x => nm && (nm.startsWith(x.name.split(/\s+/)[0].toLowerCase()) || x.name.toLowerCase().startsWith(nm)));
+        return hit ? { index: hit.i, name: hit.name, reply: clean(it.reply, 400) } : null;
+      }).filter(r => r && r.reply);
+      if (!reactions.length) {
+        const plain = clean(raw.replace(/```/g, '').replace(/[\[\]{}]/g, ''), 300);
+        if (!plain) return res.status(502).json({ ok: false, reason: 'upstream_error' });
+        reactions.push({ index: pool[0].i, name: pool[0].name, reply: plain });
+      }
+      return res.status(200).json({ ok: true, reactions });
+    } catch (e) {
+      console.error('Farm react error:', e);
       const rate = /\b429\b/.test(String(e.message));
       return res.status(rate ? 429 : 502).json({ ok: false, reason: rate ? 'rate_limited' : 'upstream_error' });
     }
