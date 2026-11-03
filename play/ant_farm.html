@@ -203,6 +203,51 @@
     .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 14px 6px 4px; }
     .controls .grow { flex: 1; }
 
+
+    /* ---------- действия руководителя ---------- */
+    .actions { display: grid; gap: 12px; padding: 16px 6px 2px; color: var(--panel-ink); }
+    .ap-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+    .ap-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+    .ap-dots { display: inline-flex; gap: 6px; }
+    .ap-dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--glass); box-shadow: 0 0 0 3px rgba(111,214,200,.18); transition: background-color .25s, box-shadow .25s; }
+    .ap-dots i.off { background: transparent; box-shadow: inset 0 0 0 2px rgba(164,189,182,.5); }
+    .ap-hint { color: var(--panel-mute); font-size: 14px; max-width: 66ch; }
+    .ap-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .act-btn { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1.5px solid rgba(111,214,200,.5); background: rgba(111,214,200,.1); color: var(--panel-ink); font-weight: 600; font-size: 15px; cursor: pointer; transition: background-color .15s, border-color .15s; }
+    .act-btn:not(:disabled):hover { background: rgba(111,214,200,.22); border-color: var(--glass); }
+    .act-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .today { list-style: none; display: grid; gap: 6px; font-size: 13.5px; color: var(--panel-mute); }
+    .today li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+    .today .tg { color: var(--glass); font-weight: 600; white-space: nowrap; }
+    .today .tx { overflow-wrap: anywhere; color: var(--panel-ink); opacity: .9; }
+    .talk-btn { margin-top: 8px; min-height: 36px; padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--focus); background: transparent; color: #0b4f47; font-weight: 600; font-size: 13.5px; cursor: pointer; }
+    .talk-btn:hover { background: #e3f4f1; }
+    .talk-btn:disabled { opacity: .45; cursor: not-allowed; }
+    li.act { color: var(--ink-2); }
+    li.act::before { border-color: var(--amber) !important; border-radius: 3px !important; }
+    .act-tag { font-size: 12px; font-weight: 700; background: #f3e3b4; color: #5a4200; padding: 1px 8px; border-radius: 99px; margin-right: 6px; }
+    .act-reply { margin-top: 4px; font-size: 13.5px; color: var(--ink); border-left: 3px solid #b9c8c1; padding-left: 10px; }
+    dialog.act { width: min(520px, 94vw); max-width: none; }
+    dialog.act h2 { margin-bottom: 4px; }
+    dialog.act .sub { color: var(--ink-2); font-size: 14px; margin-bottom: 14px; }
+    dialog.act label { display: block; font-weight: 600; font-size: 13.5px; margin: 12px 0 6px; }
+    dialog.act select, dialog.act textarea { width: 100%; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; padding: 10px 12px; font: inherit; color: var(--ink); }
+    dialog.act textarea { min-height: 96px; resize: vertical; }
+    dialog.act .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    dialog.act .chip { border: 1.5px solid var(--line); background: var(--bench-2); border-radius: 99px; padding: 5px 12px; font-size: 13px; cursor: pointer; color: var(--ink); text-align: left; }
+    dialog.act .chip:hover { border-color: var(--focus); background: #fff; }
+    dialog.act .row { margin-top: 18px; }
+    .thread { display: grid; gap: 10px; margin: 6px 0 0; }
+    .thread .m { max-width: 88%; padding: 9px 13px; border-radius: 14px; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
+    .thread .me { justify-self: end; background: #0b6f64; color: #fff; border-bottom-right-radius: 4px; }
+    .thread .emp { justify-self: start; background: #fff; border: 1px solid #d6e1db; border-bottom-left-radius: 4px; }
+    .thread .who-l { font-size: 12px; color: var(--ink-2); margin: 0 0 2px 4px; }
+    .thread .typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
+    .thread .typing i { width: 7px; height: 7px; border-radius: 50%; background: #8aa097; animation: tdot 1.1s infinite; }
+    .thread .typing i:nth-child(2) { animation-delay: .15s; } .thread .typing i:nth-child(3) { animation-delay: .3s; }
+    @keyframes tdot { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+    .err-line { color: var(--coral-ink); font-size: 13.5px; margin-top: 10px; }
+
     /* ---------- ниже сцены ---------- */
     .below { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; margin-top: 28px; align-items: start; }
     .below h2 { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 14px; }
@@ -242,7 +287,7 @@
     .march svg { position: absolute; top: 0; width: 56px; height: 34px; color: var(--glass); animation: march 2.4s linear infinite; }
     .march svg:nth-child(2) { animation-delay: -.8s; } .march svg:nth-child(3) { animation-delay: -1.6s; }
     @keyframes march { from { left: -60px; } to { left: 200px; } }
-    dialog { border: 0; border-radius: 16px; padding: 24px; max-width: min(420px, 92vw); background: var(--bench-2); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+    dialog { margin: auto; border: 0; border-radius: 16px; padding: 24px; max-width: min(420px, 92vw); background: var(--bench-2); color: var(--ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
     dialog::backdrop { background: rgba(10, 20, 18, .6); }
     dialog h2 { font-family: var(--font-display); font-size: 18px; margin-bottom: 8px; }
     dialog p { color: var(--ink-2); margin-bottom: 20px; }
@@ -354,9 +399,22 @@
 
         <div class="scene" id="mainScene"></div>
 
+        <div class="actions" id="actionsPanel" aria-labelledby="apTitle">
+          <div class="ap-head">
+            <div class="ap-title" id="apTitle"><span>Действия на день <span id="apDay">1</span></span> <span class="ap-dots" id="apDots" role="img" aria-label="Осталось действий"></span></div>
+          </div>
+          <p class="ap-hint" id="apHint"></p>
+          <div class="ap-btns">
+            <button type="button" class="act-btn" id="actChat" onclick="openAct('chat')">Написать в общий чат</button>
+            <button type="button" class="act-btn" id="act1on1" onclick="openAct('1on1')">Поговорить 1-on-1</button>
+            <button type="button" class="act-btn" id="actTask" onclick="openAct('task')">Дать поручение</button>
+          </div>
+          <ul class="today" id="todayLog" aria-live="polite"></ul>
+        </div>
+
         <div class="controls">
-          <button type="button" class="btn btn-primary" id="simulateBtn" onclick="simulateDays()">Следующий день</button>
-          <button type="button" class="btn btn-ghost" onclick="generateDocumentary()">Собрать документалку <span class="soon">скоро</span></button>
+          <button type="button" class="btn btn-primary" id="simulateBtn" onclick="endDay()">Завершить день</button>
+          <button type="button" class="btn btn-ghost" onclick="generateDocumentary()">Собрать документалку</button>
           <span class="grow"></span>
           <button type="button" class="btn-quiet" onclick="refundFarm()">Удалить ферму</button>
         </div>
@@ -394,6 +452,12 @@
         <button class="btn btn-danger" value="ok" id="cdOk">Удалить</button>
       </div>
     </form>
+  </dialog>
+  <dialog id="actDlg" class="act" aria-labelledby="actTitle">
+    <h2 id="actTitle"></h2>
+    <p class="sub" id="actSub"></p>
+    <div id="actBody"></div>
+    <div class="row" id="actRow"></div>
   </dialog>
   <div id="toasts" aria-live="polite"></div>
 
@@ -695,14 +759,15 @@
     function memberMood(i, members, metrics, log) {
       const m = members[i];
       let v = (+metrics.mood || 0) + (TRIGGER_BIAS[m.trigger] || 0) * 0.6;
-      (log || []).forEach(e => { if (mentions(m, e.text || '')) v += ((e.metrics_delta && +e.metrics_delta.mood) || 0) * 1.2; });
+      (log || []).forEach(e => { if (e.kind !== 'action' && mentions(m, e.text || '')) v += ((e.metrics_delta && +e.metrics_delta.mood) || 0) * 1.2; });
       return clamp(Math.round(v * 10) / 10, 0, 10);
     }
     function lastEventFor(m, log) {
-      for (let i = (log || []).length - 1; i >= 0; i--) if (mentions(m, log[i].text || '')) return log[i];
+      for (let i = (log || []).length - 1; i >= 0; i--) if (log[i].kind !== 'action' && mentions(m, log[i].text || '')) return log[i];
       return null;
     }
     function selectMember(i, showEvent) {
+      S.sel = i; if (typeof renderActions === 'function') renderActions();
       document.querySelectorAll('.slot').forEach(s => s.classList.toggle('selected', +s.dataset.i === i));
       document.querySelectorAll('.who-card').forEach(c => c.classList.toggle('selected', +c.dataset.i === i));
       const card = document.querySelector(`.who-card[data-i="${i}"]`);
@@ -715,7 +780,7 @@
     }
 
     /* ============ экран «колония» ============ */
-    const S = { session: null, members: [], busy: false };
+    const S = { session: null, members: [], busy: false, actions: [], sel: -1 };
 
     function highlight(text, members) {
       let s = esc(text);
@@ -731,7 +796,7 @@
     function renderJournal(log, hideLast = 0) {
       const box = $('eventLogContainer');
       if (!log || !log.length) {
-        box.innerHTML = '<div class="empty" id="eventLogPlaceholder"><b>Журнал пуст</b>Нажмите «Следующий день» — муравьи проживут рабочий день, и здесь появятся записи.</div>';
+        box.innerHTML = '<div class="empty" id="eventLogPlaceholder"><b>Журнал пуст</b>Поговорите с командой и завершите день: муравьи проживут его, и здесь появятся записи.</div>';
         return;
       }
       const groups = new Map();
@@ -742,7 +807,9 @@
         const items = groups.get(d);
         const allPending = hideLast > 0 && items.every(x => x.idx >= firstHidden);
         return `<section class="day-group${allPending ? ' pending' : ''}" data-day="${esc(d)}"><h3>День ${esc(d)}</h3><ol>` +
-          items.map(({ e, idx }) => `<li data-idx="${idx}" class="${hideLast > 0 && idx >= firstHidden ? 'pending' : ''}">${highlight(e.text || '', S.members)}<div>${deltaChips(e.metrics_delta)}</div></li>`).join('') +
+          items.map(({ e, idx }) => e.kind === 'action'
+            ? `<li data-idx="${idx}" class="act"><span class="act-tag">${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}</span>${esc(e.text || '')}${e.reply ? `<div class="act-reply">${esc(e.target || 'Сотрудник')}: «${esc(e.reply)}»</div>` : ''}</li>`
+            : `<li data-idx="${idx}" class="${hideLast > 0 && idx >= firstHidden ? 'pending' : ''}">${highlight(e.text || '', S.members)}<div>${deltaChips(e.metrics_delta)}</div></li>`).join('') +
           '</ol></section>';
       }).join('');
     }
@@ -765,9 +832,12 @@
             <div class="who-meta"><span class="trig">${esc(TRIGGERS[m.trigger] || m.trigger)}</span>
               <span>Настроение <span class="mini ${low ? 'low' : ''}" aria-hidden="true">${dots}</span> <b>${fmt(mood)}</b></span></div>
             ${last ? `<div class="who-last">День ${esc(last.day)}: ${esc(last.text)}</div>` : ''}
+            <button type="button" class="talk-btn" data-i="${i}">Поговорить 1-on-1</button>
           </div></article>`;
       }).join('');
       document.querySelectorAll('.who-card').forEach(c => c.addEventListener('click', () => selectMember(+c.dataset.i, true)));
+      document.querySelectorAll('.talk-btn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openAct('1on1', +b.dataset.i); }));
+      renderActions();
     }
 
     function renderDashboard(session, opts = {}) {
@@ -787,8 +857,9 @@
       } else if (!opts.keepMetrics) applyMetrics(metrics);
       S.moods = S.members.map((mm, i) => memberMood(i, S.members, metrics, log));
       S.members.forEach((_, i) => paintMember(i, S.moods[i]));
-      renderRoster(S.members, S.moods, log);
       renderJournal(log, opts.hideLast || 0);
+      S.actions = loadActions();
+      renderRoster(S.members, S.moods, log);
     }
 
     /* ============ конструктор ============ */
@@ -911,7 +982,7 @@
         $('dashboardView').classList.remove('hidden');
         renderDashboard(data.session, { rebuild: true });
         hideLoading();
-        if (autoSimulate) setTimeout(() => simulateDays(true), 700);
+        if (autoSimulate && !((data.session.event_log || []).length)) setTimeout(() => simulateDays(true), 700);
       } catch (e) {
         console.error(e);
         hideLoading();
@@ -924,14 +995,14 @@
       if (S.busy) return;
       S.busy = true;
       const btn = $('simulateBtn');
-      btn.disabled = true; btn.textContent = 'Идёт рабочий день…';
+      btn.disabled = true; btn.textContent = 'Идёт рабочий день…'; renderActions();
       $('mainScene').classList.add('busy');
       $('mainScene').scrollIntoView({ block: 'center', behavior: RM ? 'auto' : 'smooth' });
       try {
         const res = await fetch(`${API_BASE}/api/farms?action=simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1 })
+          body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1, manager_actions: silent ? [] : S.actions, intro: silent })
         });
         const data = await res.json();
         if (!data.ok) { toast('Симуляция не удалась: ' + (data.reason || 'ошибка сервера'), 'error'); return; }
@@ -942,10 +1013,15 @@
           const r2 = await fetch(`${API_BASE}/api/get-session?id=${encodeURIComponent(currentSessionId)}`);
           fresh = (await r2.json()).session || null;
         } catch (_) { /* упадём на локальную сборку */ }
+        const doneActions = silent ? [] : S.actions;
         if (!fresh) {
-          fresh = { ...S.session, current_day: data.new_day ?? (S.session.current_day + 1), metrics: data.new_metrics || S.session.metrics,
-            event_log: [...(S.session.event_log || []), ...newEvents] };
+          const day = S.session.current_day;
+          const actLog = doneActions.map(a => ({ day, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
+          fresh = { ...S.session, current_day: data.new_day != null ? data.new_day + 1 : day + 1, metrics: data.new_metrics || S.session.metrics,
+            event_log: [...(S.session.event_log || []), ...actLog, ...newEvents] };
         }
+        try { localStorage.removeItem(actKey()); } catch (_) {}
+        S.actions = [];
         $('mainScene').classList.remove('busy');
         await playDay(fresh, newEvents);
       } catch (e) {
@@ -954,7 +1030,7 @@
       } finally {
         S.busy = false;
         $('mainScene').classList.remove('busy');
-        btn.disabled = false; btn.textContent = 'Следующий день';
+        btn.disabled = false; renderActions();
       }
     }
 
@@ -1019,18 +1095,200 @@
       }
     }
 
+
+    /* ============ действия руководителя ============ */
+    const AP_MAX = 3;
+    const ACT_LABEL = { chat: 'Общий чат', '1on1': '1-on-1', task: 'Поручение' };
+    const SUGGEST = {
+      chat: ['Вижу, что мы все устали. Сегодня без сверхурочных.', 'Давайте сосредоточимся на главном, остальное подождёт.', 'Хорошая работа, команда. Если что-то мешает, пишите мне напрямую.'],
+      '1on1': ['Как ты себя чувствуешь? Что сейчас давит сильнее всего?', 'Я заметил, что тебе непросто. Чем я могу помочь?', 'Что бы ты убрал из своей недели в первую очередь?'],
+      task: ['Фокус на багах и стабильности', 'Фокус на людях: сегодня без новых задач, только поддержка команды', 'Срочно доделать релиз до пятницы', 'Разобрать технический долг']
+    };
+    const actKey = () => `farmActions:${currentSessionId}:${S.session ? S.session.current_day : 0}`;
+    function loadActions() { try { const v = JSON.parse(localStorage.getItem(actKey()) || '[]'); return Array.isArray(v) ? v.slice(0, AP_MAX) : []; } catch (_) { return []; } }
+    function saveActions() { try { localStorage.setItem(actKey(), JSON.stringify(S.actions)); } catch (_) {} }
+    const apLeft = () => Math.max(0, AP_MAX - S.actions.length);
+    const talkedTo = () => new Set(S.actions.filter(a => a.type === '1on1').map(a => a.target));
+
+    function renderActions() {
+      if (!$('apDots') || !S.session) return;
+      const left = apLeft(), busy = S.busy;
+      $('apDay').textContent = S.session.current_day;
+      $('apDots').innerHTML = Array.from({ length: AP_MAX }, (_, k) => `<i class="${k < left ? '' : 'off'}"></i>`).join('');
+      $('apDots').setAttribute('aria-label', `Осталось действий: ${left} из ${AP_MAX}`);
+      $('apHint').textContent = left === AP_MAX
+        ? 'У вас три действия на день: напишите команде, поговорите с тем, кому тяжелее, или дайте поручение. Цифры изменятся, когда вы завершите день.'
+        : left > 0 ? `Можно сделать ещё ${left}. Когда закончите, завершите день и посмотрите последствия.`
+        : 'Действия на сегодня закончились. Завершите день, чтобы увидеть последствия.';
+      ['actChat', 'act1on1', 'actTask'].forEach(id => { $(id).disabled = busy || left === 0; });
+      const sel = S.members[S.sel];
+      $('act1on1').textContent = sel ? `Поговорить с ${sel.name.split(/\s+/)[0]}` : 'Поговорить 1-on-1';
+      document.querySelectorAll('.talk-btn').forEach(b => { const m = S.members[+b.dataset.i]; b.disabled = busy || left === 0 || (m && talkedTo().has(m.name)); });
+      $('todayLog').innerHTML = S.actions.map(a => `<li><span class="tg">${esc(ACT_LABEL[a.type])}${a.target ? ' · ' + esc(a.target.split(/\s+/)[0]) : ''}</span><span class="tx">${esc(a.text)}</span></li>`).join('');
+      if (!busy) $('simulateBtn').textContent = left > 0 ? `Завершить день · осталось ${left}` : 'Завершить день';
+    }
+
+    function openAct(type, preset) {
+      if (S.busy || apLeft() <= 0 || !S.members.length) return;
+      const dlg = $('actDlg'), body = $('actBody'), row = $('actRow');
+      const titles = { chat: 'Сообщение в общий чат', '1on1': 'Разговор один на один', task: 'Поручение' };
+      const subs = {
+        chat: 'Увидят все. Влияет на команду слабее, чем личный разговор.',
+        '1on1': 'Сотрудник ответит один раз. Личный разговор сильнее действует на конкретного человека.',
+        task: 'Меняет продуктивность и нагрузку, но может сказаться на настроении.'
+      };
+      $('actTitle').textContent = titles[type];
+      $('actSub').textContent = subs[type] + ' Стоит 1 очко.';
+      let who = '';
+      if (type === '1on1') {
+        const done = talkedTo();
+        const free = S.members.map((m, i) => ({ m, i })).filter(x => !done.has(x.m.name));
+        if (!free.length) { toast('Со всеми уже поговорили сегодня.'); return; }
+        const pick = free.some(x => x.i === preset) ? preset : free.some(x => x.i === S.sel) ? S.sel : free[0].i;
+        who = `<label for="actWho">С кем поговорить</label><select id="actWho">${free.map(x => `<option value="${x.i}" ${x.i === pick ? 'selected' : ''}>${esc(x.m.name)}${x.m.role ? ', ' + esc(x.m.role) : ''}</option>`).join('')}</select>`;
+      } else if (type === 'task') {
+        who = `<label for="actWho">Кому</label><select id="actWho"><option value="-1">Всей команде</option>${S.members.map((m, i) => `<option value="${i}">${esc(m.name)}</option>`).join('')}</select>`;
+      }
+      const ph = { chat: 'Что вы скажете команде?', '1on1': 'Что вы скажете сотруднику?', task: 'Какое поручение?' }[type];
+      body.innerHTML = `${who}<label for="actText">${type === 'task' ? 'Поручение' : 'Ваша реплика'}</label><textarea id="actText" maxlength="300" placeholder="${ph}"></textarea>
+        <div class="chips">${SUGGEST[type].map(t => `<button type="button" class="chip">${esc(t)}</button>`).join('')}</div><div class="err-line" id="actErr" role="alert"></div>`;
+      body.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { $('actText').value = c.textContent; $('actText').focus(); }));
+      row.innerHTML = `<button type="button" class="btn btn-line" id="actCancel">Отмена</button><button type="button" class="btn btn-primary" id="actSend">${type === '1on1' ? 'Отправить' : type === 'task' ? 'Дать поручение' : 'Написать'}</button>`;
+      $('actCancel').onclick = () => dlg.close();
+      $('actSend').onclick = () => submitAct(type);
+      dlg.addEventListener('close', () => { const p = S.pendingBubble; S.pendingBubble = null; if (p) { if (p.idx >= 0) selectMember(p.idx, false); showBubble(p.idx, p.text, null, 6500); } }, { once: true });
+      dlg.showModal();
+      $('actText').focus();
+    }
+
+    async function submitAct(type) {
+      const ta = $('actText'), err = $('actErr'), send = $('actSend');
+      const text = ta.value.replace(/\s+/g, ' ').trim();
+      err.textContent = '';
+      if (!text) { err.textContent = 'Напишите текст или выберите готовую фразу.'; ta.focus(); return; }
+      const whoSel = $('actWho'), idx = whoSel ? +whoSel.value : -1;
+      const m = idx >= 0 ? S.members[idx] : null;
+      if (type !== '1on1') {
+        S.actions.push({ type, text, ...(m ? { target: m.name } : {}) });
+        saveActions(); renderActions();
+        S.pendingBubble = { idx: -1, text: type === 'chat' ? 'Вы в общем чате: ' + text : 'Поручение' + (m ? ' для ' + m.name.split(/\s+/)[0] : ' команде') + ': ' + text };
+        $('actDlg').close();
+        return;
+      }
+      // 1-on-1: реплика -> ответ сотрудника (ИИ)
+      send.disabled = true; $('actCancel').disabled = true; ta.disabled = true; if (whoSel) whoSel.disabled = true;
+      const first = m.name.split(/\s+/)[0];
+      $('actBody').innerHTML = `<div class="thread"><div class="m me">${esc(text)}</div><div><div class="who-l">${esc(first)}</div><div class="m emp typing" id="typingDots"><i></i><i></i><i></i></div></div></div><div class="err-line" id="actErr" role="alert"></div>`;
+      S.waiting = true;
+      try {
+        const res = await fetch(`${API_BASE}/api/farms?action=chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: currentSessionId, member_index: idx, text }) });
+        const data = await res.json().catch(() => ({}));
+        if (!data.ok || !data.reply) {
+          S.waiting = false;
+          const msg = data.reason === 'rate_limited' ? 'Сервис ИИ перегружен. Подождите минуту и попробуйте ещё раз. Очко не потрачено.' : 'Не удалось получить ответ. Очко не потрачено, попробуйте ещё раз.';
+          openActRetry(type, idx, text, msg); return;
+        }
+        S.waiting = false;
+        S.actions.push({ type: '1on1', target: m.name, text, reply: data.reply });
+        saveActions(); renderActions();
+        $('typingDots').outerHTML = `<div class="m emp">${esc(data.reply)}</div>`;
+        $('actRow').innerHTML = '<button type="button" class="btn btn-primary" id="actDone">Закрыть</button>';
+        $('actDone').onclick = () => $('actDlg').close(); $('actDone').focus();
+        S.pendingBubble = { idx, text: data.reply };
+      } catch (e) {
+        S.waiting = false;
+        console.error(e);
+        openActRetry(type, idx, text, 'Нет связи с сервером. Очко не потрачено, попробуйте ещё раз.');
+      }
+    }
+    // вернуть форму после ошибки, сохранив текст и выбранного сотрудника
+    function openActRetry(type, idx, text, msg) {
+      const dlg = $('actDlg'); dlg.close();
+      openAct(type, idx);
+      if ($('actText')) { $('actText').value = text; $('actErr').textContent = msg; }
+    }
+
+    async function endDay() {
+      if (S.busy) return;
+      const left = apLeft();
+      if (left > 0) {
+        const ok = await askConfirm(left === AP_MAX ? 'Завершить день без действий?' : `Осталось действий: ${left}`,
+          'Бездействие тоже влияет на команду: скрытые проблемы будут нарастать. Завершить день сейчас?', 'Завершить день', 'btn-primary');
+        if (!ok) return;
+      }
+      simulateDays();
+    }
+
+    /* ============ документалка ============ */
+    function buildDocumentary(session) {
+      const cfg = session.team_config || {}, log = session.event_log || [];
+      const members = (cfg.members || []).map(parseMember);
+      const final = session.metrics || { mood: 7, trust: 7, productivity: 7 };
+      const days = [...new Set(log.map(e => e.day ?? 1))].sort((a, b) => a - b);
+      const KEYS = [['mood', 'Настроение', '#d98f12'], ['trust', 'Доверие', '#1f9d8f'], ['productivity', 'Продуктивность', '#5f9a1f']];
+      let cur = { mood: 7, trust: 7, productivity: 7 };
+      const series = [{ day: 0, ...cur }];
+      const dayBlocks = days.map(d => {
+        const items = log.filter(e => (e.day ?? 1) === d);
+        items.filter(e => e.kind !== 'action').forEach(e => KEYS.forEach(([k]) => { cur[k] = clamp(cur[k] + clamp(+(e.metrics_delta || {})[k] || 0, -2, 2), 0, 10); }));
+        series.push({ day: d, ...cur });
+        const sum = { mood: 0, trust: 0, productivity: 0 };
+        items.filter(e => e.kind !== 'action').forEach(e => KEYS.forEach(([k]) => { sum[k] += +(e.metrics_delta || {})[k] || 0; }));
+        const li = items.map(e => e.kind === 'action'
+          ? `<li class="act"><b>${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}.</b> ${esc(e.text)}${e.reply ? `<div class="reply">${esc(e.target || 'Сотрудник')}: «${esc(e.reply)}»</div>` : ''}</li>`
+          : `<li class="ev">${esc(e.text)} ${deltaChips(e.metrics_delta)}</li>`).join('');
+        const noAct = !items.some(e => e.kind === 'action');
+        return `<section class="day"><h3>День ${esc(d)}<small>${KEYS.map(([k, l]) => sum[k] ? `${l.toLowerCase()} ${sum[k] > 0 ? '+' : '−'}${Math.abs(sum[k])}` : '').filter(Boolean).join(' · ') || 'без изменений'}</small></h3>${noAct && d > 1 ? '<p class="idle">В этот день руководитель ничего не предпринял.</p>' : ''}<ul>${li}</ul></section>`;
+      }).join('');
+      series[series.length - 1] = { day: series[series.length - 1].day, ...final };
+      const W = 640, H = 220, PX = 34, PY = 16, n = Math.max(1, series.length - 1);
+      const X = i => PX + (W - PX - 10) * (n === 0 ? 0 : i / n), Y = v => PY + (H - 2 * PY) * (1 - v / 10);
+      const grid = [0, 5, 10].map(v => `<line x1="${PX}" x2="${W - 10}" y1="${Y(v)}" y2="${Y(v)}" stroke="#dbe5e0"/><text x="${PX - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="#4a5a54">${v}</text>`).join('');
+      const lines = KEYS.map(([k, , c]) => `<polyline fill="none" stroke="${c}" stroke-width="2.5" points="${series.map((p, i) => `${X(i)},${Y(p[k])}`).join(' ')}"/>` + series.map((p, i) => `<circle cx="${X(i)}" cy="${Y(p[k])}" r="3.5" fill="${c}"/>`).join('')).join('');
+      const xl = series.map((p, i) => `<text x="${X(i)}" y="${H - 1}" text-anchor="${i === 0 ? 'start' : i === series.length - 1 && series.length > 2 ? 'end' : 'middle'}" font-size="11" fill="#4a5a54">${i === 0 ? 'старт' : 'день ' + p.day}</text>`).join('');
+      const acts = log.filter(e => e.kind === 'action');
+      const stat = (l, v) => `<div class="st"><b>${v}</b><span>${l}</span></div>`;
+      return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Документалка: ${esc(cfg.team_name || 'Команда')}</title><style>
+      body{font-family:'Onest',system-ui,sans-serif;background:#dce4df;color:#16231f;margin:0;line-height:1.55}
+      main{max-width:820px;margin:0 auto;padding:32px 20px 60px}
+      h1{font-size:28px;margin:0 0 4px}.lead{color:#4a5a54;margin:0 0 24px}
+      .stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:24px}@media(max-width:700px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      .st{background:#17262a;color:#eaf4f0;border-radius:12px;padding:12px 14px}.st b{display:block;font-size:24px;color:#6fd6c8}.st span{font-size:13px;color:#a4bdb6}
+      .card{background:#f8fbf9;border-radius:14px;padding:18px;margin-bottom:24px}
+      .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+      svg{width:100%;height:auto}h2{font-size:18px;margin:28px 0 12px}
+      .day{background:#f8fbf9;border-radius:14px;padding:14px 18px;margin-bottom:12px}.day h3{margin:0 0 6px;font-size:16px}.day h3 small{font-weight:400;color:#4a5a54;margin-left:10px;font-size:13px}
+      ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}li{padding-left:12px;border-left:3px solid #6fd6c8}li.act{border-color:#f4b942}
+      .reply{margin-top:2px;color:#4a5a54;font-size:14px}.idle{color:#9c2f1b;font-size:14px;margin:0 0 8px}
+      .d{display:inline-block;font-size:12px;font-weight:700;padding:0 8px;border-radius:99px;margin-left:4px}.d.up{background:#d7ebb6;color:#2f4a0a}.d.down{background:#f9cfc6;color:#7d1f10}
+      footer{color:#4a5a54;font-size:13px;margin-top:28px}@media print{body{background:#fff}}
+      </style></head><body><main>
+      <h1>Документалка: ${esc(cfg.team_name || 'Команда')}</h1>
+      <p class="lead">Состав: ${members.map(m => esc(m.name + (m.role ? ' (' + m.role + ')' : ''))).join(', ')}.</p>
+      <div class="stats">${stat('дней проведено', days.length)}${stat('действий руководителя', acts.length)}${stat('разговоров 1-on-1', acts.filter(a => a.type === '1on1').length)}${stat('настроение', fmt(final.mood) + '/10')}${stat('доверие', fmt(final.trust) + '/10')}${stat('продуктивность', fmt(final.productivity) + '/10')}</div>
+      <div class="card"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Динамика настроения, доверия и продуктивности по дням">${grid}${lines}${xl}</svg><div class="legend">${KEYS.map(([, l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div></div>
+      <h2>Хроника по дням</h2>${dayBlocks || '<p>Пока не проведено ни одного дня.</p>'}
+      <footer>Собрано ${new Date().toLocaleDateString('ru-RU')} · Лаборатория лидеров, my-pro-skills.ru. Динамика на графике восстановлена по событиям, начиная с 7/10.</footer>
+      </main></body></html>`;
+    }
     async function generateDocumentary() {
-      toast('Документалка появится в одном из ближайших обновлений.');
+      const log = (S.session && S.session.event_log) || [];
+      if (!log.some(e => e.kind !== 'action')) { toast('Сначала проведите хотя бы один день: документалке нужны события.'); return; }
+      const html = buildDocumentary(S.session);
+      const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+      const w = window.open(url, '_blank');
+      if (!w) { const a = document.createElement('a'); a.href = url; a.download = 'dokumentalka.html'; a.click(); toast('Документалка скачана файлом.'); }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
     /* ============ интерфейс: загрузка, диалог, тосты ============ */
     function showLoading(text) { $('loadingText').textContent = text; $('loadingOverlay').classList.remove('hidden'); }
     function hideLoading() { $('loadingOverlay').classList.add('hidden'); }
 
-    function askConfirm(title, text, okLabel) {
+    function askConfirm(title, text, okLabel, cls = 'btn-danger') {
       return new Promise(resolve => {
         const dlg = $('confirmDlg');
-        $('cdTitle').textContent = title; $('cdText').textContent = text; $('cdOk').textContent = okLabel;
+        $('cdTitle').textContent = title; $('cdText').textContent = text; $('cdOk').textContent = okLabel; $('cdOk').className = 'btn ' + cls;
         dlg.addEventListener('close', () => resolve(dlg.returnValue === 'ok'), { once: true });
         dlg.showModal();
       });
@@ -1049,6 +1307,7 @@
       st.textContent = '@keyframes flow{to{stroke-dashoffset:-34}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(40px)}}';
       document.head.appendChild(st);
       initMeters();
+      $('actDlg').addEventListener('cancel', e => { if (S.waiting) e.preventDefault(); });
       if (IS_DEV) $('pageTitle').insertAdjacentHTML('beforeend', ' <span class="dev-badge">DEV MODE</span>');
 
       const urlParams = new URLSearchParams(window.location.search);
