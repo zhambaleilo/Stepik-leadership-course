@@ -216,6 +216,7 @@
     .act-btn { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1.5px solid rgba(111,214,200,.5); background: rgba(111,214,200,.1); color: var(--panel-ink); font-weight: 600; font-size: 15px; cursor: pointer; transition: background-color .15s, border-color .15s; }
     .act-btn:not(:disabled):hover { background: rgba(111,214,200,.22); border-color: var(--glass); }
     .act-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .ap-more { font-size: 12px; font-weight: 700; color: var(--glass); margin-left: 2px; align-self: center; }
     .today { list-style: none; display: grid; gap: 6px; font-size: 13.5px; color: var(--panel-mute); }
     .today li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
     .today .tg { color: var(--glass); font-weight: 600; white-space: nowrap; }
@@ -808,7 +809,7 @@
         const allPending = hideLast > 0 && items.every(x => x.idx >= firstHidden);
         return `<section class="day-group${allPending ? ' pending' : ''}" data-day="${esc(d)}"><h3>День ${esc(d)}</h3><ol>` +
           items.map(({ e, idx }) => e.kind === 'action'
-            ? `<li data-idx="${idx}" class="act"><span class="act-tag">${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}</span>${esc(e.text || '')}${e.reply ? `<div class="act-reply">${esc(e.target || 'Сотрудник')}: «${esc(e.reply)}»</div>` : ''}</li>`
+            ? `<li data-idx="${idx}" class="act"><span class="act-tag">${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}</span>${esc(e.text || '')}${actDetails(e).map(d => `<div class="act-reply"><b>${esc(d.who)}:</b> «${esc(d.text)}»</div>`).join('')}</li>`
             : `<li data-idx="${idx}" class="${hideLast > 0 && idx >= firstHidden ? 'pending' : ''}">${highlight(e.text || '', S.members)}<div>${deltaChips(e.metrics_delta)}</div></li>`).join('') +
           '</ol></section>';
       }).join('');
@@ -1016,7 +1017,7 @@
         const doneActions = silent ? [] : S.actions;
         if (!fresh) {
           const day = S.session.current_day;
-          const actLog = doneActions.map(a => ({ day, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
+          const actLog = doneActions.map(a => ({ day, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, thread: a.thread || null, reactions: a.reactions || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
           fresh = { ...S.session, current_day: data.new_day != null ? data.new_day + 1 : day + 1, metrics: data.new_metrics || S.session.metrics,
             event_log: [...(S.session.event_log || []), ...actLog, ...newEvents] };
         }
@@ -1097,7 +1098,7 @@
 
 
     /* ============ действия руководителя ============ */
-    const AP_MAX = 3;
+    const NORM = 3, MAX_ACTIONS = 12, MAX_TURNS = 3;
     const ACT_LABEL = { chat: 'Общий чат', '1on1': '1-on-1', task: 'Поручение' };
     const SUGGEST = {
       chat: ['Вижу, что мы все устали. Сегодня без сверхурочных.', 'Давайте сосредоточимся на главном, остальное подождёт.', 'Хорошая работа, команда. Если что-то мешает, пишите мне напрямую.'],
@@ -1105,40 +1106,53 @@
       task: ['Фокус на багах и стабильности', 'Фокус на людях: сегодня без новых задач, только поддержка команды', 'Срочно доделать релиз до пятницы', 'Разобрать технический долг']
     };
     const actKey = () => `farmActions:${currentSessionId}:${S.session ? S.session.current_day : 0}`;
-    function loadActions() { try { const v = JSON.parse(localStorage.getItem(actKey()) || '[]'); return Array.isArray(v) ? v.slice(0, AP_MAX) : []; } catch (_) { return []; } }
+    function loadActions() { try { const v = JSON.parse(localStorage.getItem(actKey()) || '[]'); return Array.isArray(v) ? v.slice(0, MAX_ACTIONS) : []; } catch (_) { return []; } }
     function saveActions() { try { localStorage.setItem(actKey(), JSON.stringify(S.actions)); } catch (_) {} }
-    const apLeft = () => Math.max(0, AP_MAX - S.actions.length);
     const talkedTo = () => new Set(S.actions.filter(a => a.type === '1on1').map(a => a.target));
 
     function renderActions() {
       if (!$('apDots') || !S.session) return;
-      const left = apLeft(), busy = S.busy;
+      const n = S.actions.length, busy = S.busy, full = n >= MAX_ACTIONS;
       $('apDay').textContent = S.session.current_day;
-      $('apDots').innerHTML = Array.from({ length: AP_MAX }, (_, k) => `<i class="${k < left ? '' : 'off'}"></i>`).join('');
-      $('apDots').setAttribute('aria-label', `Осталось действий: ${left} из ${AP_MAX}`);
-      $('apHint').textContent = left === AP_MAX
-        ? 'У вас три действия на день: напишите команде, поговорите с тем, кому тяжелее, или дайте поручение. Цифры изменятся, когда вы завершите день.'
-        : left > 0 ? `Можно сделать ещё ${left}. Когда закончите, завершите день и посмотрите последствия.`
-        : 'Действия на сегодня закончились. Завершите день, чтобы увидеть последствия.';
-      ['actChat', 'act1on1', 'actTask'].forEach(id => { $(id).disabled = busy || left === 0; });
+      $('apDots').innerHTML = Array.from({ length: NORM }, (_, k) => `<i class="${k < n ? '' : 'off'}"></i>`).join('') + (n > NORM ? `<span class="ap-more">+${n - NORM}</span>` : '');
+      $('apDots').setAttribute('aria-label', `Сделано действий: ${n}, рекомендуем ${NORM}`);
+      $('apHint').textContent = n === 0
+        ? 'Начните с чего угодно: напишите команде, поговорите с тем, кому тяжелее, или дайте поручение. Рекомендуем 3 действия на день, но можно больше. Цифры изменятся, когда вы завершите день.'
+        : n < NORM ? `Сделано: ${n}. Рекомендуем хотя бы ${NORM} действия, но можно больше.`
+        : full ? 'Лимит действий на день исчерпан. Завершите день, чтобы увидеть последствия.'
+        : 'Норма выполнена, дальше по желанию. Когда будете готовы, завершите день и посмотрите последствия.';
+      ['actChat', 'act1on1', 'actTask'].forEach(id => { $(id).disabled = busy || full; });
       const sel = S.members[S.sel];
       $('act1on1').textContent = sel ? `Поговорить с ${sel.name.split(/\s+/)[0]}` : 'Поговорить 1-on-1';
-      document.querySelectorAll('.talk-btn').forEach(b => { const m = S.members[+b.dataset.i]; b.disabled = busy || left === 0 || (m && talkedTo().has(m.name)); });
+      document.querySelectorAll('.talk-btn').forEach(b => { const m = S.members[+b.dataset.i]; b.disabled = busy || full || (m && talkedTo().has(m.name)); });
       $('todayLog').innerHTML = S.actions.map(a => `<li><span class="tg">${esc(ACT_LABEL[a.type])}${a.target ? ' · ' + esc(a.target.split(/\s+/)[0]) : ''}</span><span class="tx">${esc(a.text)}</span></li>`).join('');
-      if (!busy) $('simulateBtn').textContent = left > 0 ? `Завершить день · осталось ${left}` : 'Завершить день';
+      if (!busy) $('simulateBtn').textContent = n > 0 ? `Завершить день · действий: ${n}` : 'Завершить день';
+    }
+
+    // строки под основной записью действия: ответы сотрудников, продолжение диалога, реакции
+    function actDetails(e) {
+      const who = e.target || 'Сотрудник';
+      if (e.thread && e.thread.length) {
+        const first = e.thread.findIndex(x => x.from === 'manager');
+        return e.thread.filter((_, k) => k !== first).map(x => ({ who: x.from === 'manager' ? 'Вы' : who, text: x.text }));
+      }
+      if (e.reactions && e.reactions.length) return e.reactions.map(r => ({ who: r.name, text: r.reply }));
+      if (e.reply) return [{ who, text: e.reply }];
+      return [];
     }
 
     function openAct(type, preset) {
-      if (S.busy || apLeft() <= 0 || !S.members.length) return;
+      if (S.busy || !S.members.length) return;
+      if (S.actions.length >= MAX_ACTIONS) { toast('Достигнут лимит действий на день. Завершите день.'); return; }
       const dlg = $('actDlg'), body = $('actBody'), row = $('actRow');
       const titles = { chat: 'Сообщение в общий чат', '1on1': 'Разговор один на один', task: 'Поручение' };
       const subs = {
-        chat: 'Увидят все. Влияет на команду слабее, чем личный разговор.',
-        '1on1': 'Сотрудник ответит один раз. Личный разговор сильнее действует на конкретного человека.',
-        task: 'Меняет продуктивность и нагрузку, но может сказаться на настроении.'
+        chat: 'Увидят все, коллеги ответят сразу. Влияет на команду слабее, чем личный разговор.',
+        '1on1': 'Можно вести разговор до трёх реплик: отвечайте на вопросы сотрудника. Личный разговор сильнее действует на конкретного человека.',
+        task: 'Сотрудник отреагирует сразу. Меняет продуктивность и нагрузку, но может сказаться на настроении.'
       };
       $('actTitle').textContent = titles[type];
-      $('actSub').textContent = subs[type] + ' Стоит 1 очко.';
+      $('actSub').textContent = subs[type];
       let who = '';
       if (type === '1on1') {
         const done = talkedTo();
@@ -1161,58 +1175,93 @@
       $('actText').focus();
     }
 
+    let conv = null; // текущий разговор 1-on-1
+    const fetchJson = async (path, body) => {
+      const res = await fetch(`${API_BASE}/api/farms?action=${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      return res.json().catch(() => ({}));
+    };
+    const failMsg = (data, what) => data && data.reason === 'rate_limited'
+      ? `Сервис ИИ перегружен. Подождите минуту и попробуйте ещё раз. ${what}`
+      : `Не удалось получить ответ. ${what}`;
+    const bubbleHtml = (who, text) => `<div><div class="who-l">${esc(who)}</div><div class="m emp">${esc(text)}</div></div>`;
+    const typingHtml = who => `<div><div class="who-l">${esc(who)}</div><div class="m emp typing"><i></i><i></i><i></i></div></div>`;
+    function setCloseRow() {
+      $('actRow').innerHTML = '<button type="button" class="btn btn-primary" id="actDone">Закрыть</button>';
+      $('actDone').onclick = () => $('actDlg').close(); $('actDone').focus();
+    }
+
     async function submitAct(type) {
-      const ta = $('actText'), err = $('actErr'), send = $('actSend');
+      const ta = $('actText'), err = $('actErr');
       const text = ta.value.replace(/\s+/g, ' ').trim();
       err.textContent = '';
       if (!text) { err.textContent = 'Напишите текст или выберите готовую фразу.'; ta.focus(); return; }
       const whoSel = $('actWho'), idx = whoSel ? +whoSel.value : -1;
       const m = idx >= 0 ? S.members[idx] : null;
-      if (type !== '1on1') {
-        S.actions.push({ type, text, ...(m ? { target: m.name } : {}) });
-        saveActions(); renderActions();
-        S.pendingBubble = { idx: -1, text: type === 'chat' ? 'Вы в общем чате: ' + text : 'Поручение' + (m ? ' для ' + m.name.split(/\s+/)[0] : ' команде') + ': ' + text };
-        $('actDlg').close();
-        return;
-      }
-      // 1-on-1: реплика -> ответ сотрудника (ИИ)
-      send.disabled = true; $('actCancel').disabled = true; ta.disabled = true; if (whoSel) whoSel.disabled = true;
-      const first = m.name.split(/\s+/)[0];
-      $('actBody').innerHTML = `<div class="thread"><div class="m me">${esc(text)}</div><div><div class="who-l">${esc(first)}</div><div class="m emp typing" id="typingDots"><i></i><i></i><i></i></div></div></div><div class="err-line" id="actErr" role="alert"></div>`;
+      if (type === '1on1') { conv = { idx, m, action: null, draft: '', error: '' }; return sendTurn(text); }
+      // общий чат / поручение: реакция сразу, в этом же окне
+      const act = { type, text, ...(m ? { target: m.name } : {}) };
+      const who = type === 'task' && m ? m.name.split(/\s+/)[0] : 'Команда';
+      $('actRow').innerHTML = '';
+      $('actBody').innerHTML = `<div class="thread"><div class="m me">${esc(text)}</div><div id="pend">${typingHtml(who)}</div></div><div class="err-line" id="actErr" role="alert"></div>`;
       S.waiting = true;
-      try {
-        const res = await fetch(`${API_BASE}/api/farms?action=chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: currentSessionId, member_index: idx, text }) });
-        const data = await res.json().catch(() => ({}));
-        if (!data.ok || !data.reply) {
-          S.waiting = false;
-          const msg = data.reason === 'rate_limited' ? 'Сервис ИИ перегружен. Подождите минуту и попробуйте ещё раз. Очко не потрачено.' : 'Не удалось получить ответ. Очко не потрачено, попробуйте ещё раз.';
-          openActRetry(type, idx, text, msg); return;
-        }
-        S.waiting = false;
-        S.actions.push({ type: '1on1', target: m.name, text, reply: data.reply });
-        saveActions(); renderActions();
-        $('typingDots').outerHTML = `<div class="m emp">${esc(data.reply)}</div>`;
-        $('actRow').innerHTML = '<button type="button" class="btn btn-primary" id="actDone">Закрыть</button>';
-        $('actDone').onclick = () => $('actDlg').close(); $('actDone').focus();
-        S.pendingBubble = { idx, text: data.reply };
-      } catch (e) {
-        S.waiting = false;
-        console.error(e);
-        openActRetry(type, idx, text, 'Нет связи с сервером. Очко не потрачено, попробуйте ещё раз.');
+      let data = {};
+      try { data = await fetchJson('react', { session_id: currentSessionId, kind: type, text, member_index: m ? idx : null }); } catch (e) { console.error(e); }
+      S.waiting = false;
+      const reactions = data.ok && Array.isArray(data.reactions) ? data.reactions : [];
+      if (reactions.length) act.reactions = reactions.map(r => ({ name: r.name, reply: r.reply }));
+      S.actions.push(act); saveActions(); renderActions();
+      if (reactions.length) {
+        $('pend').outerHTML = reactions.map(r => bubbleHtml(r.name, r.reply)).join('');
+        S.pendingBubble = { idx: reactions[0].index, text: reactions[0].reply };
+      } else {
+        $('pend').remove();
+        $('actErr').textContent = failMsg(data, 'Действие учтено, но реакции не будет.');
+        S.pendingBubble = { idx: -1, text: (type === 'chat' ? 'Вы в общем чате: ' : 'Поручение: ') + text };
       }
+      setCloseRow();
     }
-    // вернуть форму после ошибки, сохранив текст и выбранного сотрудника
-    function openActRetry(type, idx, text, msg) {
-      const dlg = $('actDlg'); dlg.close();
-      openAct(type, idx);
-      if ($('actText')) { $('actText').value = text; $('actErr').textContent = msg; }
+
+    function renderConv() {
+      const a = conv.action, first = conv.m.name.split(/\s+/)[0];
+      const th = (a ? a.thread : []).map(t => t.from === 'manager' ? `<div class="m me">${esc(t.text)}</div>` : bubbleHtml(first, t.text)).join('');
+      const turns = a ? a.thread.filter(t => t.from === 'manager').length : 0;
+      $('actBody').innerHTML = `<div class="thread">${th}${conv.pending ? `<div class="m me">${esc(conv.pending)}</div>${typingHtml(first)}` : ''}</div>` +
+        (!conv.pending && turns < MAX_TURNS ? `<label for="actText">Ваш ответ (реплика ${turns + 1} из ${MAX_TURNS})</label><textarea id="actText" maxlength="300" placeholder="Ответьте на вопрос или продолжите разговор"></textarea>` : '') +
+        `<div class="err-line" id="actErr" role="alert">${esc(conv.error || '')}</div>`;
+      if (conv.pending) { $('actRow').innerHTML = ''; return; }
+      if (turns >= MAX_TURNS) { setCloseRow(); return; }
+      $('actText').value = conv.draft || '';
+      $('actRow').innerHTML = '<button type="button" class="btn btn-line" id="actEnd">Закончить разговор</button><button type="button" class="btn btn-primary" id="actSend">Ответить</button>';
+      $('actEnd').onclick = () => $('actDlg').close();
+      $('actSend').onclick = () => { const t = $('actText').value.replace(/\s+/g, ' ').trim(); if (!t) { $('actErr').textContent = 'Напишите ответ или закончите разговор.'; $('actText').focus(); return; } sendTurn(t); };
+      $('actText').focus();
+    }
+
+    async function sendTurn(text) {
+      conv.pending = text; conv.error = ''; conv.draft = '';
+      renderConv();
+      const history = conv.action ? conv.action.thread.slice() : [];
+      S.waiting = true;
+      let data = {};
+      try { data = await fetchJson('chat', { session_id: currentSessionId, member_index: conv.idx, text, history }); } catch (e) { console.error(e); }
+      S.waiting = false;
+      conv.pending = '';
+      if (!data.ok || !data.reply) {
+        if (!conv.action) { const idx = conv.idx; $('actDlg').close(); openAct('1on1', idx); if ($('actText')) { $('actText').value = text; $('actErr').textContent = failMsg(data, 'Действие не засчитано, попробуйте ещё раз.'); } return; }
+        conv.draft = text; conv.error = failMsg(data, 'Ответ не отправлен, попробуйте ещё раз.'); renderConv(); return;
+      }
+      if (!conv.action) { conv.action = { type: '1on1', target: conv.m.name, text, thread: [] }; S.actions.push(conv.action); }
+      conv.action.thread.push({ from: 'manager', text }, { from: 'employee', text: data.reply });
+      conv.action.reply = data.reply;
+      saveActions(); renderActions();
+      S.pendingBubble = { idx: conv.idx, text: data.reply };
+      renderConv();
     }
 
     async function endDay() {
       if (S.busy) return;
-      const left = apLeft();
-      if (left > 0) {
-        const ok = await askConfirm(left === AP_MAX ? 'Завершить день без действий?' : `Осталось действий: ${left}`,
+      if (S.actions.length === 0) {
+        const ok = await askConfirm('Завершить день без действий?',
           'Бездействие тоже влияет на команду: скрытые проблемы будут нарастать. Завершить день сейчас?', 'Завершить день', 'btn-primary');
         if (!ok) return;
       }
@@ -1235,7 +1284,7 @@
         const sum = { mood: 0, trust: 0, productivity: 0 };
         items.filter(e => e.kind !== 'action').forEach(e => KEYS.forEach(([k]) => { sum[k] += +(e.metrics_delta || {})[k] || 0; }));
         const li = items.map(e => e.kind === 'action'
-          ? `<li class="act"><b>${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}.</b> ${esc(e.text)}${e.reply ? `<div class="reply">${esc(e.target || 'Сотрудник')}: «${esc(e.reply)}»</div>` : ''}</li>`
+          ? `<li class="act"><b>${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}.</b> ${esc(e.text)}${actDetails(e).map(d => `<div class="reply"><b>${esc(d.who)}:</b> «${esc(d.text)}»</div>`).join('')}</li>`
           : `<li class="ev">${esc(e.text)} ${deltaChips(e.metrics_delta)}</li>`).join('');
         const noAct = !items.some(e => e.kind === 'action');
         return `<section class="day"><h3>День ${esc(d)}<small>${KEYS.map(([k, l]) => sum[k] ? `${l.toLowerCase()} ${sum[k] > 0 ? '+' : '−'}${Math.abs(sum[k])}` : '').filter(Boolean).join(' · ') || 'без изменений'}</small></h3>${noAct && d > 1 ? '<p class="idle">В этот день руководитель ничего не предпринял.</p>' : ''}<ul>${li}</ul></section>`;
