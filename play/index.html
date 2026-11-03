@@ -208,9 +208,25 @@
     .band-demo .input-zone { background: #fff; border-top: 1px solid #dbe5e0; padding: 12px; }
     .band-demo .hint-btn { border: 1.5px solid #b9c8c1; border-radius: 12px; background: #fff; color: #16231f; font-family: inherit; }
     .band-demo .hint-btn:hover { background: #eef3f0; border-color: #0b7d71; }
-    .band-demo .hint-btn.primary { background: #e3f4f1; border-color: #0b7d71; color: #0b4f47; }
-    .band-demo .hint-btn.secondary { background: #fdeeea; border-color: #e8a496; color: #9c2f1b; }
-    .band-demo .hint-btn.example { background: #fff; color: #4a5a54; }
+    .band-demo .hint-btn { line-height: 1.45; }
+    .band-demo .ref-link { align-self: flex-start; margin-top: 2px; padding: 6px 2px; background: none; border: 0; color: #4a5a54; font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; border-radius: 6px; }
+    .band-demo .ref-link:hover { color: #16231f; }
+    .band-demo .ref-link[hidden] { display: none; }
+    .band-demo .why { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 13px; }
+    .band-demo .why li { padding-left: 10px; border-left: 3px solid #b9c8c1; color: #4a5a54; }
+    .band-demo .why q { display: block; color: #16231f; quotes: none; font-weight: 600; margin-bottom: 2px; }
+    dialog.ref { margin: auto; border: 0; border-radius: 16px; padding: 24px; width: min(480px, 92vw); background: #eef3f0; color: #16231f; box-shadow: 0 30px 80px rgba(0,0,0,.45); font-family: 'Onest','Inter',sans-serif; }
+    dialog.ref::backdrop { background: rgba(10,20,18,.6); }
+    dialog.ref h2 { font-family: 'Manrope','Inter',sans-serif; font-size: 20px; margin: 0 0 12px; }
+    dialog.ref blockquote { margin: 0 0 12px; padding: 12px 14px; background: #fff; border-left: 4px solid #0b6f64; border-radius: 8px; font-size: 15.5px; line-height: 1.5; }
+    dialog.ref p { margin: 0 0 18px; color: #4a5a54; font-size: 14px; line-height: 1.55; }
+    dialog.ref button { min-height: 44px; padding: 10px 20px; border: 0; border-radius: 10px; background: #6fd6c8; color: #0b1a17; font: inherit; font-weight: 600; cursor: pointer; }
+    dialog.ref button:focus-visible { outline: 3px solid #0b7d71; outline-offset: 2px; }
+    .video-player { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; margin-bottom: 14px; }
+    .video-player video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .video-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; background: #0f172a; color: #fff; text-decoration: none; font-weight: 600; text-align: center; padding: 20px; }
+    .video-fallback[hidden], .video-player video[hidden] { display: none; }
+    .video-fallback small { font-weight: 400; color: #cbd5e1; }
     .band-demo .fake-input input { min-height: 42px; border: 1.5px solid #cfdcd6; border-radius: 21px; padding: 8px 14px; background: #f4f8f6; font-family: inherit; }
     .band-demo .fake-input button { width: 42px; height: 42px; border-radius: 50%; background: #0b6f64; color: #fff; opacity: .5; padding: 0; }
     .band-demo :focus-visible { outline: 3px solid #0b7d71; outline-offset: 2px; }
@@ -315,10 +331,8 @@
           
           <div class="input-zone">
             <div class="hints-grid" id="hints">
-              <button class="hint-btn example" onclick="showExample()">💡 Показать эталонный ответ</button>
-              <button class="hint-btn primary" onclick="handleAction('E')">💡 Признать состояние («Вижу, тебе тяжело...»)</button>
-              <button class="hint-btn secondary" onclick="handleAction('T')">«Соберись, у всех бывает»</button>
             </div>
+            <button type="button" class="ref-link" id="refLink" onclick="openRef()">Показать эталонный ответ</button>
             <div class="fake-input">
               <input type="text" placeholder="Демо ограничено выбором кнопок..." disabled>
               <button disabled>➤</button>
@@ -381,18 +395,29 @@
      </div>
     </section>
 
-    <!-- БЛОК 2: ВИДЕО (LAZY LOAD) -->
+    <!-- БЛОК 2: ВИДЕО (файл в репозитории play/demo.mp4, запасной вариант — YouTube) -->
     <section class="band band-video" id="video" aria-labelledby="videoTitle">
      <div class="wrap">
       <div class="band-head"><span class="step-num" aria-hidden="true">2</span><div><h2 id="videoTitle">Посмотрите, как это работает в полной версии</h2><p>Видео о полной версии: рабочий стол, диалог, разбор.</p></div></div>
     <div class="video-section">
-      <div class="video-lazy-wrapper" onclick="loadVideo(this)">
-        <!-- Превьюшка YouTube -->
-        <img src="https://img.youtube.com/vi/-2u13r7JPpY/maxresdefault.jpg" alt="Превью видео" onerror="this.style.display='none'">
-        <div class="play-btn"></div>
+      <div class="video-player" id="videoBox">
+        <video id="demoVideo" controls preload="metadata" playsinline poster="../img/demo-desktop.jpg" aria-label="Видео: как работает RPG-симулятор">
+          <source id="demoVideoSrc" src="../play/demo.mp4" type="video/mp4">
+        </video>
+        <a class="video-fallback" id="videoFallback" href="https://www.youtube.com/watch?v=-2u13r7JPpY" target="_blank" rel="noopener" hidden>
+          Видео не загрузилось<small>Открыть на YouTube ↗</small>
+        </a>
       </div>
+      <script>
+        (function () {
+          var v = document.getElementById('demoVideo'), s = document.getElementById('demoVideoSrc'), f = document.getElementById('videoFallback');
+          function fail() { v.hidden = true; f.hidden = false; }
+          s.addEventListener('error', fail); v.addEventListener('error', fail);
+          window.addEventListener('load', function () { if (v.networkState === 3) fail(); });
+        })();
+      </script>
       <p class="video-caption" style="margin-bottom:10px">
-        Видео не запускается? <a href="https://www.youtube.com/watch?v=-2u13r7JPpY" target="_blank" rel="noopener" style="color:#2563eb;font-weight:600">Открыть на YouTube ↗</a>
+        Не играет? <a href="https://www.youtube.com/watch?v=-2u13r7JPpY" target="_blank" rel="noopener" style="color:#2563eb;font-weight:600">Открыть на YouTube ↗</a>
       </p>
       <p class="video-caption">
         Это не тест с вариантами ответов. Руководитель пишет реплику своими словами, ИИ-сотрудник реагирует в реальном времени, ИИ-судья разбирает ответ по 11 критериям.
@@ -441,22 +466,29 @@
     </section>
   </main>
   
+  <dialog id="refDlg" class="ref" aria-labelledby="refTitle">
+    <h2 id="refTitle">Эталонный ответ</h2>
+    <blockquote id="refText"></blockquote>
+    <p id="refWhy"></p>
+    <button type="button" id="refClose" onclick="document.getElementById('refDlg').close()">Закрыть</button>
+  </dialog>
+
   <script>
     // Ход 1 не зависит от предыстории; ход 2 зависит от того, что руководитель ответил в ходе 1.
     // E = признал состояние, T = обесценил. Ключи хода 2: [ответ в ходе 1][ответ в ходе 2].
     const scenario = {
       turn1: {
-        E: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "🟢 Вы признали его состояние. Диалог продолжается.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
-        T: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждёт.", feedback: "🔴 Обесценивание. Сотрудник закрылся.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +8, trustChange: -25 }
+        E: { userText: "Алексей, я слышу, что сил совсем нет. Это важнее любого дедлайна.", feedback: "Вы признали его состояние. Диалог продолжается.", aiResponse: "Спасибо... Я правда не знал, что можно остановиться.", stressChange: -15, trustChange: +20 },
+        T: { userText: "Соберись, у всех бывает. Просто работай быстрее, клиент ждёт.", feedback: "Обесценивание. Сотрудник закрылся.", aiResponse: "Понял. Сделаю как скажете.", stressChange: +8, trustChange: -25 }
       },
       turn2: {
         E: {
-          E: { label: "💡 Предложить решение", userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "🟢 Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
-          T: { label: "«Не ной, все устают»", userText: "Не ной, все устают. Возьми себя в руки.", feedback: "🔴 Давление: сравнение с другими обесценивает проблему и перечёркивает начало разговора.", aiResponse: "...Хорошо.", stressChange: +20, trustChange: -25 }
+          E: { userText: "Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?", feedback: "Конкретное решение вместо давления.", aiResponse: "Это было бы здорово. Спасибо, что услышал.", stressChange: -20, trustChange: +15 },
+          T: { userText: "Не ной, все устают. Возьми себя в руки.", feedback: "Давление: сравнение с другими обесценивает проблему и перечёркивает начало разговора.", aiResponse: "...Хорошо.", stressChange: +20, trustChange: -25 }
         },
         T: {
-          E: { label: "💡 Извиниться и помочь", userText: "Алексей, я ответил резко и был неправ. Давай я заберу эту задачу, а ты возьмёшь паузу. Что тебе сейчас нужно?", feedback: "🟢 Извинение и конкретная помощь. Доверие начинает возвращаться.", aiResponse: "Не ожидал... Спасибо. Мне правда нужен перерыв.", stressChange: -12, trustChange: +12 },
-          T: { label: "«Возьми себя в руки»", userText: "Возьми себя в руки. Работа сама себя не сделает.", feedback: "🔴 Давление усиливается. Сотрудник уходит в формальные ответы.", aiResponse: "...Хорошо.", stressChange: +10, trustChange: -15 }
+          E: { userText: "Алексей, я ответил резко и был неправ. Давай я заберу эту задачу, а ты возьмёшь паузу. Что тебе сейчас нужно?", feedback: "Извинение и конкретная помощь. Доверие начинает возвращаться.", aiResponse: "Не ожидал... Спасибо. Мне правда нужен перерыв.", stressChange: -12, trustChange: +12 },
+          T: { userText: "Возьми себя в руки. Работа сама себя не сделает.", feedback: "Давление усиливается. Сотрудник уходит в формальные ответы.", aiResponse: "...Хорошо.", stressChange: +10, trustChange: -15 }
         }
       }
     };
@@ -469,14 +501,35 @@
     const PATH_LABEL = { EE: '«признать состояние» оба раза', TT: '«Соберись…» оба раза' };
 
     const START = { stress: 92, trust: 45 };
-    let state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [] };
-    let INITIAL_HINTS = '', INITIAL_MESSAGES = '';
+    let state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [], feedback: [] };
+    let INITIAL_MESSAGES = '';
+    const REF = {
+      1: { text: 'Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.', why: 'Реплика называет состояние словами («сил совсем нет»), снимает давление срока и сразу предлагает конкретный шаг: пересмотреть сроки.' },
+      E: { text: 'Давай сегодня ты просто отдохнёшь, а задачу я перенесу или отдам кому-то другому. Как тебе?', why: 'Это конкретное решение вместо давления, и сотруднику оставлено право ответить: «Как тебе?».' },
+      T: { text: 'Алексей, я ответил резко и был неправ. Давай я заберу эту задачу, а ты возьмёшь паузу. Что тебе сейчас нужно?', why: 'Извинение за резкость возвращает доверие, а конкретная помощь и вопрос о потребностях показывают, что вы услышали человека.' }
+    };
+    const shuffle = a => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+    const plain = t => String(t).replace(/^[^\wА-Яа-яЁё«]+\s*/, '');
     window.addEventListener('DOMContentLoaded', () => {
-      INITIAL_HINTS = document.getElementById('hints').innerHTML;
       INITIAL_MESSAGES = document.getElementById('messages').innerHTML;
+      renderHints();
+      const dlg = document.getElementById('refDlg');
+      dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
     });
 
-    function showExample() { alert("Эталонный ответ:\n\n«Алексей, я слышу, что сил совсем нет. Давай пересмотрим сроки, здоровье важнее.»"); }
+    // Варианты ответа: нейтральные, в случайном порядке, без подсказок о том, какой «правильный»
+    function renderHints() {
+      const d = state.turn === 1 ? scenario.turn1 : scenario.turn2[state.path];
+      const html = shuffle(['E', 'T']).map(k => `<button type="button" class="hint-btn" onclick="handleAction('${k}')">${d[k].userText}</button>`).join('');
+      document.getElementById('hints').innerHTML = html;
+      document.getElementById('refLink').hidden = state.turn > 2;
+    }
+    function openRef() {
+      const r = state.turn === 1 ? REF[1] : REF[state.path];
+      document.getElementById('refText').textContent = '«' + r.text + '»';
+      document.getElementById('refWhy').textContent = 'Почему это работает. ' + r.why;
+      document.getElementById('refDlg').showModal();
+    }
 
     // === НОВАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ (CSS CLASSES) ===
     function switchView(viewId) {
@@ -502,12 +555,10 @@
       msgDiv.innerHTML = `<div class="bubble">${data.userText}</div>`;
       msgs.appendChild(msgDiv);
       
-      const hintDiv = document.createElement('div');
-      hintDiv.className = 'feedback-hint ' + (type === 'T' ? 'fb-red' : 'fb-green');
-      hintDiv.innerHTML = data.feedback;
-      msgs.insertBefore(hintDiv, msgDiv.nextSibling);
-      
-      updateMetrics(data.stressChange, data.trustChange);
+      // Оценки по ходу диалога нет: состояние сотрудника меняется и объясняется только в итоге
+      state.stress = Math.max(0, Math.min(100, state.stress + data.stressChange));
+      state.trust = Math.max(0, Math.min(100, state.trust + data.trustChange));
+      state.feedback.push(data.feedback);
       
       if (state.turn === 1) switchView('view-dashboard');
       
@@ -523,20 +574,16 @@
         
         state.turn++;
         if (state.turn <= 2) {
-          hints.innerHTML = getHintsForTurn(state.turn, state.path);
+          renderHints();
           hints.style.pointerEvents = 'auto';
           hints.style.opacity = '1';
         } else {
           switchView('view-final');
+          document.getElementById('refLink').hidden = true;
+          hints.innerHTML = '';
           renderFinalResult();
         }
       }, 1200);
-    }
-
-    function getHintsForTurn(turn, prevPath) {
-      if (turn !== 2) return '';
-      const d = scenario.turn2[prevPath];
-      return `<button class="hint-btn primary" onclick="handleAction('E')">${d.E.label}</button><button class="hint-btn secondary" onclick="handleAction('T')">${d.T.label}</button>`;
     }
 
     function updateMetrics(sd, td) {
@@ -569,14 +616,18 @@
       const alt = simulate(altKey);
       el.innerHTML = `<b>Что произошло.</b> Стресс ${START.stress}% → ${state.stress}% (${sg(state.stress - START.stress)}), доверие ${START.trust}% → ${state.trust}% (${sg(state.trust - START.trust)}). ` +
         SUMMARY[combo] +
-        `<br><span class="alt">Для сравнения: если бы вы ответили ${PATH_LABEL[altKey]}, было бы стресс ${alt.stress}%, доверие ${alt.trust}%.</span>`;
+        `<br><span class="alt">Для сравнения: если бы вы ответили ${PATH_LABEL[altKey]}, было бы стресс ${alt.stress}%, доверие ${alt.trust}%.</span>` +
+        `<ol class="why" aria-label="Разбор ваших реплик">${state.choices.map((c, i) => {
+          const d = i === 0 ? scenario.turn1[c] : scenario.turn2[state.choices[0]][c];
+          return `<li><q>Ваша реплика ${i + 1}: «${d.userText}»</q>${plain(d.feedback)}</li>`;
+        }).join('')}</ol>`;
     }
 
     function resetDemo() {
-      state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [] };
+      state = { turn: 1, path: null, stress: START.stress, trust: START.trust, choices: [], feedback: [] };
       const msgs = document.getElementById('messages'), hints = document.getElementById('hints');
       msgs.innerHTML = INITIAL_MESSAGES; msgs.scrollTop = 0;
-      hints.innerHTML = INITIAL_HINTS; hints.style.pointerEvents = 'auto'; hints.style.opacity = '1';
+      renderHints(); hints.style.pointerEvents = 'auto'; hints.style.opacity = '1';
       updateMetrics(0, 0);
       switchView('view-placeholder');
       document.getElementById('hints').querySelector('button')?.focus();
@@ -592,23 +643,6 @@
       });
     }
 
-    // === LAZY LOAD VIDEO ===
-    function loadVideo(wrapper) {
-      const iframe = document.createElement('iframe');
-      iframe.src = "https://www.youtube-nocookie.com/embed/-2u13r7JPpY?autoplay=1&rel=0";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
-      iframe.title = "Видео: как работает RPG-симулятор";
-      iframe.frameBorder = "0";
-      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-      iframe.allowFullscreen = true;
-      iframe.style.position = "absolute";
-      iframe.style.top = "0";
-      iframe.style.left = "0";
-      iframe.style.width = "100%";
-      iframe.style.height = "100%";
-      wrapper.innerHTML = '';
-      wrapper.appendChild(iframe);
-    }
   </script>
 </body>
 </html>
