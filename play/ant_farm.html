@@ -204,50 +204,102 @@
     .controls .grow { flex: 1; }
 
 
-    /* ---------- действия руководителя ---------- */
-    .actions { display: grid; gap: 12px; padding: 16px 6px 2px; color: var(--panel-ink); }
-    .ap-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
-    .ap-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
-    .ap-dots { display: inline-flex; gap: 6px; }
-    .ap-dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--glass); box-shadow: 0 0 0 3px rgba(111,214,200,.18); transition: background-color .25s, box-shadow .25s; }
-    .ap-dots i.off { background: transparent; box-shadow: inset 0 0 0 2px rgba(164,189,182,.5); }
+    /* ---------- панель управления днём ---------- */
+    .deck { display: grid; grid-template-columns: minmax(0, 1fr) 232px; gap: 16px 28px; align-items: start; padding: 16px 6px 4px; color: var(--panel-ink); }
+    .deck-main { display: grid; gap: 10px; min-width: 0; }
+    .ap-title { font-family: var(--font-display); font-size: 13px; font-weight: 500; }
+    .cover { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cover-chip { min-height: 36px; padding: 6px 14px; border-radius: 99px; border: 1.5px solid rgba(234, 244, 240, .28); background: transparent; color: var(--panel-ink); font-size: 13.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .cover-chip::before { content: ''; width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px rgba(164, 189, 182, .6); flex: none; }
+    .cover-chip:hover { background: rgba(255, 255, 255, .08); }
+    .cover-chip.done { border-color: var(--glass); background: rgba(111, 214, 200, .14); }
+    .cover-chip.done::before { background: var(--glass); box-shadow: none; }
+    .cover-chip.on { outline: 2px solid var(--glass); outline-offset: 2px; }
     .ap-hint { color: var(--panel-mute); font-size: 14px; max-width: 66ch; }
-    .ap-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-    .act-btn { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1.5px solid rgba(111,214,200,.5); background: rgba(111,214,200,.1); color: var(--panel-ink); font-weight: 600; font-size: 15px; cursor: pointer; transition: background-color .15s, border-color .15s; }
-    .act-btn:not(:disabled):hover { background: rgba(111,214,200,.22); border-color: var(--glass); }
-    .act-btn:disabled { opacity: .4; cursor: not-allowed; }
-    .ap-more { font-size: 12px; font-weight: 700; color: var(--glass); margin-left: 2px; align-self: center; }
-    .today { list-style: none; display: grid; gap: 6px; font-size: 13.5px; color: var(--panel-mute); }
-    .today li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
-    .today .tg { color: var(--glass); font-weight: 600; white-space: nowrap; }
-    .today .tx { overflow-wrap: anywhere; color: var(--panel-ink); opacity: .9; }
-    .talk-btn { margin-top: 8px; min-height: 36px; padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--focus); background: transparent; color: #0b4f47; font-weight: 600; font-size: 13.5px; cursor: pointer; }
-    .talk-btn:hover { background: #e3f4f1; }
-    .talk-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .side-ctrls { display: grid; gap: 10px; }
+    .sbtn { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1.5px solid transparent; font-weight: 600; font-size: 15px; cursor: pointer; text-align: center; transition: background-color .15s, border-color .15s; }
+    .sbtn:disabled { opacity: .55; cursor: not-allowed; }
+    .sbtn-go { background: var(--glass); color: #0b1a17; }
+    .sbtn-go:not(:disabled):hover { background: #8ae3d6; }
+    .sbtn-neutral { background: transparent; border-color: rgba(234, 244, 240, .35); color: var(--panel-ink); }
+    .sbtn-neutral:not(:disabled):hover { background: rgba(255, 255, 255, .08); border-color: rgba(234, 244, 240, .6); }
+    .sbtn-danger { background: transparent; border-color: rgba(240, 169, 156, .55); color: #f0a99c; }
+    .sbtn-danger:not(:disabled):hover { background: rgba(232, 85, 61, .14); border-color: #f0a99c; }
+
+    /* ---------- окно коммуникации ---------- */
+    .comms { margin-top: 22px; background: #f8fbf9; border-radius: 14px; overflow: hidden; box-shadow: 0 14px 34px -16px rgba(8, 28, 24, .45), 0 0 0 1px rgba(22, 35, 31, .1); }
+    .wtitle { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px 0 10px; background: #e6eeea; border-bottom: 1px solid #cfdcd6; user-select: none; }
+    .wicon { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; color: #fff; flex: none; background: #1f9d8f; }
+    .wicon svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .wname { flex: 1; font-size: 13px; font-weight: 600; }
+    .wsub { font-size: 12.5px; color: var(--ink-2); }
+    .comms-body { display: grid; grid-template-columns: 240px minmax(0, 1fr); height: 440px; }
+    .comms-list { border-right: 1px solid #dbe5e0; background: #eef3f0; overflow-y: auto; padding: 8px; display: grid; align-content: start; gap: 4px; }
+    .cl-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; text-align: left; cursor: pointer; color: var(--ink); }
+    .cl-item:hover { background: rgba(255, 255, 255, .7); }
+    .cl-item.on { background: #fff; box-shadow: 0 0 0 1.5px var(--focus); }
+    .cl-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #0b1a17; flex: none; }
+    .cl-name { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .cl-sub { display: block; font-size: 12px; color: var(--ink-2); }
+    .cl-meta { margin-left: auto; font-size: 12px; color: #1f7a3a; font-weight: 700; white-space: nowrap; }
+    .comms-pane { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; min-width: 0; min-height: 0; }
+    .pane-head { padding: 10px 14px; background: #fff; border-bottom: 1px solid #dbe5e0; font-size: 14px; }
+    .pane-head b { display: block; }
+    .pane-head small { color: var(--ink-2); }
+    .pane-thread { overflow-y: auto; padding: 14px; background: #eaf1ee; display: flex; flex-direction: column; gap: 8px; }
+    .pane-thread .m { max-width: 82%; padding: 9px 13px; border-radius: 14px; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
+    .pane-thread .me { align-self: flex-end; background: #0b6f64; color: #fff; border-bottom-right-radius: 4px; }
+    .pane-thread .emp { align-self: flex-start; background: #fff; border: 1px solid #d6e1db; border-bottom-left-radius: 4px; }
+    .pane-thread .who-l { align-self: flex-start; font-size: 12px; color: var(--ink-2); margin: 4px 0 -4px 4px; }
+    .pane-thread .typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
+    .pane-thread .typing i { width: 7px; height: 7px; border-radius: 50%; background: #8aa097; animation: tdot 1.1s infinite; }
+    .pane-thread .typing i:nth-child(2) { animation-delay: .15s; } .pane-thread .typing i:nth-child(3) { animation-delay: .3s; }
+    @keyframes tdot { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+    .pane-empty { margin: auto; max-width: 38ch; text-align: center; color: var(--ink-2); font-size: 14px; }
+    .pane-input { display: flex; gap: 8px; align-items: flex-end; padding: 10px 12px; background: #fff; border-top: 1px solid #dbe5e0; }
+    .pane-input textarea { flex: 1; min-width: 0; min-height: 42px; max-height: 140px; padding: 9px 14px; border: 1.5px solid var(--line); border-radius: 21px; font: inherit; font-size: 14.5px; line-height: 1.4; resize: none; background: #fff; color: var(--ink); display: block; }
+    .pane-input textarea:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px rgba(11, 125, 113, .2); }
+    .pane-input textarea:disabled { background: #f1f5f3; }
+    .send-btn { width: 42px; height: 42px; border-radius: 50%; border: 0; background: #0b6f64; color: #fff; display: grid; place-items: center; cursor: pointer; flex: none; }
+    .send-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+    .pane-note { padding: 0 14px 10px; font-size: 12.5px; color: var(--ink-2); background: #fff; }
+    .pane-note.err { color: var(--coral-ink); }
+
+    /* ---------- карточка сотрудника и «Общий зал» ---------- */
+    .tip { position: absolute; z-index: 7; width: min(250px, 62%); background: #f7f1e3; color: #2a1a11; border-radius: 12px; padding: 12px 14px; box-shadow: 0 14px 30px rgba(0, 0, 0, .45); pointer-events: none; font-size: clamp(11.5px, 1.5cqw, 13.5px); line-height: 1.4; animation: pop .2s ease-out; }
+    .tip > b { font-size: 1.08em; }
+    .tip .tip-role { display: block; color: #6a5645; margin-bottom: 8px; }
+    .tip-m { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 7px; }
+    .tip-m i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 3px; background: rgba(42, 26, 17, .14); overflow: hidden; }
+    .tip-m i::after { content: ''; display: block; height: 100%; width: var(--v); background: var(--c); border-radius: 3px; }
+    .tip p { margin: 4px 0 0; }
+    .hubtag { pointer-events: auto; cursor: pointer; border: 1px solid rgba(111, 214, 200, .45); font-family: inherit; }
+    .hubtag:hover { background: rgba(111, 214, 200, .32); }
+    dialog.hall { width: min(500px, 92vw); max-width: none; }
+    .hall h2 { margin-bottom: 14px; }
+    .hall-m { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+    .hall-m div { background: #fff; border-radius: 10px; padding: 8px 10px; font-size: 12.5px; color: var(--ink-2); }
+    .hall-m b { display: block; font-family: var(--font-display); font-size: 18px; color: var(--ink); }
+    .hall h3 { font-size: 13px; margin: 12px 0 4px; }
+    .hall ul { margin: 0 0 4px; padding-left: 18px; font-size: 14px; color: var(--ink-2); }
+    .hall .row { margin-top: 16px; }
+    li.act details summary { cursor: pointer; list-style: none; }
+    li.act details summary::-webkit-details-marker { display: none; }
+    li.act details summary::after { content: ' ▸'; color: var(--ink-2); }
+    li.act details[open] summary::after { content: ' ▾'; }
+    .act-tag { font-size: 12px; font-weight: 700; background: #f3e3b4; color: #5a4200; padding: 1px 8px; border-radius: 99px; margin-right: 6px; }
+    .act-cnt { font-size: 12px; color: var(--ink-2); margin-left: 4px; }
+    .act-reply { margin-top: 4px; font-size: 13.5px; color: var(--ink); border-left: 3px solid #b9c8c1; padding-left: 10px; }
     li.act { color: var(--ink-2); }
     li.act::before { border-color: var(--amber) !important; border-radius: 3px !important; }
-    .act-tag { font-size: 12px; font-weight: 700; background: #f3e3b4; color: #5a4200; padding: 1px 8px; border-radius: 99px; margin-right: 6px; }
-    .act-reply { margin-top: 4px; font-size: 13.5px; color: var(--ink); border-left: 3px solid #b9c8c1; padding-left: 10px; }
-    dialog.act { width: min(520px, 94vw); max-width: none; }
-    dialog.act h2 { margin-bottom: 4px; }
-    dialog.act .sub { color: var(--ink-2); font-size: 14px; margin-bottom: 14px; }
-    dialog.act label { display: block; font-weight: 600; font-size: 13.5px; margin: 12px 0 6px; }
-    dialog.act select, dialog.act textarea { width: 100%; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; padding: 10px 12px; font: inherit; color: var(--ink); }
-    dialog.act textarea { min-height: 96px; resize: vertical; }
-    dialog.act .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    dialog.act .chip { border: 1.5px solid var(--line); background: var(--bench-2); border-radius: 99px; padding: 5px 12px; font-size: 13px; cursor: pointer; color: var(--ink); text-align: left; }
-    dialog.act .chip:hover { border-color: var(--focus); background: #fff; }
-    dialog.act .row { margin-top: 18px; }
-    .thread { display: grid; gap: 10px; margin: 6px 0 0; }
-    .thread .m { max-width: 88%; padding: 9px 13px; border-radius: 14px; font-size: 14.5px; line-height: 1.5; overflow-wrap: anywhere; }
-    .thread .me { justify-self: end; background: #0b6f64; color: #fff; border-bottom-right-radius: 4px; }
-    .thread .emp { justify-self: start; background: #fff; border: 1px solid #d6e1db; border-bottom-left-radius: 4px; }
-    .thread .who-l { font-size: 12px; color: var(--ink-2); margin: 0 0 2px 4px; }
-    .thread .typing { display: inline-flex; gap: 4px; padding: 13px 14px; }
-    .thread .typing i { width: 7px; height: 7px; border-radius: 50%; background: #8aa097; animation: tdot 1.1s infinite; }
-    .thread .typing i:nth-child(2) { animation-delay: .15s; } .thread .typing i:nth-child(3) { animation-delay: .3s; }
-    @keyframes tdot { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
-    .err-line { color: var(--coral-ink); font-size: 13.5px; margin-top: 10px; }
+    @media (max-width: 760px) {
+      .deck { grid-template-columns: minmax(0, 1fr); }
+      .comms-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 540px; }
+      .comms-list { display: flex; overflow-x: auto; border-right: 0; border-bottom: 1px solid #dbe5e0; }
+      .cl-item { width: auto; flex: none; }
+      .cl-sub { display: none; }
+    }
 
     /* ---------- ниже сцены ---------- */
     .below { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; margin-top: 28px; align-items: start; }
@@ -400,26 +452,35 @@
 
         <div class="scene" id="mainScene"></div>
 
-        <div class="actions" id="actionsPanel" aria-labelledby="apTitle">
-          <div class="ap-head">
-            <div class="ap-title" id="apTitle"><span>Действия на день <span id="apDay">1</span></span> <span class="ap-dots" id="apDots" role="img" aria-label="Осталось действий"></span></div>
+        <div class="deck">
+          <div class="deck-main">
+            <div class="ap-title" id="apTitle">Действия на день <span id="apDay">1</span></div>
+            <div class="cover" id="cover" role="list" aria-label="С кем вы уже поговорили сегодня"></div>
+            <p class="ap-hint" id="apHint"></p>
           </div>
-          <p class="ap-hint" id="apHint"></p>
-          <div class="ap-btns">
-            <button type="button" class="act-btn" id="actChat" onclick="openAct('chat')">Написать в общий чат</button>
-            <button type="button" class="act-btn" id="act1on1" onclick="openAct('1on1')">Поговорить 1-on-1</button>
-            <button type="button" class="act-btn" id="actTask" onclick="openAct('task')">Дать поручение</button>
+          <div class="side-ctrls">
+            <button type="button" class="sbtn sbtn-go" id="simulateBtn" onclick="endDay()">Завершить день</button>
+            <button type="button" class="sbtn sbtn-neutral" onclick="generateDocumentary()">Собрать документалку</button>
+            <button type="button" class="sbtn sbtn-danger" onclick="refundFarm()">Удалить ферму</button>
           </div>
-          <ul class="today" id="todayLog" aria-live="polite"></ul>
-        </div>
-
-        <div class="controls">
-          <button type="button" class="btn btn-primary" id="simulateBtn" onclick="endDay()">Завершить день</button>
-          <button type="button" class="btn btn-ghost" onclick="generateDocumentary()">Собрать документалку</button>
-          <span class="grow"></span>
-          <button type="button" class="btn-quiet" onclick="refundFarm()">Удалить ферму</button>
         </div>
       </div>
+
+      <section class="comms" id="commsSec" aria-labelledby="commsTitle">
+        <div class="wtitle"><span class="wicon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span class="wname" id="commsTitle">Коммуникации</span><span class="wsub">Реплики видят только участники чата</span></div>
+        <div class="comms-body">
+          <nav class="comms-list" id="commsList" aria-label="Чаты"></nav>
+          <div class="comms-pane">
+            <div class="pane-head" id="paneHead"></div>
+            <div class="pane-thread" id="paneThread" role="log" aria-live="polite"></div>
+            <div class="pane-input">
+              <textarea id="paneText" rows="1" maxlength="400" aria-label="Ваше сообщение" onkeydown="paneKey(event)" oninput="paneAutosize()"></textarea>
+              <button type="button" class="send-btn" id="paneSend" onclick="sendMsg()" aria-label="Отправить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l18-8L3 4v6l11 2-11 2z"/></svg></button>
+            </div>
+            <div class="pane-note" id="paneNote" role="status"></div>
+          </div>
+        </div>
+      </section>
 
       <div class="below">
         <div>
@@ -454,11 +515,13 @@
       </div>
     </form>
   </dialog>
-  <dialog id="actDlg" class="act" aria-labelledby="actTitle">
-    <h2 id="actTitle"></h2>
-    <p class="sub" id="actSub"></p>
-    <div id="actBody"></div>
-    <div class="row" id="actRow"></div>
+  <dialog id="hallDlg" class="hall" aria-labelledby="hallTitle">
+    <h2 id="hallTitle">Общий зал</h2>
+    <div id="hallBody"></div>
+    <div class="row">
+      <button type="button" class="btn btn-line" onclick="$('hallDlg').close()">Закрыть</button>
+      <button type="button" class="btn btn-primary" onclick="$('hallDlg').close(); openChat('team', { scroll: true })">Открыть общий чат</button>
+    </div>
   </dialog>
   <div id="toasts" aria-live="polite"></div>
 
@@ -600,7 +663,7 @@
       </svg>
       <div class="overlay" style="position:absolute;inset:0;z-index:2">
         ${slots}${tags}
-        <div class="tag hubtag" style="left:${HUB[0] / VB_W * 100}%;top:${(HUB[1] + 34) / VB_H * 100}%">Общий зал</div>
+        <button type="button" class="tag hubtag" aria-label="Общий зал: сводка за сегодня" onclick="openHall()" style="left:${HUB[0] / VB_W * 100}%;top:${(HUB[1] + 34) / VB_H * 100}%">Общий зал</button>
       </div>
       <div class="glassfx"></div>`;
 
@@ -611,7 +674,14 @@
       sc.svg.querySelectorAll('.cl').forEach((c, i) => { c.style.animation = `drift ${40 + i * 25}s ease-in-out ${-i * 12}s infinite alternate`; });
       sc.svg.querySelector('.rays').style.animation = 'spin 40s linear infinite';
       sc.svg.querySelector('.rays').style.transformOrigin = '150px 72px';
-      root.querySelectorAll('.ant').forEach(b => b.addEventListener('click', () => selectMember(+b.dataset.i, true)));
+      root.querySelectorAll('.ant').forEach(b => {
+        const i = +b.dataset.i;
+        b.addEventListener('click', () => { if (root.id !== 'mainScene') return; openChat('m' + i, { scroll: true, focus: true }); if (touchInput()) showTip(i, 3500); });
+        b.addEventListener('mouseenter', () => showTip(i));
+        b.addEventListener('mouseleave', () => { if (!touchInput()) hideTip(); });
+        b.addEventListener('focus', () => showTip(i));
+        b.addEventListener('blur', () => { if (!touchInput()) hideTip(); });
+      });
       SC = sc;
       members.slice(0, 5).forEach((m, i) => paintMember(i, 7));
       applyMetrics(metrics || { mood: 7, trust: 7, productivity: 7 });
@@ -767,21 +837,44 @@
       for (let i = (log || []).length - 1; i >= 0; i--) if (log[i].kind !== 'action' && mentions(m, log[i].text || '')) return log[i];
       return null;
     }
-    function selectMember(i, showEvent) {
-      S.sel = i; if (typeof renderActions === 'function') renderActions();
+    function memberTrust(i) {
+      const m = S.members[i], log = (S.session && S.session.event_log) || [];
+      let v = +((S.session && S.session.metrics) || {}).trust;
+      if (isNaN(v)) v = 7;
+      log.forEach(e => { if (e.kind !== 'action' && mentions(m, e.text || '')) v += ((e.metrics_delta && +e.metrics_delta.trust) || 0) * 1.2; });
+      return clamp(Math.round(v * 10) / 10, 0, 10);
+    }
+    function highlightMember(i) {
+      S.sel = i;
       document.querySelectorAll('.slot').forEach(s => s.classList.toggle('selected', +s.dataset.i === i));
       document.querySelectorAll('.who-card').forEach(c => c.classList.toggle('selected', +c.dataset.i === i));
-      const card = document.querySelector(`.who-card[data-i="${i}"]`);
-      if (card && showEvent) card.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
-      if (showEvent && S.session) {
-        const ev = lastEventFor(S.members[i], S.session.event_log);
-        const m = S.members[i];
-        showBubble(i, ev ? ev.text : `${m.name}${m.role ? ' · ' + m.role : ''}: пока без происшествий.`, ev && ev.metrics_delta, 6000);
-      }
+    }
+    const selectMember = (i) => highlightMember(i);
+    function hideTip() { clearTimeout(hideTip.t); const t = SC && SC.overlay.querySelector('.tip'); if (t) t.remove(); }
+    function showTip(i, ms) {
+      if (!SC || SC.root.id !== 'mainScene' || !S.session || !S.members[i] || !SC.positions[i]) return;
+      hideTip();
+      const m = S.members[i], mood = S.moods[i] ?? 7, trust = memberTrust(i);
+      const W = SC.root.clientWidth, H = SC.root.clientHeight, [x, y] = SC.positions[i];
+      const px = x / VB_W * W, py = (y + 10) / VB_H * H;
+      const el = document.createElement('div');
+      el.className = 'tip'; el.setAttribute('role', 'status');
+      el.innerHTML = `<b>${esc(m.name)}</b>${m.role ? `<span class="tip-role">${esc(m.role)}</span>` : '<span class="tip-role"></span>'}
+        <div class="tip-m"><span>Настроение</span><b>${fmt(mood)}/10</b><i style="--v:${mood * 10}%;--c:#d98f12"></i></div>
+        <div class="tip-m"><span>Доверие</span><b>${fmt(trust)}/10</b><i style="--v:${trust * 10}%;--c:#1f9d8f"></i></div>
+        <p><b>Особенность:</b> ${esc(TRIGGERS[m.trigger] || m.trigger || 'нет')}</p>
+        ${m.style ? `<p><b>Характер:</b> ${esc(m.style)}</p>` : ''}`;
+      SC.overlay.appendChild(el);
+      const w = el.offsetWidth, h = el.offsetHeight, half = W * 0.045;
+      let left = px + half + 10;
+      if (left + w > W - 6) left = px - half - 10 - w;
+      el.style.left = clamp(left, 6, Math.max(6, W - w - 6)) + 'px';
+      el.style.top = clamp(py - h / 2, 6, Math.max(6, H - h - 6)) + 'px';
+      if (ms) hideTip.t = setTimeout(hideTip, ms);
     }
 
     /* ============ экран «колония» ============ */
-    const S = { session: null, members: [], busy: false, actions: [], sel: -1 };
+    const S = { session: null, members: [], busy: false, sel: -1, chats: {}, drafts: {}, chatSel: 'team', pending: null, err: '' };
 
     function highlight(text, members) {
       let s = esc(text);
@@ -809,10 +902,17 @@
         const allPending = hideLast > 0 && items.every(x => x.idx >= firstHidden);
         return `<section class="day-group${allPending ? ' pending' : ''}" data-day="${esc(d)}"><h3>День ${esc(d)}</h3><ol>` +
           items.map(({ e, idx }) => e.kind === 'action'
-            ? `<li data-idx="${idx}" class="act"><span class="act-tag">${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}</span>${esc(e.text || '')}${actDetails(e).map(d => `<div class="act-reply"><b>${esc(d.who)}:</b> «${esc(d.text)}»</div>`).join('')}</li>`
+            ? journalAct(e, idx)
             : `<li data-idx="${idx}" class="${hideLast > 0 && idx >= firstHidden ? 'pending' : ''}">${highlight(e.text || '', S.members)}<div>${deltaChips(e.metrics_delta)}</div></li>`).join('') +
           '</ol></section>';
       }).join('');
+    }
+    const plural = (n, a, b, c) => { const k = n % 100, d = n % 10; return (k > 10 && k < 20) ? c : d === 1 ? a : (d >= 2 && d <= 4) ? b : c; };
+    function journalAct(e, idx) {
+      const det = actDetails(e), total = 1 + det.length;
+      const head = `<span class="act-tag">${esc(ACT_LABEL[e.type] || 'Действие')}${e.target ? ' · ' + esc(e.target) : ''}</span>${esc(e.text || '')}`;
+      if (!det.length) return `<li data-idx="${idx}" class="act">${head}</li>`;
+      return `<li data-idx="${idx}" class="act"><details><summary>${head}<span class="act-cnt">· ${total} ${plural(total, 'реплика', 'реплики', 'реплик')}</span></summary>${det.map(d => `<div class="act-reply"><b>${esc(d.who)}:</b> «${esc(d.text)}»</div>`).join('')}</details></li>`;
     }
     function revealJournal(idx) {
       const li = document.querySelector(`#eventLogContainer li[data-idx="${idx}"]`); if (!li) return;
@@ -825,7 +925,7 @@
         const mood = moods[i], low = mood <= 3;
         const last = lastEventFor(m, log);
         const dots = Array.from({ length: 10 }, (_, k) => `<i class="${k < Math.round(mood) ? 'on' : ''}"></i>`).join('');
-        return `<article class="who-card" data-i="${i}">
+        return `<article class="who-card" data-i="${i}" tabindex="0" role="button" aria-label="Открыть чат с ${esc(m.name)}">
           <div class="chip-ant" style="color:${m.color}"><svg viewBox="0 0 72 44" aria-hidden="true"><use href="#ant"/></svg></div>
           <div>
             <div class="who-name">${esc(m.name)}</div>
@@ -833,12 +933,14 @@
             <div class="who-meta"><span class="trig">${esc(TRIGGERS[m.trigger] || m.trigger)}</span>
               <span>Настроение <span class="mini ${low ? 'low' : ''}" aria-hidden="true">${dots}</span> <b>${fmt(mood)}</b></span></div>
             ${last ? `<div class="who-last">День ${esc(last.day)}: ${esc(last.text)}</div>` : ''}
-            <button type="button" class="talk-btn" data-i="${i}">Поговорить 1-on-1</button>
           </div></article>`;
       }).join('');
-      document.querySelectorAll('.who-card').forEach(c => c.addEventListener('click', () => selectMember(+c.dataset.i, true)));
-      document.querySelectorAll('.talk-btn').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openAct('1on1', +b.dataset.i); }));
-      renderActions();
+      document.querySelectorAll('.who-card').forEach(c => {
+        const go = () => openChat('m' + c.dataset.i, { scroll: true, focus: true });
+        c.addEventListener('click', go);
+        c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      });
+      renderComms();
     }
 
     function renderDashboard(session, opts = {}) {
@@ -859,7 +961,8 @@
       S.moods = S.members.map((mm, i) => memberMood(i, S.members, metrics, log));
       S.members.forEach((_, i) => paintMember(i, S.moods[i]));
       renderJournal(log, opts.hideLast || 0);
-      S.actions = loadActions();
+      S.chats = loadChats(); S.pending = null; S.err = '';
+      if (S.chatSel !== 'team' && !S.members[+S.chatSel.slice(1)]) S.chatSel = 'team';
       renderRoster(S.members, S.moods, log);
     }
 
@@ -996,14 +1099,14 @@
       if (S.busy) return;
       S.busy = true;
       const btn = $('simulateBtn');
-      btn.disabled = true; btn.textContent = 'Идёт рабочий день…'; renderActions();
+      btn.disabled = true; btn.textContent = 'Идёт рабочий день…'; const doneActions = silent ? [] : buildActions(); renderComms();
       $('mainScene').classList.add('busy');
       $('mainScene').scrollIntoView({ block: 'center', behavior: RM ? 'auto' : 'smooth' });
       try {
         const res = await fetch(`${API_BASE}/api/farms?action=simulate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1, manager_actions: silent ? [] : S.actions, intro: silent })
+          body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1, manager_actions: doneActions, intro: silent })
         });
         const data = await res.json();
         if (!data.ok) { toast('Симуляция не удалась: ' + (data.reason || 'ошибка сервера'), 'error'); return; }
@@ -1014,15 +1117,14 @@
           const r2 = await fetch(`${API_BASE}/api/get-session?id=${encodeURIComponent(currentSessionId)}`);
           fresh = (await r2.json()).session || null;
         } catch (_) { /* упадём на локальную сборку */ }
-        const doneActions = silent ? [] : S.actions;
         if (!fresh) {
           const day = S.session.current_day;
-          const actLog = doneActions.map(a => ({ day, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, thread: a.thread || null, reactions: a.reactions || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
+          const actLog = doneActions.map(a => ({ day, kind: 'action', type: a.type, target: a.target || null, text: a.text, reply: a.reply || null, thread: a.thread || null, metrics_delta: { mood: 0, trust: 0, productivity: 0 } }));
           fresh = { ...S.session, current_day: data.new_day != null ? data.new_day + 1 : day + 1, metrics: data.new_metrics || S.session.metrics,
             event_log: [...(S.session.event_log || []), ...actLog, ...newEvents] };
         }
-        try { localStorage.removeItem(actKey()); } catch (_) {}
-        S.actions = [];
+        try { localStorage.removeItem(chatKey()); } catch (_) {}
+        S.chats = {}; S.drafts = {}; $('paneText').value = '';
         $('mainScene').classList.remove('busy');
         await playDay(fresh, newEvents);
       } catch (e) {
@@ -1031,7 +1133,7 @@
       } finally {
         S.busy = false;
         $('mainScene').classList.remove('busy');
-        btn.disabled = false; renderActions();
+        btn.disabled = false; renderComms();
       }
     }
 
@@ -1050,7 +1152,7 @@
         const d = ev.metrics_delta || {};
         const mi = S.members.findIndex(m => mentions(m, ev.text || ''));
         showBubble(mi, ev.text || '', d, 4200);
-        if (mi >= 0) selectMember(mi, false);
+        if (mi >= 0) highlightMember(mi);
         cur = {
           mood: clamp(cur.mood + (d.mood || 0), 0, 10),
           trust: clamp(cur.trust + (d.trust || 0), 0, 10),
@@ -1097,171 +1199,173 @@
     }
 
 
-    /* ============ действия руководителя ============ */
-    const NORM = 3, MAX_ACTIONS = 12, MAX_TURNS = 3;
+    /* ============ коммуникации ============ */
+    const MAX_MSG = 4;
     const ACT_LABEL = { chat: 'Общий чат', '1on1': '1-on-1', task: 'Поручение' };
-    const SUGGEST = {
-      chat: ['Вижу, что мы все устали. Сегодня без сверхурочных.', 'Давайте сосредоточимся на главном, остальное подождёт.', 'Хорошая работа, команда. Если что-то мешает, пишите мне напрямую.'],
-      '1on1': ['Как ты себя чувствуешь? Что сейчас давит сильнее всего?', 'Я заметил, что тебе непросто. Чем я могу помочь?', 'Что бы ты убрал из своей недели в первую очередь?'],
-      task: ['Фокус на багах и стабильности', 'Фокус на людях: сегодня без новых задач, только поддержка команды', 'Срочно доделать релиз до пятницы', 'Разобрать технический долг']
-    };
-    const actKey = () => `farmActions:${currentSessionId}:${S.session ? S.session.current_day : 0}`;
-    function loadActions() { try { const v = JSON.parse(localStorage.getItem(actKey()) || '[]'); return Array.isArray(v) ? v.slice(0, MAX_ACTIONS) : []; } catch (_) { return []; } }
-    function saveActions() { try { localStorage.setItem(actKey(), JSON.stringify(S.actions)); } catch (_) {} }
-    const talkedTo = () => new Set(S.actions.filter(a => a.type === '1on1').map(a => a.target));
+    const touchInput = () => matchMedia('(pointer: coarse)').matches || innerWidth <= 768;
+    const chatKey = () => `farmChats:${currentSessionId}:${S.session ? S.session.current_day : 0}`;
+    function loadChats() { try { const v = JSON.parse(localStorage.getItem(chatKey()) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch (_) { return {}; } }
+    function saveChats() { try { localStorage.setItem(chatKey(), JSON.stringify(S.chats)); } catch (_) {} }
+    const mgrCount = id => (S.chats[id] || []).filter(x => x.from === 'manager').length;
+    const memIdx = id => id === 'team' ? -1 : +id.slice(1);
+    const initial = n => (String(n).trim()[0] || '?').toUpperCase();
+    const chatIds = () => ['team', ...S.members.map((_, i) => 'm' + i)];
 
-    function renderActions() {
-      if (!$('apDots') || !S.session) return;
-      const n = S.actions.length, busy = S.busy, full = n >= MAX_ACTIONS;
+    function renderComms() {
+      if (!$('commsList') || !S.session) return;
+      const busy = S.busy, id = S.chatSel, idx = memIdx(id), m = idx >= 0 ? S.members[idx] : null;
       $('apDay').textContent = S.session.current_day;
-      $('apDots').innerHTML = Array.from({ length: NORM }, (_, k) => `<i class="${k < n ? '' : 'off'}"></i>`).join('') + (n > NORM ? `<span class="ap-more">+${n - NORM}</span>` : '');
-      $('apDots').setAttribute('aria-label', `Сделано действий: ${n}, рекомендуем ${NORM}`);
-      $('apHint').textContent = n === 0
-        ? 'Начните с чего угодно: напишите команде, поговорите с тем, кому тяжелее, или дайте поручение. Рекомендуем 3 действия на день, но можно больше. Цифры изменятся, когда вы завершите день.'
-        : n < NORM ? `Сделано: ${n}. Рекомендуем хотя бы ${NORM} действия, но можно больше.`
-        : full ? 'Лимит действий на день исчерпан. Завершите день, чтобы увидеть последствия.'
-        : 'Норма выполнена, дальше по желанию. Когда будете готовы, завершите день и посмотрите последствия.';
-      ['actChat', 'act1on1', 'actTask'].forEach(id => { $(id).disabled = busy || full; });
-      const sel = S.members[S.sel];
-      $('act1on1').textContent = sel ? `Поговорить с ${sel.name.split(/\s+/)[0]}` : 'Поговорить 1-on-1';
-      document.querySelectorAll('.talk-btn').forEach(b => { const m = S.members[+b.dataset.i]; b.disabled = busy || full || (m && talkedTo().has(m.name)); });
-      $('todayLog').innerHTML = S.actions.map(a => `<li><span class="tg">${esc(ACT_LABEL[a.type])}${a.target ? ' · ' + esc(a.target.split(/\s+/)[0]) : ''}</span><span class="tx">${esc(a.text)}</span></li>`).join('');
-      if (!busy) $('simulateBtn').textContent = n > 0 ? `Завершить день · действий: ${n}` : 'Завершить день';
+      const done = chatIds().filter(c => mgrCount(c) > 0).length, total = S.members.length + 1;
+      $('apHint').textContent = done === 0
+        ? 'Напишите команде в общий чат или поговорите с кем-то лично. Лимита на число разговоров нет: отметка загорится, когда вы напишете в чат. Цифры изменятся, когда вы завершите день.'
+        : `Вы уже написали: ${done} из ${total}. Можно написать ещё, а можно завершить день и посмотреть последствия.`;
+      $('cover').innerHTML = chatIds().map(c => {
+        const mi = memIdx(c), label = mi < 0 ? 'Команда' : S.members[mi].name.split(/\s+/)[0];
+        return `<button type="button" class="cover-chip${mgrCount(c) ? ' done' : ''}${c === id ? ' on' : ''}" data-c="${c}" role="listitem" aria-label="${esc(label)}: ${mgrCount(c) ? 'уже писали' : 'пока не писали'}">${esc(label)}</button>`;
+      }).join('');
+      $('cover').querySelectorAll('.cover-chip').forEach(b => b.addEventListener('click', () => openChat(b.dataset.c, { scroll: true, focus: true })));
+      $('commsList').innerHTML = chatIds().map(c => {
+        const mi = memIdx(c), mm = mi >= 0 ? S.members[mi] : null, n = mgrCount(c);
+        return `<button type="button" class="cl-item${c === id ? ' on' : ''}" data-c="${c}"><span class="cl-av" style="background:${mm ? mm.color : '#6fd6c8'}">${mm ? esc(initial(mm.name)) : '#'}</span><span><span class="cl-name">${mm ? esc(mm.name.split(/\s+/)[0]) : 'Общий чат'}</span><span class="cl-sub">${mm ? esc(mm.role || '1-on-1') : 'Вся команда'}</span></span>${n ? `<span class="cl-meta">✓ ${n}</span>` : ''}</button>`;
+      }).join('');
+      $('commsList').querySelectorAll('.cl-item').forEach(b => b.addEventListener('click', () => openChat(b.dataset.c, { focus: !touchInput() })));
+      $('paneHead').innerHTML = m
+        ? `<b>${esc(m.name)}</b><small>${m.role ? esc(m.role) + ' · ' : ''}личный разговор, видите только вы двое</small>`
+        : '<b>Общий чат</b><small>Видит вся команда, отвечают те, кому это ближе всего</small>';
+      const th = S.chats[id] || [];
+      const first = m ? m.name.split(/\s+/)[0] : '';
+      let h = th.map(t => t.from === 'manager'
+        ? `<div class="m me">${esc(t.text)}</div>`
+        : `${!m ? `<div class="who-l">${esc((t.name || '').split(/\s+/)[0])}</div>` : ''}<div class="m emp">${esc(t.text)}</div>`).join('');
+      if (S.pending === id) h += `${m ? '' : '<div class="who-l">Команда</div>'}<div class="m emp typing" aria-label="${m ? esc(first) : 'Команда'} печатает"><i></i><i></i><i></i></div>`;
+      if (!h) h = `<div class="pane-empty">${m ? `Здесь можно поговорить с ${esc(first)} лично. Начните с вопроса, а не с оценки.` : 'Здесь можно написать всей команде. Ответят те, кого это касается сильнее всего.'}</div>`;
+      const box = $('paneThread'), stick = box.scrollHeight - box.scrollTop - box.clientHeight < 80 || box.dataset.id !== id;
+      box.innerHTML = h; box.dataset.id = id;
+      if (stick) box.scrollTop = box.scrollHeight;
+      const limit = mgrCount(id) >= MAX_MSG, lock = busy || !!S.pending || limit;
+      const ta = $('paneText');
+      ta.disabled = lock; $('paneSend').disabled = lock;
+      ta.placeholder = limit ? 'Лимит реплик в этом чате исчерпан' : touchInput() ? 'Сообщение' : 'Сообщение. Enter отправляет, Shift+Enter: новая строка';
+      const note = $('paneNote');
+      note.className = 'pane-note' + (S.err ? ' err' : '');
+      note.textContent = S.err || (limit ? 'В этом чате достаточно реплик. Напишите кому-то ещё или завершите день.' : mgrCount(id) ? `Ваших реплик в этом чате: ${mgrCount(id)} из ${MAX_MSG}.` : '');
+      if (!busy) $('simulateBtn').textContent = 'Завершить день';
     }
 
-    // строки под основной записью действия: ответы сотрудников, продолжение диалога, реакции
+    function openChat(id, o = {}) {
+      if (!chatIds().includes(id)) return;
+      const ta = $('paneText');
+      S.drafts[S.chatSel] = ta.value;
+      S.chatSel = id; S.err = '';
+      ta.value = S.drafts[id] || ''; paneAutosize();
+      const mi = memIdx(id);
+      if (mi >= 0) highlightMember(mi); else { highlightMember(-1); }
+      renderComms();
+      if (o.scroll) $('commsSec').scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+      if (o.focus && !touchInput() && !ta.disabled) ta.focus({ preventScroll: true });
+    }
+
+    function paneAutosize() {
+      const ta = $('paneText');
+      if (!ta.value) { ta.style.height = ''; return; }
+      ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px';
+    }
+    function paneKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !touchInput()) { e.preventDefault(); sendMsg(); }
+    }
+
+    const fetchJson = async (path, body) => {
+      const res = await fetch(`${API_BASE}/api/farms?action=${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      return res.json().catch(() => ({}));
+    };
+    const failMsg = (data, what) => data && data.reason === 'rate_limited'
+      ? `Сервис ИИ перегружен. Подождите минуту и отправьте ещё раз. ${what}`
+      : `Не удалось получить ответ. ${what}`;
+
+    async function sendMsg() {
+      if (S.busy || S.pending) return;
+      const id = S.chatSel, ta = $('paneText');
+      const text = ta.value.replace(/\s+/g, ' ').trim();
+      if (!text) { S.err = 'Напишите сообщение.'; renderComms(); return; }
+      if (mgrCount(id) >= MAX_MSG) return;
+      const idx = memIdx(id), m = idx >= 0 ? S.members[idx] : null;
+      const history = (S.chats[id] || []).slice();
+      S.err = ''; S.drafts[id] = '';
+      (S.chats[id] = S.chats[id] || []).push({ from: 'manager', text });
+      ta.value = ''; paneAutosize();
+      S.pending = id; renderComms();
+      let data = {};
+      try {
+        data = m
+          ? await fetchJson('chat', { session_id: currentSessionId, member_index: idx, text, history })
+          : await fetchJson('react', { session_id: currentSessionId, kind: 'chat', text, member_index: null, history });
+      } catch (e) { console.error(e); }
+      S.pending = null;
+      const replies = m
+        ? (data.ok && data.reply ? [{ index: idx, name: m.name, reply: data.reply }] : [])
+        : (data.ok && Array.isArray(data.reactions) ? data.reactions : []);
+      if (!replies.length) {
+        S.chats[id].pop();
+        if (!S.chats[id].length) delete S.chats[id];
+        S.drafts[id] = text; if (S.chatSel === id) { ta.value = text; paneAutosize(); }
+        S.err = failMsg(data, 'Сообщение не отправлено, текст сохранён.');
+        renderComms(); return;
+      }
+      replies.forEach(r => S.chats[id].push({ from: 'employee', name: r.name, text: r.reply }));
+      saveChats(); renderComms();
+      const first = replies[0];
+      let bi = Number.isInteger(first.index) ? first.index : S.members.findIndex(x => x.name === first.name);
+      if (bi >= 0) { highlightMember(bi); showBubble(bi, first.reply, null, 6000); }
+    }
+
+    // действия за день собираются из переписок: один общий чат и по одному 1-on-1 на сотрудника
+    function buildActions() {
+      const out = [];
+      chatIds().forEach(id => {
+        const th = S.chats[id] || [], first = th.find(x => x.from === 'manager');
+        if (!first) return;
+        if (id === 'team') out.push({ type: 'chat', text: first.text, thread: th.slice() });
+        else { const m = S.members[memIdx(id)]; if (m) out.push({ type: '1on1', target: m.name, text: first.text, thread: th.slice() }); }
+      });
+      return out;
+    }
+
+    // строки под основной записью действия: ответы, продолжение диалога
     function actDetails(e) {
       const who = e.target || 'Сотрудник';
       if (e.thread && e.thread.length) {
         const first = e.thread.findIndex(x => x.from === 'manager');
-        return e.thread.filter((_, k) => k !== first).map(x => ({ who: x.from === 'manager' ? 'Вы' : who, text: x.text }));
+        return e.thread.filter((_, k) => k !== first).map(x => ({ who: x.from === 'manager' ? 'Вы' : (x.name || who), text: x.text }));
       }
       if (e.reactions && e.reactions.length) return e.reactions.map(r => ({ who: r.name, text: r.reply }));
       if (e.reply) return [{ who, text: e.reply }];
       return [];
     }
 
-    function openAct(type, preset) {
-      if (S.busy || !S.members.length) return;
-      if (S.actions.length >= MAX_ACTIONS) { toast('Достигнут лимит действий на день. Завершите день.'); return; }
-      const dlg = $('actDlg'), body = $('actBody'), row = $('actRow');
-      const titles = { chat: 'Сообщение в общий чат', '1on1': 'Разговор один на один', task: 'Поручение' };
-      const subs = {
-        chat: 'Увидят все, коллеги ответят сразу. Влияет на команду слабее, чем личный разговор.',
-        '1on1': 'Можно вести разговор до трёх реплик: отвечайте на вопросы сотрудника. Личный разговор сильнее действует на конкретного человека.',
-        task: 'Сотрудник отреагирует сразу. Меняет продуктивность и нагрузку, но может сказаться на настроении.'
-      };
-      $('actTitle').textContent = titles[type];
-      $('actSub').textContent = subs[type];
-      let who = '';
-      if (type === '1on1') {
-        const done = talkedTo();
-        const free = S.members.map((m, i) => ({ m, i })).filter(x => !done.has(x.m.name));
-        if (!free.length) { toast('Со всеми уже поговорили сегодня.'); return; }
-        const pick = free.some(x => x.i === preset) ? preset : free.some(x => x.i === S.sel) ? S.sel : free[0].i;
-        who = `<label for="actWho">С кем поговорить</label><select id="actWho">${free.map(x => `<option value="${x.i}" ${x.i === pick ? 'selected' : ''}>${esc(x.m.name)}${x.m.role ? ', ' + esc(x.m.role) : ''}</option>`).join('')}</select>`;
-      } else if (type === 'task') {
-        who = `<label for="actWho">Кому</label><select id="actWho"><option value="-1">Всей команде</option>${S.members.map((m, i) => `<option value="${i}">${esc(m.name)}</option>`).join('')}</select>`;
-      }
-      const ph = { chat: 'Что вы скажете команде?', '1on1': 'Что вы скажете сотруднику?', task: 'Какое поручение?' }[type];
-      body.innerHTML = `${who}<label for="actText">${type === 'task' ? 'Поручение' : 'Ваша реплика'}</label><textarea id="actText" maxlength="300" placeholder="${ph}"></textarea>
-        <div class="chips">${SUGGEST[type].map(t => `<button type="button" class="chip">${esc(t)}</button>`).join('')}</div><div class="err-line" id="actErr" role="alert"></div>`;
-      body.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { $('actText').value = c.textContent; $('actText').focus(); }));
-      row.innerHTML = `<button type="button" class="btn btn-line" id="actCancel">Отмена</button><button type="button" class="btn btn-primary" id="actSend">${type === '1on1' ? 'Отправить' : type === 'task' ? 'Дать поручение' : 'Написать'}</button>`;
-      $('actCancel').onclick = () => dlg.close();
-      $('actSend').onclick = () => submitAct(type);
-      dlg.addEventListener('close', () => { const p = S.pendingBubble; S.pendingBubble = null; if (p) { if (p.idx >= 0) selectMember(p.idx, false); showBubble(p.idx, p.text, null, 6500); } }, { once: true });
-      dlg.showModal();
-      $('actText').focus();
-    }
-
-    let conv = null; // текущий разговор 1-on-1
-    const fetchJson = async (path, body) => {
-      const res = await fetch(`${API_BASE}/api/farms?action=${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      return res.json().catch(() => ({}));
-    };
-    const failMsg = (data, what) => data && data.reason === 'rate_limited'
-      ? `Сервис ИИ перегружен. Подождите минуту и попробуйте ещё раз. ${what}`
-      : `Не удалось получить ответ. ${what}`;
-    const bubbleHtml = (who, text) => `<div><div class="who-l">${esc(who)}</div><div class="m emp">${esc(text)}</div></div>`;
-    const typingHtml = who => `<div><div class="who-l">${esc(who)}</div><div class="m emp typing"><i></i><i></i><i></i></div></div>`;
-    function setCloseRow() {
-      $('actRow').innerHTML = '<button type="button" class="btn btn-primary" id="actDone">Закрыть</button>';
-      $('actDone').onclick = () => $('actDlg').close(); $('actDone').focus();
-    }
-
-    async function submitAct(type) {
-      const ta = $('actText'), err = $('actErr');
-      const text = ta.value.replace(/\s+/g, ' ').trim();
-      err.textContent = '';
-      if (!text) { err.textContent = 'Напишите текст или выберите готовую фразу.'; ta.focus(); return; }
-      const whoSel = $('actWho'), idx = whoSel ? +whoSel.value : -1;
-      const m = idx >= 0 ? S.members[idx] : null;
-      if (type === '1on1') { conv = { idx, m, action: null, draft: '', error: '' }; return sendTurn(text); }
-      // общий чат / поручение: реакция сразу, в этом же окне
-      const act = { type, text, ...(m ? { target: m.name } : {}) };
-      const who = type === 'task' && m ? m.name.split(/\s+/)[0] : 'Команда';
-      $('actRow').innerHTML = '';
-      $('actBody').innerHTML = `<div class="thread"><div class="m me">${esc(text)}</div><div id="pend">${typingHtml(who)}</div></div><div class="err-line" id="actErr" role="alert"></div>`;
-      S.waiting = true;
-      let data = {};
-      try { data = await fetchJson('react', { session_id: currentSessionId, kind: type, text, member_index: m ? idx : null }); } catch (e) { console.error(e); }
-      S.waiting = false;
-      const reactions = data.ok && Array.isArray(data.reactions) ? data.reactions : [];
-      if (reactions.length) act.reactions = reactions.map(r => ({ name: r.name, reply: r.reply }));
-      S.actions.push(act); saveActions(); renderActions();
-      if (reactions.length) {
-        $('pend').outerHTML = reactions.map(r => bubbleHtml(r.name, r.reply)).join('');
-        S.pendingBubble = { idx: reactions[0].index, text: reactions[0].reply };
-      } else {
-        $('pend').remove();
-        $('actErr').textContent = failMsg(data, 'Действие учтено, но реакции не будет.');
-        S.pendingBubble = { idx: -1, text: (type === 'chat' ? 'Вы в общем чате: ' : 'Поручение: ') + text };
-      }
-      setCloseRow();
-    }
-
-    function renderConv() {
-      const a = conv.action, first = conv.m.name.split(/\s+/)[0];
-      const th = (a ? a.thread : []).map(t => t.from === 'manager' ? `<div class="m me">${esc(t.text)}</div>` : bubbleHtml(first, t.text)).join('');
-      const turns = a ? a.thread.filter(t => t.from === 'manager').length : 0;
-      $('actBody').innerHTML = `<div class="thread">${th}${conv.pending ? `<div class="m me">${esc(conv.pending)}</div>${typingHtml(first)}` : ''}</div>` +
-        (!conv.pending && turns < MAX_TURNS ? `<label for="actText">Ваш ответ (реплика ${turns + 1} из ${MAX_TURNS})</label><textarea id="actText" maxlength="300" placeholder="Ответьте на вопрос или продолжите разговор"></textarea>` : '') +
-        `<div class="err-line" id="actErr" role="alert">${esc(conv.error || '')}</div>`;
-      if (conv.pending) { $('actRow').innerHTML = ''; return; }
-      if (turns >= MAX_TURNS) { setCloseRow(); return; }
-      $('actText').value = conv.draft || '';
-      $('actRow').innerHTML = '<button type="button" class="btn btn-line" id="actEnd">Закончить разговор</button><button type="button" class="btn btn-primary" id="actSend">Ответить</button>';
-      $('actEnd').onclick = () => $('actDlg').close();
-      $('actSend').onclick = () => { const t = $('actText').value.replace(/\s+/g, ' ').trim(); if (!t) { $('actErr').textContent = 'Напишите ответ или закончите разговор.'; $('actText').focus(); return; } sendTurn(t); };
-      $('actText').focus();
-    }
-
-    async function sendTurn(text) {
-      conv.pending = text; conv.error = ''; conv.draft = '';
-      renderConv();
-      const history = conv.action ? conv.action.thread.slice() : [];
-      S.waiting = true;
-      let data = {};
-      try { data = await fetchJson('chat', { session_id: currentSessionId, member_index: conv.idx, text, history }); } catch (e) { console.error(e); }
-      S.waiting = false;
-      conv.pending = '';
-      if (!data.ok || !data.reply) {
-        if (!conv.action) { const idx = conv.idx; $('actDlg').close(); openAct('1on1', idx); if ($('actText')) { $('actText').value = text; $('actErr').textContent = failMsg(data, 'Действие не засчитано, попробуйте ещё раз.'); } return; }
-        conv.draft = text; conv.error = failMsg(data, 'Ответ не отправлен, попробуйте ещё раз.'); renderConv(); return;
-      }
-      if (!conv.action) { conv.action = { type: '1on1', target: conv.m.name, text, thread: [] }; S.actions.push(conv.action); }
-      conv.action.thread.push({ from: 'manager', text }, { from: 'employee', text: data.reply });
-      conv.action.reply = data.reply;
-      saveActions(); renderActions();
-      S.pendingBubble = { idx: conv.idx, text: data.reply };
-      renderConv();
+    function openHall() {
+      if (!S.session) return;
+      const mt = S.session.metrics || {}, log = S.session.event_log || [];
+      const names = S.members.map((m, i) => ({ n: m.name.split(/\s+/)[0], i }));
+      const talked = names.filter(x => mgrCount('m' + x.i) > 0).map(x => x.n);
+      const silent = names.filter(x => mgrCount('m' + x.i) === 0).map(x => x.n);
+      const team = S.chats.team || [];
+      const lastMgr = [...team].reverse().find(x => x.from === 'manager');
+      const replies = lastMgr ? team.slice(team.lastIndexOf(lastMgr) + 1).filter(x => x.from === 'employee') : [];
+      const ev = log.filter(e => e.kind !== 'action').slice(-3).reverse();
+      const v = k => fmt(clamp(+mt[k] || 0, 0, 10));
+      $('hallBody').innerHTML = `
+        <div class="hall-m"><div><b>${v('mood')}</b>настроение</div><div><b>${v('trust')}</b>доверие</div><div><b>${v('productivity')}</b>продуктивность</div></div>
+        <h3>День ${esc(S.session.current_day)}: с кем вы уже говорили</h3>
+        <ul><li>В общем чате: ${team.some(x => x.from === 'manager') ? 'да' : 'пока нет'}</li><li>Лично: ${talked.length ? esc(talked.join(', ')) : 'пока ни с кем'}</li>${silent.length ? `<li>Не писали: ${esc(silent.join(', '))}</li>` : ''}</ul>
+        ${lastMgr ? `<h3>Последнее в общем чате</h3><ul><li>Вы: «${esc(lastMgr.text)}»</li>${replies.map(r => `<li>${esc((r.name || '').split(/\s+/)[0])}: «${esc(r.text)}»</li>`).join('')}</ul>` : ''}
+        ${ev.length ? `<h3>Что происходило в колонии</h3><ul>${ev.map(e => `<li>День ${esc(e.day)}: ${esc(e.text)}</li>`).join('')}</ul>` : '<h3>Что происходило в колонии</h3><ul><li>Пока ничего: завершите первый день.</li></ul>'}`;
+      $('hallDlg').showModal();
     }
 
     async function endDay() {
-      if (S.busy) return;
-      if (S.actions.length === 0) {
-        const ok = await askConfirm('Завершить день без действий?',
+      if (S.busy || S.pending) return;
+      if (buildActions().length === 0) {
+        const ok = await askConfirm('Завершить день без разговоров?',
           'Бездействие тоже влияет на команду: скрытые проблемы будут нарастать. Завершить день сейчас?', 'Завершить день', 'btn-primary');
         if (!ok) return;
       }
@@ -1356,7 +1460,6 @@
       st.textContent = '@keyframes flow{to{stroke-dashoffset:-34}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(40px)}}';
       document.head.appendChild(st);
       initMeters();
-      $('actDlg').addEventListener('cancel', e => { if (S.waiting) e.preventDefault(); });
       if (IS_DEV) $('pageTitle').insertAdjacentHTML('beforeend', ' <span class="dev-badge">DEV MODE</span>');
 
       const urlParams = new URLSearchParams(window.location.search);
