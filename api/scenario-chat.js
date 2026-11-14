@@ -4,6 +4,7 @@ import path from 'path';
 import https from 'https';
 import crypto from 'crypto';
 import { hasToxicity } from '../tools/offline-rules.js';
+import { guardPaid } from './_guard.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -92,15 +93,19 @@ export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-access-code');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   }
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
+  if (!(await guardPaid(req, res, { scope: 'scenario', limit: 30, windowSec: 60, cap: Number(process.env.SCENARIO_DAILY_CAP) || 6000 }))) return;
+
   try {
     const b = req.body || {};
-    const { scenario_id, user_message, history = [] } = b;
+    const { scenario_id } = b;
+    const user_message = typeof b.user_message === 'string' ? b.user_message.slice(0, 2000) : b.user_message;
+    const history = Array.isArray(b.history) ? b.history.slice(-60) : [];
     
     if (!scenario_id || !user_message) {
       return res.status(400).json({ error: 'scenario_id and user_message are required' });

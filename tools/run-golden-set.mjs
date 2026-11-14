@@ -39,7 +39,7 @@ for (const f of readdirSync(goldenDir).filter(f => f.endsWith('.json')).sort()) 
     try {
       const r = await fetch(BASE + '/api/evaluate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-access-code': process.env.GOLDEN_ACCESS_CODE || '' },
         body: JSON.stringify({ scenario_id: g.scenario_id, dialogue: g.dialogue })
       });
       res = await r.json();

@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { hasToxicity, hasOffer, hasEmotion, KILL } from '../tools/offline-rules.js';
+import { guardPaid } from './_guard.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -59,16 +60,21 @@ export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   if (allow.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-access-code');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   }
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
+  if (!(await guardPaid(req, res, { scope: 'evaluate', limit: 8, windowSec: 60, cap: Number(process.env.EVALUATE_DAILY_CAP) || 1500 }))) return;
+
   try {
-    const { scenario_id, dialogue } = req.body;
+    const { scenario_id, dialogue } = req.body || {};
     if (!Array.isArray(dialogue) || dialogue.length === 0) {
       return res.status(400).json({ error: 'dialogue is required' });
+    }
+    if (dialogue.length > 80 || JSON.stringify(dialogue).length > 40000) {
+      return res.status(400).json({ error: 'dialogue is too long' });
     }
 
     // === Читаем сценарий ОДИН раз: он источник критериев, меты и триггеров ===

@@ -1,5 +1,8 @@
 // api/chat.js — прокси к GigaChat (Sбер). Секреты ТОЛЬКО в env Vercel.
 import https from 'https';
+import crypto from 'crypto';
+
+import { guardPaid } from './_guard.js';
 
 let cache = { token: null, exp: 0 };
 
@@ -62,6 +65,8 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
   }
   if (req.method === 'OPTIONS') return res.status(200).end();
+  // Публичная песочница: без кода доступа по замыслу, поэтому лимит по IP, суточный потолок и ограничение размера
+  if (!(await guardPaid(req, res, { scope: 'playground', limit: 20, windowSec: 60, cap: Number(process.env.PLAYGROUND_DAILY_CAP) || 1500, requireCode: false }))) return;
   if (req.method === 'GET') {
     try {
       const token = await getToken();
@@ -75,6 +80,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   try {
     const b = req.body || {};
+    if (JSON.stringify(b.messages || b.dialogue || []).length > 12000) return res.status(400).json({ error: 'request too long' });
     if (b.kind === 'review') {
       const sys = 'Ты — старший L&D-методолог, эксперт по деловым коммуникациям. Оценивай ТОЛЬКО реплики руководителя в диалоге с сотрудником по 6 критериям (список дан). По каждому критерию выведи: verdict (0 — не выполнено, 1 — частично, 2 — выполнено), quote — ТОЧНУЮ цитату из реплик руководителя, подтверждающую вердикт (если её нет — пустую строку), comment — 1-2 предложения на русском с подсказкой, что усилить. Самопроверка перед выводом: НЕ помечай как токсичность, давление или провал констатацию фактов о работе, твёрдые, но уважительные формулировки и границы без оскорблений; токсичность — это ярлыки о личности, сарказм, угрозы, унижения. Верни СТРОГО валидный JSON без markdown и лишних слов: {"criteria":[{"verdict":2,"quote":"...","comment":"..."}],"total":9,"summary":"2-3 предложения: что было сильным и что изменить в следующий раз".';
       const user = 'Ситуация: ' + (b.intro || '') + '\nКритерии по порядку:\n' + (b.criteria || []).map((c, i) => (i + 1) + '. ' + c.n).join('\n') + '\nДиалог:\n' + (b.dialogue || []).map(m => (m.role === 'user' ? 'Руководитель: ' : 'Сотрудник: ') + m.content).join('\n');

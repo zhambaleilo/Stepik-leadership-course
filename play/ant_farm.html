@@ -1105,11 +1105,11 @@
       try {
         const res = await fetch(`${API_BASE}/api/farms?action=simulate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-access-code': userCode },
           body: JSON.stringify({ session_id: currentSessionId, days_to_simulate: 1, manager_actions: doneActions, intro: silent })
         });
         const data = await res.json();
-        if (!data.ok) { toast('Симуляция не удалась: ' + (data.reason || 'ошибка сервера'), 'error'); return; }
+        if (!data.ok) { toast(failMsg(data, 'День не завершён, попробуйте ещё раз.'), 'error'); return; }
 
         const newEvents = Array.isArray(data.new_events) ? data.new_events : [];
         let fresh = null;
@@ -1275,11 +1275,13 @@
     }
 
     const fetchJson = async (path, body) => {
-      const res = await fetch(`${API_BASE}/api/farms?action=${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res = await fetch(`${API_BASE}/api/farms?action=${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-access-code': userCode }, body: JSON.stringify(body) });
       return res.json().catch(() => ({}));
     };
-    const failMsg = (data, what) => data && data.reason === 'rate_limited'
-      ? `Сервис ИИ перегружен. Подождите минуту и отправьте ещё раз. ${what}`
+    const failMsg = (data, what) => data && (data.reason === 'rate_limited' || data.reason === 'too_many_requests')
+      ? `Слишком много запросов или сервис ИИ перегружен. Подождите минуту и отправьте ещё раз. ${what}`
+      : data && data.reason === 'daily_cap' ? (data.message || 'Дневной лимит исчерпан.')
+      : data && /код|сессия|session/i.test(data.reason || '') ? `${data.reason}. ${what}`
       : `Не удалось получить ответ. ${what}`;
 
     async function sendMsg() {

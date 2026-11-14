@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const sessionId = req.query.id;
 
-  if (!sessionId || !SUPABASE_URL || !SUPABASE_KEY) {
+  if (!sessionId || !/^[A-Za-z0-9_-]{1,64}$/.test(String(sessionId)) || !SUPABASE_URL || !SUPABASE_KEY) {
     return res.status(400).json({ error: 'Missing session_id or config' });
   }
 
@@ -41,6 +41,7 @@ export default async function handler(req, res) {
     }
 
     const session = rows[0];
+    delete session.access_code_id; // внутренняя связка с кодом доступа клиенту не нужна
     
     // Парсим JSON-поля, если Supabase вернул их как строки
     if (typeof session.dialogue === 'string') {

@@ -17,4 +17,6 @@ jobs:
         with:
           node-version: 20
       - name: Прогон golden set
+        env:
+          GOLDEN_ACCESS_CODE: ${{ secrets.GOLDEN_ACCESS_CODE }}
         run: node tools/run-golden-set.mjs ${{ github.event_name == 'push' && '--wait=90' || '' }}

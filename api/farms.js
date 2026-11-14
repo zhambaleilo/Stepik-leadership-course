@@ -1,6 +1,7 @@
 // api/farms.js — фермы: list, save, delete, simulate (с журналом действий руководителя), chat (1-on-1)
 import https from 'https';
 import crypto from 'crypto';
+import { guardPaid } from './_guard.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -168,19 +169,13 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(200).json({ farms: [], remaining_sessions: 0, active_farms_count: 0 }); }
   }
 
-  // === 2. SAVE ===
-  if (req.method === 'POST' && action === 'save') {
-    const { session_id, metrics, event_log, current_day, status } = req.body;
-    if (!session_id) return res.status(400).json({ ok: false, reason: 'session_id required' });
-    try {
-      const updateData = { last_saved_at: new Date().toISOString() };
-      if (metrics !== undefined) updateData.metrics = metrics;
-      if (event_log !== undefined) updateData.event_log = event_log;
-      if (current_day !== undefined) updateData.current_day = current_day;
-      if (status !== undefined) updateData.status = status;
-      await fetch(`${SUPABASE_URL}/rest/v1/sessions?id=eq.${session_id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }, body: JSON.stringify(updateData) });
-      return res.status(200).json({ ok: true });
-    } catch (e) { return res.status(502).json({ ok: false, reason: 'Save error: ' + e.message }); }
+  // === 2. SAVE === отключён: фронт его не использует, а запись метрик/журнала извне — лишняя поверхность атаки
+  if (req.method === 'POST' && action === 'save') return res.status(410).json({ ok: false, reason: 'save отключён' });
+
+  // === ЗАЩИТА платных и пишущих действий: владелец сессии, лимит по IP, суточный потолок ===
+  const GUARDED = { simulate: { limit: 6, windowSec: 60 }, chat: { limit: 20, windowSec: 60 }, react: { limit: 20, windowSec: 60 } };
+  if (req.method === 'POST' && GUARDED[action]) {
+    if (!(await guardPaid(req, res, { scope: 'farms:' + action, ...GUARDED[action], cap: Number(process.env.FARMS_DAILY_CAP) || 3000, sessionId: req.body && req.body.session_id, kind: 'ant_farm' }))) return;
   }
 
   // === 3. DELETE ===
@@ -195,7 +190,8 @@ export default async function handler(req, res) {
 
   // === 4. SIMULATE ===
   if (req.method === 'POST' && action === 'simulate') {
-    const { session_id, days_to_simulate = 1 } = req.body;
+    const { session_id } = req.body;
+    const days_to_simulate = Math.min(3, Math.max(1, parseInt(req.body.days_to_simulate, 10) || 1));
     const actions = sanitizeActions(req.body.manager_actions);
     const intro = req.body.intro === true;
     if (!session_id) return res.status(400).json({ ok: false, reason: 'session_id required' });
