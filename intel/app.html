@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark" data-density="cozy" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Market Intel · кабинет</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="intel.css">
+</head>
+<body data-page="app">
+<div class="bg"></div><div class="grid-lines"></div>
+<div class="aurora"><i></i><i></i><i></i></div><div class="grain"></div>
+
+<header class="topbar">
+  <div class="in">
+    <div class="brand"><span class="dot"></span> Market Intel</div>
+    <span class="micro" id="who"></span>
+    <span class="spacer"></span>
+    <span class="quota" id="quota">Пакет: …</span>
+    <a class="btn ghost sm" href="https://my-pro-skills.ru">← на сайт</a>
+    <button class="btn ghost sm" id="logout" type="button">Выйти</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="cols">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="side">
+      <section class="card">
+        <h3>Новый анализ</h3>
+        <p class="hint" style="margin-bottom:14px">Боли пишите так, как их произносят сами люди — по этим фразам строится поиск.</p>
+        <form id="briefForm" novalidate>
+          <label class="lbl micro" for="f_name">название продукта</label>
+          <input class="field" id="f_name" maxlength="120" placeholder="КОНФИ" required>
+
+          <label class="lbl micro" for="f_desc" style="margin-top:12px">что это и для кого</label>
+          <textarea class="field" id="f_desc" maxlength="2000" placeholder="10-дневный тренажёр уверенности в Telegram для молодых специалистов" required></textarea>
+          <div class="hint"><span id="charCount" class="mono">0</span> / 2000</div>
+
+          <div class="row" style="margin-top:12px">
+            <div>
+              <label class="lbl micro" for="f_cat">категория</label>
+              <input class="field" id="f_cat" maxlength="120" placeholder="mental wellness">
+            </div>
+            <div>
+              <label class="lbl micro" for="f_geo">рынок</label>
+              <select class="field" id="f_geo"><option value="RU">Россия</option><option value="EN">Англоязычный</option></select>
+            </div>
+          </div>
+
+          <label class="lbl micro" for="f_price" style="margin-top:12px">модель цены</label>
+          <input class="field" id="f_price" maxlength="120" placeholder="подписка 490 ₽/мес (необязательно)">
+
+          <div class="micro" style="margin:16px 0 6px">боли аудитории · 1–3 фразы</div>
+          <input class="field" id="f_p1" maxlength="200" placeholder="боюсь звонить по работе" style="margin-bottom:7px">
+          <input class="field" id="f_p2" maxlength="200" placeholder="стыдно говорить на дейликах" style="margin-bottom:7px">
+          <input class="field" id="f_p3" maxlength="200" placeholder="третья боль (необязательно)">
+
+          <button class="btn primary" id="runBtn" type="submit" style="width:100%;justify-content:center;margin-top:16px">Запустить анализ</button>
+          <div class="hint" style="text-align:center">Ctrl + Enter · списывается 1 анализ из пакета</div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h3>История</h3>
+        <div class="hist-tools">
+          <input class="field" id="histSearch" type="search" placeholder="Поиск по названию…" aria-label="Поиск по истории">
+          <div class="row">
+            <select class="field" id="histVerdict" aria-label="Фильтр по вердикту">
+              <option value="">Все вердикты</option>
+              <option value="Стоит тестировать">Стоит тестировать</option>
+              <option value="Спорно">Спорно</option>
+              <option value="Спроса не видно">Спроса не видно</option>
+            </select>
+            <select class="field" id="histSort" aria-label="Сортировка">
+              <option value="date">Сначала новые</option>
+              <option value="score">По баллу ↓</option>
+              <option value="name">По названию</option>
+            </select>
+          </div>
+          <button class="btn ghost sm" id="saveView" type="button">Сохранить этот вид</button>
+        </div>
+        <div class="views" id="views"></div>
+        <ul id="hist"><li class="empty">Загрузка…</li></ul>
+      </section>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div>
+      <div class="viewbar" role="group" aria-label="Настройки отображения отчёта">
+        <div class="grp"><span class="micro">тема</span>
+          <select class="field" id="v_theme"><option value="dark">Тёмная</option><option value="light">Светлая</option></select>
+        </div>
+        <div class="grp"><span class="micro">плотность</span>
+          <select class="field" id="v_density"><option value="cozy">Обычная</option><option value="compact">Плотная</option></select>
+        </div>
+        <div class="grp"><span class="micro">сигналы</span>
+          <select class="field" id="v_sigsort"><option value="weight">По весу</option><option value="score">По баллу</option><option value="name">По алфавиту</option></select>
+        </div>
+        <label class="switch"><input type="checkbox" id="v_unmeasured" checked><span class="tr"></span>показывать неизмеренные</label>
+        <div class="grp"><span class="micro">следы</span>
+          <select class="field" id="v_traces"><option value="all">Все</option><option value="cited">Только использованные</option></select>
+        </div>
+        <label class="switch"><input type="checkbox" id="v_motion" checked><span class="tr"></span>анимация</label>
+        <span class="spacer"></span>
+        <button class="btn ghost sm" id="copyBtn" type="button" disabled>Копировать резюме</button>
+        <button class="btn ghost sm" id="exportBtn" type="button" disabled>Экспорт JSON</button>
+        <button class="btn ghost sm" id="resetView" type="button">Сбросить вид</button>
+      </div>
+
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div id="result"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="foot">
+  <span>Market Intel · оценка по цифровым следам</span>
+  <span class="spacer"></span>
+  <span class="micro">нет следов — нет вывода</span>
+</footer>
+
+<div id="toasts" aria-live="polite"></div>
+<script src="intel.js"></script>
+</body>
+</html>

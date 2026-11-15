@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark" data-density="cozy" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Market Intel · вход</title>
+<meta name="description" content="Оценка рыночного потенциала мини-продукта по цифровым следам. Нет следов — нет вывода.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="intel.css">
+</head>
+<body data-page="login">
+<div class="bg"></div><div class="grid-lines"></div>
+<div class="aurora"><i></i><i></i><i></i></div><div class="grain"></div>
+
+<main class="login-shell">
+  <section class="login-left">
+    <div class="brand"><span class="dot"></span> Market Intel</div>
+    <h1>Рынок отвечает<br>раньше, чем вы строите.</h1>
+    <p class="lead">Опишите продукт и боли аудитории её собственными словами. Инструмент соберёт цифровые следы — обсуждения, жалобы, аналоги — и вынесет вердикт только по тому, что реально нашёл.</p>
+
+    <div class="principles">
+      <div class="principle"><span class="n">1</span><div><b>Нет следов — нет вывода.</b><div class="hint">Если доказательства не найдены, вы увидите «Недостаточно данных», а не выдуманный балл.</div></div></div>
+      <div class="principle"><span class="n">2</span><div><b>Каждое утверждение со ссылкой.</b><div class="hint">Конкуренты, тренды и сегменты появляются только если опираются на конкретный источник.</div></div></div>
+      <div class="principle"><span class="n">3</span><div><b>Пакет тратится только на результат.</b><div class="hint">Сбой источников или модели не списывает анализ. Повторный просмотр отчёта бесплатен.</div></div></div>
+    </div>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="bar"><span class="micro">поток следов</span><span class="spacer"></span><span class="micro">demo</span></div>
+      <div class="feed"><div>
+        r/nursing · «опять двойная смена без спроса»<br>
+        r/socialskills · «боюсь включать камеру на дейли»<br>
+        hn · «shift scheduling for small clinics»<br>
+        r/productivity · «не могу начать задачу без дедлайна»<br>
+        r/nursing · «считаю переработки в заметках»<br>
+        r/careerguidance · «стыдно задавать вопросы вслух»<br>
+        r/nursing · «опять двойная смена без спроса»<br>
+        r/socialskills · «боюсь включать камеру на дейли»<br>
+        hn · «shift scheduling for small clinics»<br>
+        r/productivity · «не могу начать задачу без дедлайна»<br>
+        r/nursing · «считаю переработки в заметках»<br>
+        r/careerguidance · «стыдно задавать вопросы вслух»
+      </div></div>
+    </div>
+  </section>
+
+  <section class="login-right">
+    <div class="card login-card">
+      <div class="micro">доступ по паролю</div>
+      <h2 style="margin:8px 0 6px">Вход в кабинет</h2>
+      <p class="hint" style="margin-bottom:18px">Пароль выдаётся вместе с пакетом анализов.</p>
+      <form id="loginForm" novalidate>
+        <label class="lbl micro" for="pw">пароль</label>
+        <div class="pw-wrap">
+          <input class="field" id="pw" type="password" autocomplete="current-password" placeholder="••••••••••" required>
+          <button class="btn icon" type="button" id="togglePw" aria-label="Показать пароль" title="Показать пароль">👁</button>
+        </div>
+        <div class="err" id="err" role="alert" aria-live="assertive"></div>
+        <button class="btn primary" id="go" type="submit" style="width:100%;justify-content:center;margin-top:6px">Войти</button>
+      </form>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <a class="btn ghost sm" href="app.html?demo=1">Посмотреть пример отчёта</a>
+        <a class="hint" href="https://my-pro-skills.ru">← на сайт</a>
+      </div>
+      <p class="hint" id="originNote" style="margin-top:14px"></p>
+    </div>
+  </section>
+</main>
+
+<div id="toasts" aria-live="polite"></div>
+<script src="intel.js"></script>
+</body>
+</html>
