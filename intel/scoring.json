@@ -1,0 +1,10 @@
+{
+  "weights": {
+    "demand": 0.30,
+    "unresolved_pain": 0.25,
+    "willingness_to_pay": 0.20,
+    "competition": 0.15,
+    "audience_reach": 0.10
+  },
+  "thresholds": { "high": 70, "medium": 45 }
+}
