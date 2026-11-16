@@ -4,7 +4,7 @@
 //   run    — сбор следов (Reddit RSS + HN) → анализ Groq → ворота покрытия → атомарное списание пакета
 //   enrich — RU-сегменты через GigaChat (пакет не тратится, максимум 2 попытки на запуск)
 // Скоринг считает код по intel/scoring.json. Нет доказательства — нет утверждения.
-// Бюджет времени run (Vercel Hobby ~10 с): сбор ≤2.5 с, Groq ≤5.5 с, БД ≈1 с → худший случай ≈9 с, типичный 5–6 с.
+// Бюджет времени run (Vercel Hobby ~10 с): сбор ≤3.5 с (Яндекс; Reddit/HN ≤2.5 с), Groq ≤4.7 с, БД ≈1 с → худший случай ≈9 с, типичный 5–6 с.
 import crypto from 'crypto';
 import https from 'https';
 import fs from 'fs';
@@ -120,23 +120,50 @@ async function hnSearch(q) {
 }
 
 // План поиска приходит с клиента, поэтому проверяем его на сервере: иначе run станет открытым поиском по произвольным строкам
+// Яндекс Search API v2 (синхронный). Включается, только если заданы YANDEX_SEARCH_API_KEY и YANDEX_FOLDER_ID.
+const yandexOn = () => !!(process.env.YANDEX_SEARCH_API_KEY && process.env.YANDEX_FOLDER_ID);
+function parseYandex(raw) {
+  let xml = String(raw || '');
+  if (xml && !xml.trimStart().startsWith('<')) { try { xml = Buffer.from(xml, 'base64').toString('utf8'); } catch (_) { xml = ''; } }
+  const docs = xml.match(/<doc[ >][\s\S]*?<\/doc>/g) || [];
+  const tag = (d, t) => { const m = d.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)); return m ? cleanTxt(m[1]) : ''; };
+  return docs.slice(0, 8).map(d => {
+    const passages = (d.match(/<passage[^>]*>[\s\S]*?<\/passage>/g) || []).map(x => cleanTxt(x)).filter(Boolean).join(' … ');
+    return { title: tag(d, 'title').slice(0, 200), snippet: (passages || tag(d, 'headline')).slice(0, 350), link: tag(d, 'url'), source: 'yandex' };
+  }).filter(x => x.title && x.link);
+}
+async function yandexSearch(q) {
+  try {
+    const r = await sreq('POST', 'https://searchapi.api.cloud.yandex.net/v2/web/search',
+      { Authorization: `Api-Key ${process.env.YANDEX_SEARCH_API_KEY}`, 'Content-Type': 'application/json' },
+      JSON.stringify({ query: { searchType: 'SEARCH_TYPE_RU', queryText: q.slice(0, 400), familyMode: 'FAMILY_MODE_NONE', fixTypoMode: 'FIX_TYPO_MODE_ON', page: '0' },
+        groupSpec: { groupMode: 'GROUP_MODE_FLAT', groupsOnPage: '8', docsInGroup: '1' }, maxPassages: '3', l10n: 'LOCALIZATION_RU',
+        folderId: process.env.YANDEX_FOLDER_ID, responseFormat: 'FORMAT_XML' }), 3500);
+    if (r.status !== 200) { console.error('yandex', r.status, r.text.slice(0, 200)); return { status: r.status, items: [] }; }
+    return { status: 200, items: parseYandex(JSON.parse(r.text).rawData) };
+  } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
+}
+
 function validatePlan(p) {
   const strs = (a, n, max) => [...new Set((Array.isArray(a) ? a : []).map(x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim()).filter(x => x.length >= 3 && x.length <= max))].slice(0, n);
   return {
     queries: strs(p && p.queries, 3, 100),
     subreddits: [...new Set((Array.isArray(p && p.subreddits) ? p.subreddits : []).map(x => String(x == null ? '' : x).replace(/^r\//i, '').trim()).filter(x => SUBREDDIT.test(x)))].slice(0, 3),
-    hn_queries: strs(p && p.hn_queries, 2, 100)
+    hn_queries: strs(p && p.hn_queries, 2, 100),
+    ru_queries: strs(p && p.ru_queries, 2, 100)
   };
 }
+const ruFallback = brief => (brief.target_geo === 'RU' ? (brief.pains.length ? brief.pains.slice(0, 2) : [`${brief.product_name} ${brief.category || ''}`.trim()]) : []);
 function fallbackPlan(brief) {
-  return validatePlan({ queries: brief.pains.length ? brief.pains : [brief.product_name], subreddits: [], hn_queries: [brief.category || brief.product_name] });
+  return validatePlan({ queries: brief.pains.length ? brief.pains : [brief.product_name], subreddits: [], hn_queries: [brief.category || brief.product_name], ru_queries: ruFallback(brief) });
 }
 
 async function gatherSignals(plan) {
   const jobs = [];
+  if (yandexOn()) plan.ru_queries.forEach(q => jobs.push(['yandex', () => yandexSearch(q)]));
   plan.queries.forEach(q => jobs.push(['reddit:all', () => redditRss(q)]));
-  if (plan.queries[0]) plan.subreddits.forEach(s => jobs.push([`reddit:r/${s}`, () => redditRss(plan.queries[0], s)]));
   plan.hn_queries.forEach(q => jobs.push(['hn', () => hnSearch(q)]));
+  if (plan.queries[0]) plan.subreddits.forEach(s => jobs.push([`reddit:r/${s}`, () => redditRss(plan.queries[0], s)]));
   const settled = await Promise.allSettled(jobs.slice(0, 8).map(([, fn]) => fn()));
   const stats = {}, lists = [];
   settled.forEach((s, i) => {
@@ -265,10 +292,10 @@ const SCHEMA = obj({
   base_segments: { type: 'array', items: obj({ name: STR, pain: STR, habitats: { type: 'array', items: STR }, offer_hypothesis: STR, evidence_idx: IDX }) },
   summary: STR
 });
-const PLAN_SCHEMA = obj({ queries: { type: 'array', items: STR }, subreddits: { type: 'array', items: STR }, hn_queries: { type: 'array', items: STR } });
+const PLAN_SCHEMA = obj({ queries: { type: 'array', items: STR }, subreddits: { type: 'array', items: STR }, hn_queries: { type: 'array', items: STR }, ru_queries: { type: 'array', items: STR } });
 
 const SYS_ANALYZE = 'Ты — старший аналитик рынка. Оцени потенциал мини-продукта ТОЛЬКО по приведённым следам. Сигналы 0-100: demand (активность поиска решения), unresolved_pain (боль не закрыта текущими решениями), willingness_to_pay (платные аналоги/жалобы на цены), competition (ИНВЕРСИЯ: 100=конкуренты слабые, 0=рынок перегрет), audience_reach (концентрированные места обитания ЦА). Каждый сигнал, конкурент, тренд и сегмент ОБЯЗАН ссылаться хотя бы на один сниппет через evidence_idx; ссылайся только на сниппеты, которые действительно относятся к продукту и его аудитории. Если доказательств нет — для сигнала верни evidence_idx: [] и низкий score, для конкурентов, трендов и сегментов верни пустой массив. НЕ придумывай названия продуктов, каналов и сообществ. Все тексты (comment, summary, positioning, weakness, pain, offer_hypothesis, trend, opportunity) пиши ПО-РУССКИ. summary — 2-4 предложения.';
-const SYS_PLAN = 'Ты помогаешь искать в интернете следы спроса на мини-продукт. По брифу составь: queries — 2-3 поисковых запроса НА АНГЛИЙСКОМ (до 80 символов) так, как боль формулируют сами люди на Reddit; subreddits — 2-3 реальных профильных сабреддита без «r/» (только латиница, цифры, подчёркивание); hn_queries — 1-2 коротких запроса для Hacker News про аналоги и рынок. Только JSON по схеме.';
+const SYS_PLAN = 'Ты помогаешь искать в интернете следы спроса на мини-продукт. По брифу составь: queries — 2-3 поисковых запроса НА АНГЛИЙСКОМ (до 80 символов) так, как боль формулируют сами люди на Reddit; subreddits — 2-3 реальных профильных сабреддита без «r/» (только латиница, цифры, подчёркивание); hn_queries — 1-2 коротких запроса для Hacker News про аналоги и рынок; ru_queries — 2 запроса НА РУССКОМ (до 80 символов) для поиска в Яндексе: один так, как ищет решение сама аудитория (боль или «как…»), второй про аналоги и цены («тренажёр … онлайн цена», «курс … отзывы»). Только JSON по схеме.';
 
 const briefText = b => `ПРОДУКТ: ${b.product_name}\nОПИСАНИЕ: ${b.description}\nКАТЕГОРИЯ: ${b.category || '—'}\nГЕО: ${b.target_geo}\nБОЛИ: ${b.pains.join(' | ') || '—'}`;
 function readBrief(b) {
@@ -279,11 +306,22 @@ function readBrief(b) {
   if (name.length > 120 || desc.length > 2000) return { error: 'too long' };
   return { brief: { product_name: name, description: desc, category: String(b.category || '').slice(0, 120), target_geo: b.target_geo === 'EN' ? 'EN' : 'RU', price_model: String(b.price_model || '').slice(0, 120), pains } };
 }
-const noData = (res, stage, snippets, stats, extra = {}) => res.status(200).json({
-  ok: false, reason: 'no_data', stage,
-  coverage: { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, ...extra },
-  message: 'Не удалось собрать достаточно следов по этому описанию. Пакет не списан. Уточните боли словами аудитории или повторите позже.'
-});
+const BLOCK = c => c === 429 || c === 403 || c === 401 || c === 503 || c === 'timeout' || c === 'error' || typeof c === 'string';
+const SRC_NAME = { reddit: 'Reddit', hn: 'Hacker News', yandex: 'Яндекс' };
+function unavailableSources(stats) {
+  const bySrc = {};
+  Object.entries(stats || {}).forEach(([label, st]) => { const k = label.split(':')[0]; const b = bySrc[k] || (bySrc[k] = { items: 0, codes: [] }); b.items += st.items; b.codes.push(...st.codes); });
+  return Object.entries(bySrc).filter(([, b]) => b.items === 0 && b.codes.length && b.codes.every(BLOCK)).map(([k]) => SRC_NAME[k] || k);
+}
+const noData = (res, stage, snippets, stats, extra = {}) => {
+  const unavailable = unavailableSources(stats);
+  const sourcesNote = unavailable.length ? ` Источники недоступны с сервера: ${unavailable.join(', ')} — это не вина описания, повторите позже.` : ' Уточните боли словами аудитории или повторите позже.';
+  return res.status(200).json({
+    ok: false, reason: 'no_data', stage,
+    coverage: { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, unavailable, ...extra },
+    message: 'Не удалось собрать достаточно следов по этому описанию. Пакет не списан.' + sourcesNote
+  });
+};
 
 // ---------- HANDLER ----------
 export default async function handler(req, res) {
@@ -370,6 +408,7 @@ export default async function handler(req, res) {
 
     let plan = validatePlan(req.body && req.body.plan);
     if (!plan.queries.length) plan = fallbackPlan(brief);
+    else if (!plan.ru_queries.length) plan.ru_queries = ruFallback(brief);
     const { items: snippets, stats } = await gatherSignals(plan);
     if (snippets.length < MIN_SNIPPETS) return noData(res, 'collect', snippets, stats);   // до Groq: вызов не жжём
 
