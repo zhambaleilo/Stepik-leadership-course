@@ -241,15 +241,46 @@
 
   function renderNoData(d) {
     state.current = null; $('exportBtn').disabled = true; $('copyBtn').disabled = true;
+    var cov = d.coverage || {}, st = cov.stats || {};
+    var un = Array.isArray(cov.unavailable) ? cov.unavailable : [];
+    var blocked = un.length > 0;
     var analyze = d.stage === 'analyze';
+
+    var chips = Object.keys(st).map(function (k) {
+      var v = st[k] || {}, codes = v.codes || [], n = v.items || 0;
+      var denied = codes.length > 0 && codes.every(function (c) { return c === 403 || c === 429; });
+      var tone = n > 0 ? 'var(--signal)' : denied ? 'var(--coral)' : 'var(--amber)';
+      var note = n > 0 ? n + ' следов' : denied ? 'закрыт' : (codes.join(', ') || 'пусто');
+      return '<span class="mono" style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:4px 9px;margin:0 6px 6px 0;border-radius:99px;border:1px solid ' + tone + ';color:' + tone + ';background:rgba(255,255,255,.03)">' +
+        '<span style="width:6px;height:6px;border-radius:50%;background:' + tone + ';flex:none"></span>' + esc(k) + ' · ' + esc(note) + '</span>';
+    }).join('');
+
+    var head = blocked
+      ? 'Источники закрыты для нашего сервера'
+      : analyze ? 'Следы найдены, но они не о вашем продукте' : 'Следов по этим формулировкам мало';
+
+    var body = blocked
+      ? '<p style="margin-top:12px">Запрос отклонён самими площадками (' + esc(un.join(', ')) + '), а не вашим описанием. Менять боли и формулировки здесь бессмысленно: доступ восстанавливается на стороне ключей и настроек источников.</p>'
+      : analyze
+        ? '<p style="margin-top:12px">Модель не смогла привязать найденные обсуждения к вашему продукту. Отказ честнее выдуманной оценки.</p>'
+        : '<p style="margin-top:12px">Источники ответили, но релевантных обсуждений почти нет.</p>';
+
+    var action = blocked
+      ? '<p style="margin-top:9px"><b>Что делать:</b> повторить прогон позже; если закрыт Яндекс — проверить ключ, роль и каталог. <b>Пакет не списан.</b></p>'
+      : '<p style="margin-top:9px"><b>Что можно изменить:</b> опишите боли словами самой аудитории, добавьте конкретики в описание или уточните категорию. <b>Пакет не списан.</b></p>';
+
     $('result').innerHTML =
-      '<section class="card"><div class="notice bad"><b>Недостаточно данных.</b> ' + esc(d.message || 'Оценку дать нельзя.') + '</div>' +
-      '<p style="margin-top:13px">' + (analyze
-        ? 'Следы найдены, но модель не смогла привязать к ним выводы о вашем продукте. Это честнее, чем выдуманная оценка.'
-        : 'Источники не дали достаточно материала по этим формулировкам.') + '</p>' +
-      '<p style="margin-top:9px"><b>Что можно изменить:</b> опишите боли словами самой аудитории, добавьте конкретики в описание или уточните категорию. <b>Пакет не списан.</b></p>' +
+      '<section class="card">' +
+      '<div class="notice ' + (blocked ? '' : 'bad') + '"><b>Недостаточно данных.</b> ' + esc(d.message || 'Оценку дать нельзя.') + '</div>' +
+      '<h3 style="margin:14px 0 0">' + esc(head) + '</h3>' +
+      body +
+      (chips ? '<div style="margin-top:12px">' + chips + '</div>' : '') +
+      action +
       (d.summary ? '<p class="dim" style="margin-top:9px">Комментарий модели: ' + esc(d.summary) + '</p>' : '') +
-      '</section>' + coverageCard(d.coverage);
+      '<div style="margin-top:14px"><button type="button" class="btn" id="retryBtn">Повторить анализ</button></div>' +
+      '</section>' + coverageCard(cov);
+
+    var rb = $('retryBtn'); if (rb) rb.addEventListener('click', function () { run(); });
     $('result').scrollIntoView({ block: 'start', behavior: prefs.motion ? 'smooth' : 'auto' });
   }
 
