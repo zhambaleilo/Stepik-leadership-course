@@ -1,10 +1,5 @@
 // api/intel.js — Market Intel: потенциал мини-продукта по следам в интернете.
 // Действия: login | logout | plan | run | enrich | history.
-//   plan   — Groq составляет EN-запросы и сабреддиты по брифу (пакет не тратится)
-//   run    — сбор следов (Reddit RSS + HN) → анализ Groq → ворота покрытия → атомарное списание пакета
-//   enrich — RU-сегменты через GigaChat (пакет не тратится, максимум 2 попытки на запуск)
-// Скоринг считает код по intel/scoring.json. Нет доказательства — нет утверждения.
-// Бюджет времени run (Vercel Hobby ~10 с): сбор ≤2.5 с, Groq ≤5.5 с, БД ≈1 с → худший случай ≈9 с, типичный 5–6 с.
 import crypto from 'crypto';
 import https from 'https';
 import fs from 'fs';
@@ -19,17 +14,16 @@ const BUDGET_MS = 9200;
 const MIN_SNIPPETS = 4, MIN_CITED = 4, MIN_MEASURED = 3;
 const SIGNAL_KEYS = ['demand', 'unresolved_pain', 'willingness_to_pay', 'competition', 'audience_reach'];
 
-// ---------- Supabase ----------
 function sb() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return { url: process.env.SUPABASE_URL, h: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' } };
 }
 
-// ---------- пароль / сессия ----------
 const secret = () => process.env.INTEL_SECRET || '';
 const sha256hex = s => crypto.createHash('sha256').update(String(s), 'utf8').digest('hex');
 const hmac = d => crypto.createHmac('sha256', secret()).update(d).digest('hex');
 const makeToken = id => { const p = `${id}.${Date.now() + 7 * 86400000}`; return `${p}.${hmac(p)}`; };
+
 function verifyToken(req) {
   const raw = String(req.headers.cookie || '').split(';').map(s => s.trim()).find(c => c.startsWith('intel_token='));
   const t = raw ? raw.slice(12) : '';
@@ -38,9 +32,9 @@ function verifyToken(req) {
   const a = Buffer.from(hmac(`${id}.${exp}`), 'hex'), b = Buffer.from(sig, 'hex');
   return a.length === b.length && crypto.timingSafeEqual(a, b) ? id : null;
 }
+
 const clientIp = req => String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
-// true — в пределах, false — превышен, null — счётчик недоступен (как rpcHit в _guard.js)
 async function rpcHit(key, win, limit) {
   const { url, h } = sb();
   try {
@@ -52,12 +46,11 @@ async function rpcHit(key, win, limit) {
 }
 const cap = () => Number(process.env.INTEL_DAILY_CAP) || 200;
 
-// ---------- HTTP ----------
 function sreq(method, urlStr, headers, body, timeoutMs = 3000, insecure = false) {
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
     const r = https.request({ hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, method, headers, rejectUnauthorized: !insecure, timeout: timeoutMs }, res => {
-      res.setEncoding('utf8'); // иначе многобайтные символы рвутся на границе чанков
+      res.setEncoding('utf8');
       let d = ''; res.on('data', c => d += c); res.on('end', () => resolve({ status: res.statusCode, text: d }));
     });
     r.on('timeout', () => r.destroy(new Error('timeout')));
@@ -67,21 +60,18 @@ function sreq(method, urlStr, headers, body, timeoutMs = 3000, insecure = false)
   });
 }
 
-// ---------- очистка текста: CDATA → сущности → теги → пробелы ----------
-const ENT = { quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', hellip: '…', mdash: '—', ndash: '–', laquo: '«', raquo: '»', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”' };
+const ENT = { quot: '"', apos: "'", lt: '<', gt: '>', nbsp: ' ', hellip: '…', mdash: '—', ndash: '–', laquo: '«', raquo: '»', lsquo: ''', rsquo: ''', ldquo: '"', rdquo: '"' };
 const cp = n => { try { return n > 0 && n <= 0x10FFFF ? String.fromCodePoint(n) : ''; } catch (_) { return ''; } };
 function decodeEnt(s) {
   return s.replace(/&#x([0-9a-f]+);/gi, (_, h) => cp(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => cp(+d))
     .replace(/&([a-z]+);/gi, (m, n) => { n = n.toLowerCase(); return n === 'amp' ? m : (ENT[n] !== undefined ? ENT[n] : m); })
-    .replace(/&amp;/gi, '&'); // &amp; последним, чтобы не раскодировать дважды
+    .replace(/&amp;/gi, '&');
 }
 const stripTags = s => s.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function cleanTxt(raw) {
   const t = String(raw || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
   const d = decodeEnt(t);
-  // HTML, экранированный внутри XML (&lt;p&gt;a &amp;amp; b&lt;/p&gt;): теги появились только после раскодирования,
-  // значит сущности внутри текста нужно раскодировать ещё раз — уже после вырезания тегов
   if (!/</.test(t) && /<[a-z!\/]/i.test(d)) return decodeEnt(stripTags(d));
   return stripTags(d);
 }
@@ -97,7 +87,6 @@ function parseRss(xml, source, limit = 6) {
   })).filter(x => x.title);
 }
 
-// ---------- сбор следов ----------
 async function redditRss(q, sub) {
   const url = sub
     ? `https://www.reddit.com/r/${sub}/search.rss?q=${encodeURIComponent(q)}&restrict_sr=on&sort=relevance&t=all`
@@ -119,7 +108,6 @@ async function hnSearch(q) {
   } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
 }
 
-// План поиска приходит с клиента, поэтому проверяем его на сервере: иначе run станет открытым поиском по произвольным строкам
 function validatePlan(p) {
   const strs = (a, n, max) => [...new Set((Array.isArray(a) ? a : []).map(x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim()).filter(x => x.length >= 3 && x.length <= max))].slice(0, n);
   return {
@@ -145,7 +133,6 @@ async function gatherSignals(plan) {
     st.requests++; st.items += v.items.length; if (!st.codes.includes(v.status)) st.codes.push(v.status);
     lists.push(v.items);
   });
-  // по кругу из каждого источника, без дублей ссылок, максимум 20
   const out = [], seen = new Set();
   for (let r = 0; out.length < 20 && lists.some(l => r < l.length); r++) {
     for (const l of lists) {
@@ -159,7 +146,6 @@ async function gatherSignals(plan) {
   return { items: out, stats };
 }
 
-// ---------- Groq: strict JSON ----------
 async function groq(messages, schema, name, maxTokens, timeoutMs) {
   const key = process.env.GROQ_API_KEY;
   if (!key) throw new Error('GROQ_API_KEY not set');
@@ -174,7 +160,6 @@ async function groq(messages, schema, name, maxTokens, timeoutMs) {
   return JSON.parse(c);
 }
 
-// ---------- GigaChat: RU-сегменты ----------
 let gCache = { token: null, exp: 0 };
 async function gigaToken() {
   if (gCache.token && Date.now() < gCache.exp - 60000) return gCache.token;
@@ -192,7 +177,6 @@ async function gigaChat(messages) {
   return (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim();
 }
 
-// ---------- скоринг: по измеренным сигналам с перенормировкой ----------
 let scCache = null;
 function scoring() {
   if (scCache) return scCache;
@@ -213,7 +197,6 @@ function verdictOf(score, measuredCount) {
   return measuredCount < SIGNAL_KEYS.length ? `${base} (по неполным данным)` : base;
 }
 
-// ---------- анти-галлюцинации: объект без доказательств выбрасывается ----------
 function sanitize(a, n) {
   const idx = arr => [...new Set((Array.isArray(arr) ? arr : []).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < n))];
   const str = (v, m) => String(v == null ? '' : v).slice(0, m);
@@ -240,7 +223,6 @@ function citedUnique(rep) {
   return set.size;
 }
 
-// ---------- квота ----------
 async function quota(id) {
   const { url, h } = sb();
   const [a, u] = await Promise.all([
@@ -253,7 +235,6 @@ async function quota(id) {
   return { limit, used, remaining: Math.max(0, limit - used) };
 }
 
-// ---------- схемы Groq (strict: все поля required, additionalProperties: false) ----------
 const IDX = { type: 'array', items: { type: 'integer' } };
 const STR = { type: 'string' };
 const SIG_SCHEMA = { type: 'object', properties: { score: { type: 'integer' }, comment: STR, evidence_idx: IDX }, required: ['score', 'comment', 'evidence_idx'], additionalProperties: false };
@@ -285,7 +266,6 @@ const noData = (res, stage, snippets, stats, extra = {}) => res.status(200).json
   message: 'Не удалось собрать достаточно следов по этому описанию. Пакет не списан. Уточните боли словами аудитории или повторите позже.'
 });
 
-// ---------- HANDLER ----------
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   if (ALLOW.includes(origin)) {
@@ -299,7 +279,6 @@ export default async function handler(req, res) {
   const action = String(req.query.action || '');
   const t0 = Date.now();
 
-  // ===== LOGIN: при сбое счётчика отказ (fail-closed) =====
   if (action === 'login' && req.method === 'POST') {
     const ip = clientIp(req);
     const a = await rpcHit(`intel:login:${ip}:m`, 60, 5), b = await rpcHit(`intel:login:${ip}:h`, 3600, 30);
@@ -320,7 +299,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  // ===== HISTORY =====
   if (action === 'history' && req.method === 'GET') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -338,7 +316,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ items, quota: await quota(id) });
   }
 
-  // ===== PLAN: запросы по брифу, пакет не тратится =====
   if (action === 'plan' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -354,7 +331,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, plan: fallbackPlan(rb.brief), fallback: true });
   }
 
-  // ===== RUN: пакет списывается только при успешном отчёте =====
   if (action === 'run' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -371,7 +347,7 @@ export default async function handler(req, res) {
     let plan = validatePlan(req.body && req.body.plan);
     if (!plan.queries.length) plan = fallbackPlan(brief);
     const { items: snippets, stats } = await gatherSignals(plan);
-    if (snippets.length < MIN_SNIPPETS) return noData(res, 'collect', snippets, stats);   // до Groq: вызов не жжём
+    if (snippets.length < MIN_SNIPPETS) return noData(res, 'collect', snippets, stats);
 
     const left = BUDGET_MS - (Date.now() - t0);
     if (left < 3500) return res.status(200).json({ ok: false, reason: 'too_slow', message: 'Источники ответили слишком медленно. Пакет не списан, повторите.', coverage: { snippets: snippets.length, stats } });
@@ -389,7 +365,7 @@ export default async function handler(req, res) {
     const rep = sanitize(analysis, snippets.length);
     const measured = SIGNAL_KEYS.filter(k => rep.signals[k].measured).length, cited = citedUnique(rep);
     rep.coverage = { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, measured_signals: measured, cited_unique: cited };
-    if (cited < MIN_CITED || measured < MIN_MEASURED) {   // после Groq: честный отказ, запись не вставляем, пакет не тронут
+    if (cited < MIN_CITED || measured < MIN_MEASURED) {
       return res.status(200).json({ ok: false, reason: 'no_data', stage: 'analyze', coverage: rep.coverage, summary: rep.summary,
         message: 'Найденные следы почти не относятся к вашему продукту, поэтому оценку по ним давать нельзя. Пакет не списан.' });
     }
@@ -405,7 +381,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, run: saved, quota: await quota(id) });
   }
 
-  // ===== ENRICH: RU-сегменты, пакет не тратится; ≤2 попытки на запуск, не чаще раза в минуту =====
   if (action === 'enrich' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -424,7 +399,7 @@ export default async function handler(req, res) {
     const dc = await dailyCap('intel:enrich', cap());
     if (!dc.ok) return dc.unavailable ? res.status(503).json({ error: 'guard_unavailable' }) : res.status(429).json({ error: 'daily_cap' });
     report.enrich = { attempts: (en.attempts || 0) + 1, last_at: Date.now() };
-    await fetch(`${url}/rest/v1/intel_runs?id=eq.${encodeURIComponent(rid)}`, { method: 'PATCH', headers: h, body: JSON.stringify({ report }) });   // фиксируем попытку до вызова модели
+    await fetch(`${url}/rest/v1/intel_runs?id=eq.${encodeURIComponent(rid)}`, { method: 'PATCH', headers: h, body: JSON.stringify({ report }) });
 
     const sn = Array.isArray(run.signals) ? run.signals : [];
     const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -443,7 +418,7 @@ export default async function handler(req, res) {
           habitats: (Array.isArray(s.habitats) ? s.habitats : []).slice(0, 6).map(x => String(x).slice(0, 80)),
           offer_hypothesis: String(s.offer_hypothesis || '').slice(0, 300)
         }));
-        for (const s of segments) if (s.pain_quote && !pool.includes(norm(s.pain_quote))) s.pain_quote = '';   // цитата только подстрокой реального сниппета
+        for (const s of segments) if (s.pain_quote && !pool.includes(norm(s.pain_quote))) s.pain_quote = '';
       }
     } catch (e) { console.error('enrich failed:', e.message); }
     if (segments.length) {
