@@ -1,21 +1,19 @@
 // api/intel.js — Market Intel: потенциал мини-продукта по следам в интернете.
 // Действия: login | logout | plan | run | enrich | history.
-//   plan   — Groq составляет EN-запросы и сабреддиты по брифу (пакет не тратится)
-//   run    — сбор следов (Reddit RSS + HN) → анализ Groq → ворота покрытия → атомарное списание пакета
-//   enrich — RU-сегменты через GigaChat (пакет не тратится, максимум 2 попытки на запуск)
-// Скоринг считает код по intel/scoring.json. Нет доказательства — нет утверждения.
-// Бюджет времени run (Vercel Hobby ~10 с): сбор ≤3.5 с (Яндекс; Reddit/HN ≤2.5 с), Groq ≤4.7 с, БД ≈1 с → худший случай ≈9 с, типичный 5–6 с.
+// Источники: Яндекс Search API (если заданы ключ+каталог) → Reddit RSS → HN Algolia.
+// Нет доказательства — нет утверждения. Пакет списывается только при успешном отчёте.
 import crypto from 'crypto';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { rateLimit, dailyCap } from './_guard.js';
 
 const ALLOW = ['https://my-pro-skills.ru', 'http://localhost:8000'];
 const UA = 'MarketIntel/1.0 (research; my-pro-skills.ru)';
 const SUBREDDIT = /^[A-Za-z0-9_]{2,30}$/;
 const ID_RE = /^[A-Za-z0-9-]{1,64}$/;
-const BUDGET_MS = 9200;
+const BUDGET_MS = 8000;
 const MIN_SNIPPETS = 4, MIN_CITED = 4, MIN_MEASURED = 3;
 const SIGNAL_KEYS = ['demand', 'unresolved_pain', 'willingness_to_pay', 'competition', 'audience_reach'];
 
@@ -40,7 +38,6 @@ function verifyToken(req) {
 }
 const clientIp = req => String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
 
-// true — в пределах, false — превышен, null — счётчик недоступен (как rpcHit в _guard.js)
 async function rpcHit(key, win, limit) {
   const { url, h } = sb();
   try {
@@ -57,7 +54,7 @@ function sreq(method, urlStr, headers, body, timeoutMs = 3000, insecure = false)
   return new Promise((resolve, reject) => {
     const u = new URL(urlStr);
     const r = https.request({ hostname: u.hostname, port: u.port || 443, path: u.pathname + u.search, method, headers, rejectUnauthorized: !insecure, timeout: timeoutMs }, res => {
-      res.setEncoding('utf8'); // иначе многобайтные символы рвутся на границе чанков
+      res.setEncoding('utf8');
       let d = ''; res.on('data', c => d += c); res.on('end', () => resolve({ status: res.statusCode, text: d }));
     });
     r.on('timeout', () => r.destroy(new Error('timeout')));
@@ -74,14 +71,12 @@ function decodeEnt(s) {
   return s.replace(/&#x([0-9a-f]+);/gi, (_, h) => cp(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => cp(+d))
     .replace(/&([a-z]+);/gi, (m, n) => { n = n.toLowerCase(); return n === 'amp' ? m : (ENT[n] !== undefined ? ENT[n] : m); })
-    .replace(/&amp;/gi, '&'); // &amp; последним, чтобы не раскодировать дважды
+    .replace(/&amp;/gi, '&');
 }
 const stripTags = s => s.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 function cleanTxt(raw) {
   const t = String(raw || '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
   const d = decodeEnt(t);
-  // HTML, экранированный внутри XML (&lt;p&gt;a &amp;amp; b&lt;/p&gt;): теги появились только после раскодирования,
-  // значит сущности внутри текста нужно раскодировать ещё раз — уже после вырезания тегов
   if (!/</.test(t) && /<[a-z!\/]/i.test(d)) return decodeEnt(stripTags(d));
   return stripTags(d);
 }
@@ -97,19 +92,57 @@ function parseRss(xml, source, limit = 6) {
   })).filter(x => x.title);
 }
 
-// ---------- сбор следов ----------
+// ---------- источники ----------
+// Яндекс Search API v2: ответ — JSON { rawData: base64(XML) }, внутри — group/doc, подсветка <hlword>.
+async function yandexSearch(q, geo) {
+  const key = process.env.YANDEX_SEARCH_API_KEY, folder = process.env.YANDEX_FOLDER_ID;
+  if (!key || !folder) return { status: 'no_key', items: [] };
+  const ru = geo !== 'EN';
+  const body = JSON.stringify({
+    query: { searchType: ru ? 'SEARCH_TYPE_RU' : 'SEARCH_TYPE_COM', queryText: String(q).slice(0, 400) },
+    folderId: folder,
+    responseFormat: 'FORMAT_XML',
+    groupSpec: { groupMode: 'GROUP_MODE_FLAT', groupsOnPage: '8', docsInGroup: '1' },
+    maxPassages: '3',
+    l10n: ru ? 'LOCALIZATION_RU' : 'LOCALIZATION_EN',
+    ...(ru ? { region: '225' } : {})
+  });
+  try {
+    const r = await sreq('POST', 'https://searchapi.api.cloud.yandex.net/v2/web/search', { Authorization: `Api-Key ${key}`, 'Content-Type': 'application/json' }, body, 2500);
+    if (r.status !== 200) return { status: r.status, items: [] };
+    const xml = Buffer.from(JSON.parse(r.text).rawData || '', 'base64').toString('utf8');
+    const err = xml.match(/<error[^>]*code="(\d+)"/);
+    if (err) return { status: Number(err[1]), items: [] };
+    const docs = xml.match(/<doc(?:\s[^>]*)?>[\s\S]*?<\/doc>/g) || [];
+    const pick = (s, re) => { const m = s.match(re); return m ? cleanTxt(m[1]) : ''; };
+    const items = docs.map(d => {
+      const passages = (d.match(/<passage>([\s\S]*?)<\/passage>/g) || [])
+        .map(p => cleanTxt(p.replace(/<\/?passage>/g, ''))).filter(Boolean);
+      const title = pick(d, /<title>([\s\S]*?)<\/title>/);
+      return {
+        title: title.slice(0, 200),
+        snippet: (passages.join(' ') || title).slice(0, 350),
+        link: pick(d, /<url>([\s\S]*?)<\/url>/),
+        source: 'yandex'
+      };
+    }).filter(x => x.title && /^https?:\/\//i.test(x.link));
+    return { status: 200, items: items.slice(0, 8) };
+  } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
+}
+
 async function redditRss(q, sub) {
   const url = sub
     ? `https://www.reddit.com/r/${sub}/search.rss?q=${encodeURIComponent(q)}&restrict_sr=on&sort=relevance&t=all`
     : `https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=relevance&t=all`;
   try {
-    const r = await sreq('GET', url, { 'User-Agent': UA, Accept: 'application/atom+xml, application/rss+xml, application/xml, text/xml' }, null, 2500);
+    const r = await sreq('GET', url, { 'User-Agent': UA, Accept: 'application/atom+xml, application/rss+xml, application/xml, text/xml' }, null, 1800);
     return { status: r.status, items: r.status === 200 ? parseRss(r.text, 'reddit') : [] };
   } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
 }
+
 async function hnSearch(q) {
   try {
-    const r = await sreq('GET', `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=6`, { 'User-Agent': UA }, null, 2500);
+    const r = await sreq('GET', `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=6`, { 'User-Agent': UA }, null, 1800);
     if (r.status !== 200) return { status: r.status, items: [] };
     return { status: 200, items: (JSON.parse(r.text).hits || []).filter(x => x.title).map(x => ({
       title: String(x.title).slice(0, 200),
@@ -119,60 +152,41 @@ async function hnSearch(q) {
   } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
 }
 
-// План поиска приходит с клиента, поэтому проверяем его на сервере: иначе run станет открытым поиском по произвольным строкам
-// Яндекс Search API v2 (синхронный). Включается, только если заданы YANDEX_SEARCH_API_KEY и YANDEX_FOLDER_ID.
-const yandexOn = () => !!(process.env.YANDEX_SEARCH_API_KEY && process.env.YANDEX_FOLDER_ID);
-function parseYandex(raw) {
-  let xml = String(raw || '');
-  if (xml && !xml.trimStart().startsWith('<')) { try { xml = Buffer.from(xml, 'base64').toString('utf8'); } catch (_) { xml = ''; } }
-  const docs = xml.match(/<doc[ >][\s\S]*?<\/doc>/g) || [];
-  const tag = (d, t) => { const m = d.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)); return m ? cleanTxt(m[1]) : ''; };
-  return docs.slice(0, 8).map(d => {
-    const passages = (d.match(/<passage[^>]*>[\s\S]*?<\/passage>/g) || []).map(x => cleanTxt(x)).filter(Boolean).join(' … ');
-    return { title: tag(d, 'title').slice(0, 200), snippet: (passages || tag(d, 'headline')).slice(0, 350), link: tag(d, 'url'), source: 'yandex' };
-  }).filter(x => x.title && x.link);
-}
-async function yandexSearch(q) {
-  try {
-    const r = await sreq('POST', 'https://searchapi.api.cloud.yandex.net/v2/web/search',
-      { Authorization: `Api-Key ${process.env.YANDEX_SEARCH_API_KEY}`, 'Content-Type': 'application/json' },
-      JSON.stringify({ query: { searchType: 'SEARCH_TYPE_RU', queryText: q.slice(0, 400), familyMode: 'FAMILY_MODE_NONE', fixTypoMode: 'FIX_TYPO_MODE_ON', page: '0' },
-        groupSpec: { groupMode: 'GROUP_MODE_FLAT', groupsOnPage: '8', docsInGroup: '1' }, maxPassages: '3', l10n: 'LOCALIZATION_RU',
-        folderId: process.env.YANDEX_FOLDER_ID, responseFormat: 'FORMAT_XML' }), 3500);
-    if (r.status !== 200) { console.error('yandex', r.status, r.text.slice(0, 200)); return { status: r.status, items: [] }; }
-    return { status: 200, items: parseYandex(JSON.parse(r.text).rawData) };
-  } catch (e) { return { status: String(e.message || 'error'), items: [] }; }
-}
-
+// ---------- план поиска ----------
 function validatePlan(p) {
   const strs = (a, n, max) => [...new Set((Array.isArray(a) ? a : []).map(x => String(x == null ? '' : x).replace(/\s+/g, ' ').trim()).filter(x => x.length >= 3 && x.length <= max))].slice(0, n);
   return {
     queries: strs(p && p.queries, 3, 100),
+    ru_queries: strs(p && p.ru_queries, 2, 100),
     subreddits: [...new Set((Array.isArray(p && p.subreddits) ? p.subreddits : []).map(x => String(x == null ? '' : x).replace(/^r\//i, '').trim()).filter(x => SUBREDDIT.test(x)))].slice(0, 3),
-    hn_queries: strs(p && p.hn_queries, 2, 100),
-    ru_queries: strs(p && p.ru_queries, 2, 100)
+    hn_queries: strs(p && p.hn_queries, 2, 100)
   };
 }
-const ruFallback = brief => (brief.target_geo === 'RU' ? (brief.pains.length ? brief.pains.slice(0, 2) : [`${brief.product_name} ${brief.category || ''}`.trim()]) : []);
 function fallbackPlan(brief) {
-  return validatePlan({ queries: brief.pains.length ? brief.pains : [brief.product_name], subreddits: [], hn_queries: [brief.category || brief.product_name], ru_queries: ruFallback(brief) });
+  return validatePlan({
+    queries: brief.pains.length ? brief.pains : [brief.product_name],
+    ru_queries: brief.pains.length ? brief.pains : [brief.product_name],
+    subreddits: [],
+    hn_queries: [brief.category || brief.product_name]
+  });
 }
 
-async function gatherSignals(plan) {
+async function gatherSignals(plan, geo) {
   const jobs = [];
-  if (yandexOn()) plan.ru_queries.forEach(q => jobs.push(['yandex', () => yandexSearch(q)]));
+  const yOn = !!(process.env.YANDEX_SEARCH_API_KEY && process.env.YANDEX_FOLDER_ID);
+  if (yOn) (plan.ru_queries.length ? plan.ru_queries : plan.queries).slice(0, 2).forEach(q => jobs.push(['yandex', () => yandexSearch(q, geo)]));
   plan.queries.forEach(q => jobs.push(['reddit:all', () => redditRss(q)]));
-  plan.hn_queries.forEach(q => jobs.push(['hn', () => hnSearch(q)]));
   if (plan.queries[0]) plan.subreddits.forEach(s => jobs.push([`reddit:r/${s}`, () => redditRss(plan.queries[0], s)]));
-  const settled = await Promise.allSettled(jobs.slice(0, 8).map(([, fn]) => fn()));
+  plan.hn_queries.forEach(q => jobs.push(['hn', () => hnSearch(q)]));
+  const use = jobs.slice(0, 10);
+  const settled = await Promise.allSettled(use.map(([, fn]) => fn()));
   const stats = {}, lists = [];
   settled.forEach((s, i) => {
-    const label = jobs[i][0], v = s.status === 'fulfilled' ? s.value : { status: 'error', items: [] };
+    const label = use[i][0], v = s.status === 'fulfilled' ? s.value : { status: 'error', items: [] };
     const st = stats[label] || (stats[label] = { requests: 0, items: 0, codes: [] });
     st.requests++; st.items += v.items.length; if (!st.codes.includes(v.status)) st.codes.push(v.status);
     lists.push(v.items);
   });
-  // по кругу из каждого источника, без дублей ссылок, максимум 20
   const out = [], seen = new Set();
   for (let r = 0; out.length < 20 && lists.some(l => r < l.length); r++) {
     for (const l of lists) {
@@ -183,7 +197,16 @@ async function gatherSignals(plan) {
       seen.add(key); out.push({ ...it, idx: out.length });
     }
   }
-  return { items: out, stats };
+  // семейство источников недоступно целиком (только 403/429, ноль следов) — это не вина описания
+  const fam = {};
+  for (const [label, st] of Object.entries(stats)) {
+    const f = label.split(':')[0];
+    const bad = st.items === 0 && st.codes.length > 0 && st.codes.every(c => c === 403 || c === 429);
+    fam[f] = fam[f] === undefined ? bad : (fam[f] && bad);
+  }
+  const names = { reddit: 'Reddit', hn: 'Hacker News', yandex: 'Яндекс' };
+  const unavailable = Object.keys(fam).filter(f => fam[f]).map(f => names[f] || f);
+  return { items: out, stats, unavailable };
 }
 
 // ---------- Groq: strict JSON ----------
@@ -219,20 +242,32 @@ async function gigaChat(messages) {
   return (JSON.parse(r.text).choices?.[0]?.message?.content || '').trim();
 }
 
-// ---------- скоринг: по измеренным сигналам с перенормировкой ----------
+// ---------- скоринг (ключи с пробелами нормализуются) ----------
 let scCache = null;
 function scoring() {
   if (scCache) return scCache;
-  try { scCache = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'intel', 'scoring.json'), 'utf8')); }
-  catch (_) { scCache = { weights: { demand: .30, unresolved_pain: .25, willingness_to_pay: .20, competition: .15, audience_reach: .10 }, thresholds: { high: 70, medium: 45 } }; }
+  const def = { weights: { demand: .30, unresolved_pain: .25, willingness_to_pay: .20, competition: .15, audience_reach: .10 }, thresholds: { high: 70, medium: 45 } };
+  const trim = o => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [String(k).trim(), v]));
+  const paths = [
+    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'intel', 'scoring.json'),
+    path.join(process.cwd(), 'intel', 'scoring.json')
+  ];
+  for (const p of paths) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+      scCache = { weights: { ...def.weights, ...trim(raw.weights) }, thresholds: { ...def.thresholds, ...trim(raw.thresholds) } };
+      return scCache;
+    } catch (_) { /* пробуем следующий путь */ }
+  }
+  scCache = def;
   return scCache;
 }
 function scoreOf(signals) {
   const w = scoring().weights;
   const measured = SIGNAL_KEYS.filter(k => signals[k] && signals[k].measured);
-  const wsum = measured.reduce((s, k) => s + (w[k] || 0), 0);
+  const wsum = measured.reduce((s, k) => s + (Number(w[k]) || 0), 0);
   if (!measured.length || !wsum) return null;
-  return Math.round(measured.reduce((s, k) => s + signals[k].score * (w[k] || 0), 0) / wsum);
+  return Math.round(measured.reduce((s, k) => s + signals[k].score * (Number(w[k]) || 0), 0) / wsum);
 }
 function verdictOf(score, measuredCount) {
   const t = scoring().thresholds;
@@ -240,7 +275,7 @@ function verdictOf(score, measuredCount) {
   return measuredCount < SIGNAL_KEYS.length ? `${base} (по неполным данным)` : base;
 }
 
-// ---------- анти-галлюцинации: объект без доказательств выбрасывается ----------
+// ---------- анти-галлюцинации ----------
 function sanitize(a, n) {
   const idx = arr => [...new Set((Array.isArray(arr) ? arr : []).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < n))];
   const str = (v, m) => String(v == null ? '' : v).slice(0, m);
@@ -280,7 +315,7 @@ async function quota(id) {
   return { limit, used, remaining: Math.max(0, limit - used) };
 }
 
-// ---------- схемы Groq (strict: все поля required, additionalProperties: false) ----------
+// ---------- схемы Groq ----------
 const IDX = { type: 'array', items: { type: 'integer' } };
 const STR = { type: 'string' };
 const SIG_SCHEMA = { type: 'object', properties: { score: { type: 'integer' }, comment: STR, evidence_idx: IDX }, required: ['score', 'comment', 'evidence_idx'], additionalProperties: false };
@@ -292,10 +327,10 @@ const SCHEMA = obj({
   base_segments: { type: 'array', items: obj({ name: STR, pain: STR, habitats: { type: 'array', items: STR }, offer_hypothesis: STR, evidence_idx: IDX }) },
   summary: STR
 });
-const PLAN_SCHEMA = obj({ queries: { type: 'array', items: STR }, subreddits: { type: 'array', items: STR }, hn_queries: { type: 'array', items: STR }, ru_queries: { type: 'array', items: STR } });
+const PLAN_SCHEMA = obj({ queries: { type: 'array', items: STR }, ru_queries: { type: 'array', items: STR }, subreddits: { type: 'array', items: STR }, hn_queries: { type: 'array', items: STR } });
 
 const SYS_ANALYZE = 'Ты — старший аналитик рынка. Оцени потенциал мини-продукта ТОЛЬКО по приведённым следам. Сигналы 0-100: demand (активность поиска решения), unresolved_pain (боль не закрыта текущими решениями), willingness_to_pay (платные аналоги/жалобы на цены), competition (ИНВЕРСИЯ: 100=конкуренты слабые, 0=рынок перегрет), audience_reach (концентрированные места обитания ЦА). Каждый сигнал, конкурент, тренд и сегмент ОБЯЗАН ссылаться хотя бы на один сниппет через evidence_idx; ссылайся только на сниппеты, которые действительно относятся к продукту и его аудитории. Если доказательств нет — для сигнала верни evidence_idx: [] и низкий score, для конкурентов, трендов и сегментов верни пустой массив. НЕ придумывай названия продуктов, каналов и сообществ. Все тексты (comment, summary, positioning, weakness, pain, offer_hypothesis, trend, opportunity) пиши ПО-РУССКИ. summary — 2-4 предложения.';
-const SYS_PLAN = 'Ты помогаешь искать в интернете следы спроса на мини-продукт. По брифу составь: queries — 2-3 поисковых запроса НА АНГЛИЙСКОМ (до 80 символов) так, как боль формулируют сами люди на Reddit; subreddits — 2-3 реальных профильных сабреддита без «r/» (только латиница, цифры, подчёркивание); hn_queries — 1-2 коротких запроса для Hacker News про аналоги и рынок; ru_queries — 2 запроса НА РУССКОМ (до 80 символов) для поиска в Яндексе: один так, как ищет решение сама аудитория (боль или «как…»), второй про аналоги и цены («тренажёр … онлайн цена», «курс … отзывы»). Только JSON по схеме.';
+const SYS_PLAN = 'Ты помогаешь искать в интернете следы спроса на мини-продукт. По брифу составь: queries — 2-3 поисковых запроса НА АНГЛИЙСКОМ (до 80 символов) так, как боль формулируют сами люди на Reddit; ru_queries — 2 запроса ПО-РУССКИ для Яндекса: первый — как аудитория описывает свою боль на форумах и отзовиках, второй — про аналоги, тренажёры и цены; subreddits — 2-3 реальных профильных сабреддита без «r/» (только латиница, цифры, подчёркивание); hn_queries — 1-2 коротких запроса для Hacker News про аналоги и рынок. Только JSON по схеме.';
 
 const briefText = b => `ПРОДУКТ: ${b.product_name}\nОПИСАНИЕ: ${b.description}\nКАТЕГОРИЯ: ${b.category || '—'}\nГЕО: ${b.target_geo}\nБОЛИ: ${b.pains.join(' | ') || '—'}`;
 function readBrief(b) {
@@ -306,20 +341,14 @@ function readBrief(b) {
   if (name.length > 120 || desc.length > 2000) return { error: 'too long' };
   return { brief: { product_name: name, description: desc, category: String(b.category || '').slice(0, 120), target_geo: b.target_geo === 'EN' ? 'EN' : 'RU', price_model: String(b.price_model || '').slice(0, 120), pains } };
 }
-const BLOCK = c => c === 429 || c === 403 || c === 401 || c === 503 || c === 'timeout' || c === 'error' || typeof c === 'string';
-const SRC_NAME = { reddit: 'Reddit', hn: 'Hacker News', yandex: 'Яндекс' };
-function unavailableSources(stats) {
-  const bySrc = {};
-  Object.entries(stats || {}).forEach(([label, st]) => { const k = label.split(':')[0]; const b = bySrc[k] || (bySrc[k] = { items: 0, codes: [] }); b.items += st.items; b.codes.push(...st.codes); });
-  return Object.entries(bySrc).filter(([, b]) => b.items === 0 && b.codes.length && b.codes.every(BLOCK)).map(([k]) => SRC_NAME[k] || k);
-}
 const noData = (res, stage, snippets, stats, extra = {}) => {
-  const unavailable = unavailableSources(stats);
-  const sourcesNote = unavailable.length ? ` Источники недоступны с сервера: ${unavailable.join(', ')} — это не вина описания, повторите позже.` : ' Уточните боли словами аудитории или повторите позже.';
+  const un = Array.isArray(extra.unavailable) ? extra.unavailable : [];
   return res.status(200).json({
     ok: false, reason: 'no_data', stage,
-    coverage: { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, unavailable, ...extra },
-    message: 'Не удалось собрать достаточно следов по этому описанию. Пакет не списан.' + sourcesNote
+    coverage: { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, ...extra },
+    message: un.length
+      ? `Источники недоступны с сервера: ${un.join(', ')}. Это ограничение доступа, а не вина вашего описания. Пакет не списан.`
+      : 'Не удалось собрать достаточно следов по этому описанию. Пакет не списан. Уточните боли словами аудитории или повторите позже.'
   });
 };
 
@@ -337,7 +366,7 @@ export default async function handler(req, res) {
   const action = String(req.query.action || '');
   const t0 = Date.now();
 
-  // ===== LOGIN: при сбое счётчика отказ (fail-closed) =====
+  // ===== LOGIN =====
   if (action === 'login' && req.method === 'POST') {
     const ip = clientIp(req);
     const a = await rpcHit(`intel:login:${ip}:m`, 60, 5), b = await rpcHit(`intel:login:${ip}:h`, 3600, 30);
@@ -376,7 +405,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ items, quota: await quota(id) });
   }
 
-  // ===== PLAN: запросы по брифу, пакет не тратится =====
+  // ===== PLAN =====
   if (action === 'plan' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -386,13 +415,13 @@ export default async function handler(req, res) {
     const dc = await dailyCap('intel:plan', cap());
     if (!dc.ok) return dc.unavailable ? res.status(503).json({ error: 'guard_unavailable' }) : res.status(429).json({ error: 'daily_cap', message: 'Дневной лимит анализов исчерпан. Попробуйте завтра.' });
     try {
-      const plan = validatePlan(await groq([{ role: 'system', content: SYS_PLAN }, { role: 'user', content: briefText(rb.brief) }], PLAN_SCHEMA, 'intel_plan', 400, 5000));
-      if (plan.queries.length) return res.status(200).json({ ok: true, plan });
+      const plan = validatePlan(await groq([{ role: 'system', content: SYS_PLAN }, { role: 'user', content: briefText(rb.brief) }], PLAN_SCHEMA, 'intel_plan', 500, 5000));
+      if (plan.queries.length || plan.ru_queries.length) return res.status(200).json({ ok: true, plan });
     } catch (e) { console.error('plan failed:', e.message); }
     return res.status(200).json({ ok: true, plan: fallbackPlan(rb.brief), fallback: true });
   }
 
-  // ===== RUN: пакет списывается только при успешном отчёте =====
+  // ===== RUN =====
   if (action === 'run' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -407,19 +436,18 @@ export default async function handler(req, res) {
     if (!dc.ok) return dc.unavailable ? res.status(503).json({ error: 'guard_unavailable' }) : res.status(429).json({ error: 'daily_cap', message: 'Дневной лимит анализов исчерпан. Попробуйте завтра.' });
 
     let plan = validatePlan(req.body && req.body.plan);
-    if (!plan.queries.length) plan = fallbackPlan(brief);
-    else if (!plan.ru_queries.length) plan.ru_queries = ruFallback(brief);
-    const { items: snippets, stats } = await gatherSignals(plan);
-    if (snippets.length < MIN_SNIPPETS) return noData(res, 'collect', snippets, stats);   // до Groq: вызов не жжём
+    if (!plan.queries.length && !plan.ru_queries.length) plan = fallbackPlan(brief);
+    const { items: snippets, stats, unavailable } = await gatherSignals(plan, brief.target_geo);
+    if (snippets.length < MIN_SNIPPETS) return noData(res, 'collect', snippets, stats, { unavailable });
 
     const left = BUDGET_MS - (Date.now() - t0);
-    if (left < 3500) return res.status(200).json({ ok: false, reason: 'too_slow', message: 'Источники ответили слишком медленно. Пакет не списан, повторите.', coverage: { snippets: snippets.length, stats } });
+    if (left < 3500) return res.status(200).json({ ok: false, reason: 'too_slow', message: 'Источники ответили слишком медленно. Пакет не списан, повторите.', coverage: { snippets: snippets.length, stats, unavailable } });
     let analysis;
     try {
       analysis = await groq([
         { role: 'system', content: SYS_ANALYZE },
         { role: 'user', content: `${briefText(brief)}\n\nСЛЕДЫ (индекс = номер):\n${snippets.map(s => `[${s.idx}] (${s.source}) ${s.title}\n    ${s.snippet}\n    ${s.link}`).join('\n\n')}\n\nВерни JSON по схеме.` }
-      ], SCHEMA, 'intel_report', 2000, Math.min(5500, left - 1000));
+      ], SCHEMA, 'intel_report', 2000, Math.min(4200, left - 1200));
     } catch (e) {
       console.error('groq failed:', e.message);
       return res.status(502).json({ error: 'analyze_failed', detail: String(e.message) });
@@ -427,8 +455,8 @@ export default async function handler(req, res) {
 
     const rep = sanitize(analysis, snippets.length);
     const measured = SIGNAL_KEYS.filter(k => rep.signals[k].measured).length, cited = citedUnique(rep);
-    rep.coverage = { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, measured_signals: measured, cited_unique: cited };
-    if (cited < MIN_CITED || measured < MIN_MEASURED) {   // после Groq: честный отказ, запись не вставляем, пакет не тронут
+    rep.coverage = { snippets: snippets.length, sources: [...new Set(snippets.map(s => s.source))], stats, measured_signals: measured, cited_unique: cited, unavailable };
+    if (cited < MIN_CITED || measured < MIN_MEASURED) {
       return res.status(200).json({ ok: false, reason: 'no_data', stage: 'analyze', coverage: rep.coverage, summary: rep.summary,
         message: 'Найденные следы почти не относятся к вашему продукту, поэтому оценку по ним давать нельзя. Пакет не списан.' });
     }
@@ -439,12 +467,12 @@ export default async function handler(req, res) {
     if (!ins.ok) { console.error('intel_try_insert_run failed:', ins.status); return res.status(503).json({ error: 'migration_missing' }); }
     const runId = await ins.json();
     if (!runId) return res.status(429).json({ error: 'package_exhausted', quota: await quota(id) });
-    const r = await fetch(`${url}/rest/v1/intel_runs?id=eq.${encodeURIComponent(runId)}&select=*`, { headers: h });
-    const saved = ((await r.json()) || [])[0];
-    return res.status(200).json({ ok: true, run: saved, quota: await quota(id) });
+    // без повторного чтения из БД: экономим ~1 с на критическом пути
+    const saved = { id: runId, access_id: id, brief, signals: snippets, report: rep, score, verdict, created_at: new Date().toISOString() };
+    return res.status(200).json({ ok: true, run: saved, quota: { limit: q.limit, used: q.used + 1, remaining: Math.max(0, q.remaining - 1) } });
   }
 
-  // ===== ENRICH: RU-сегменты, пакет не тратится; ≤2 попытки на запуск, не чаще раза в минуту =====
+  // ===== ENRICH =====
   if (action === 'enrich' && req.method === 'POST') {
     const id = verifyToken(req);
     if (!id) return res.status(401).json({ error: 'unauthorized' });
@@ -463,7 +491,7 @@ export default async function handler(req, res) {
     const dc = await dailyCap('intel:enrich', cap());
     if (!dc.ok) return dc.unavailable ? res.status(503).json({ error: 'guard_unavailable' }) : res.status(429).json({ error: 'daily_cap' });
     report.enrich = { attempts: (en.attempts || 0) + 1, last_at: Date.now() };
-    await fetch(`${url}/rest/v1/intel_runs?id=eq.${encodeURIComponent(rid)}`, { method: 'PATCH', headers: h, body: JSON.stringify({ report }) });   // фиксируем попытку до вызова модели
+    await fetch(`${url}/rest/v1/intel_runs?id=eq.${encodeURIComponent(rid)}`, { method: 'PATCH', headers: h, body: JSON.stringify({ report }) });
 
     const sn = Array.isArray(run.signals) ? run.signals : [];
     const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -482,7 +510,7 @@ export default async function handler(req, res) {
           habitats: (Array.isArray(s.habitats) ? s.habitats : []).slice(0, 6).map(x => String(x).slice(0, 80)),
           offer_hypothesis: String(s.offer_hypothesis || '').slice(0, 300)
         }));
-        for (const s of segments) if (s.pain_quote && !pool.includes(norm(s.pain_quote))) s.pain_quote = '';   // цитата только подстрокой реального сниппета
+        for (const s of segments) if (s.pain_quote && !pool.includes(norm(s.pain_quote))) s.pain_quote = '';
       }
     } catch (e) { console.error('enrich failed:', e.message); }
     if (segments.length) {
